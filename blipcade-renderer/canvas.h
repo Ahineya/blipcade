@@ -16,6 +16,7 @@ namespace blipcade::graphics {
         std::vector<uint32_t> getPixelsData() const;
 
     private:
+        std::array<uint32_t, 256> colorLookup{};
         std::vector<uint8_t> pixels;
         std::array<uint8_t, 256> virtualPalette{};
         std::unique_ptr<Palette685> palette;

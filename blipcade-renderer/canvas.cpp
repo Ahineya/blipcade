@@ -15,6 +15,10 @@ namespace blipcade::graphics {
         for (int i = 0; i < 256; i++) {
             virtualPalette[i] = static_cast<uint8_t>(i);
         }
+
+        for (int i = 0; i < 256; i++) {
+            colorLookup[i] = palette->get_color(i).to_hex();
+        }
     }
 
     Canvas::~Canvas() = default;
@@ -26,11 +30,9 @@ namespace blipcade::graphics {
     std::vector<uint32_t> Canvas::getPixelsData() const {
 
         std::vector<uint32_t> colors;
-
         colors.reserve(pixels.size());
         for (const auto pixel : pixels) {
-            // colors.push_back(palette->get_color(virtualPalette[pixel]).to_hex());
-            colors.push_back(palette->get_color(pixel).to_hex());
+            colors.push_back(colorLookup[virtualPalette[pixel]]);
         }
 
         return colors;

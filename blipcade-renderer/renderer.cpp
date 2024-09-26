@@ -129,7 +129,8 @@ namespace blipcade::graphics {
 
         glUseProgram(shaderProgram);
 
-        uint32_t* pixels = canvas->getPixelsData().data();
+        auto pixelData = canvas->getPixelsData();
+        uint32_t* pixels = pixelData.data();
 
         glBindTexture(GL_TEXTURE_2D, texture);
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 128, 128, GL_RGBA, GL_UNSIGNED_BYTE, pixels); // Ensure size matches

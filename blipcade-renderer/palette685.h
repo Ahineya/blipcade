@@ -8,13 +8,13 @@
 #include <vector>
 
 namespace blipcade::graphics {
-    class Palette685 {
+    class Palette685 final {
     public:
         // Constructor
         Palette685();
 
         // Destructor
-        virtual ~Palette685();
+        ~Palette685();
 
         std::vector<Color> colors;
         VirtualPalette virtual_palette;

@@ -6,9 +6,15 @@
 #include <string>
 
 namespace blipcade::graphics {
-    Renderer::Renderer(const uint32_t width, const uint32_t height): width(width), height(height), window(nullptr),
-                                                                     renderer(nullptr), texture(nullptr),
-                                                                     palette(nullptr) {
+    Renderer::Renderer(const uint32_t width, const uint32_t height, const uint32_t scale): width(width), height(height),
+        scale(scale),
+        window(nullptr),
+        renderer(nullptr),
+        texture(nullptr),
+        palette(nullptr) {
+        real_width = width * scale;
+        real_height = height * scale;
+
         if (SDL_Init(SDL_INIT_VIDEO) != 0) {
             throw std::runtime_error("SDL_Init Error: " + std::string(SDL_GetError()));
         }
@@ -17,7 +23,8 @@ namespace blipcade::graphics {
             "Blipcade",
             SDL_WINDOWPOS_CENTERED,
             SDL_WINDOWPOS_CENTERED,
-            width, height,
+            real_width,
+            real_height,
             SDL_WINDOW_SHOWN
         );
 
@@ -34,7 +41,8 @@ namespace blipcade::graphics {
             throw std::runtime_error("SDL_CreateRenderer Error: " + std::string(SDL_GetError()));
         }
 
-        texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, width, height);
+        texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, width,
+                                    height);
 
         palette = new Palette685();
     }
@@ -54,17 +62,18 @@ namespace blipcade::graphics {
         SDL_RenderClear(renderer);
     }
 
-    void Renderer::present() const {
+    void Renderer::present(const Canvas& canvas) const {
         void *pixels;
         int pitch;
         SDL_LockTexture(texture, nullptr, &pixels, &pitch);
 
-        const auto color = palette->get_color(0x50);
+        auto canvasPixels = canvas.getPixels();
+        uint32_t* pixelBuffer = static_cast<uint32_t*>(pixels);
 
-        for (int y = 20; y < height - 20; y++) {
-            for (int x = 20; x < width - 20; x++) {
-                auto *pixel = reinterpret_cast<uint32_t *>(static_cast<uint8_t *>(pixels) + y * pitch + x * 4);
-                *pixel = color.to_hex();
+        for (uint32_t y = 0; y < height; y++) {
+            for (uint32_t x = 0; x < width; x++) {
+                uint32_t color = palette->get_color(canvasPixels[y * width + x]).to_hex();
+                pixelBuffer[y * (pitch / 4) + x] = color;
             }
         }
 

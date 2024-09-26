@@ -15,49 +15,14 @@
 #include <GLES3/gl3.h>
 #endif
 
+#include "shader_vert.h"
+#include "shader_frag.h"
+
 GLFWwindow *window = nullptr;
 
 GLuint shaderProgram;
 GLuint VBO, VAO, EBO;
 GLuint texture;
-
-const char *vertexShaderSource =
-#if defined(EMSCRIPTEN)
-    "#version 300 es\n"
-#else
-        "#version 410\n"
-#endif
-        "layout (location = 0) in vec2 aPos;\n"
-        "layout(location = 1) in vec2 aTexCoord;\n"
-        "out vec2 TexCoord;\n"
-        "uniform float uSquareSize;\n"
-        "uniform float uWindowAspectRatio;\n"
-        "void main() {\n"
-        "vec2 pos = aPos;"
-        // "pos.x /= uWindowAspectRatio;"
-        "if (uWindowAspectRatio > 1.0) {\n"
-        "pos.x /= uWindowAspectRatio;\n"
-        "} else {\n"
-        "pos.y *= uWindowAspectRatio;\n"
-        "}\n"
-        "gl_Position = vec4(pos, 0.0, 1.0);\n"
-        "TexCoord = aTexCoord;\n"
-        "}\0";
-
-const char *fragmentShaderSource =
-#if defined(EMSCRIPTEN)
-    "#version 300 es\n"
-    "precision mediump float;\n"
-#else
-        "#version 410\n"
-#endif
-    "in vec2 TexCoord;\n"
-    "out vec4 FragColor;\n"
-    "uniform sampler2D uTexture;\n"
-    "void main()\n"
-    "{\n"
-    "FragColor = texture(uTexture, TexCoord);\n"
-    "}\n";
 
 void checkShaderCompileErrors(GLuint shader, const char *type) {
     GLint success;
@@ -83,12 +48,12 @@ void checkProgramLinkErrors(GLuint program) {
 
 void compileShaders() {
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+    glShaderSource(vertexShader, 1, &shader_vertexSource, NULL);
     glCompileShader(vertexShader);
     checkShaderCompileErrors(vertexShader, "VERTEX");
 
     GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+    glShaderSource(fragmentShader, 1, &shader_fragmentSource, NULL);
     glCompileShader(fragmentShader);
     checkShaderCompileErrors(fragmentShader, "FRAGMENT");
 
@@ -107,22 +72,20 @@ void errorCallback(int error, const char *description) {
 }
 
 namespace blipcade::graphics {
-
-    Renderer* Renderer::instance = nullptr;
+    Renderer *Renderer::instance = nullptr;
 
     Renderer::Renderer(const uint32_t width, const uint32_t height, const uint32_t scale)
         : canvasWidth(width), canvasHeight(height), scale(scale),
           windowWidth(width * scale), windowHeight(height * scale),
-          canvas(nullptr), palette(nullptr)
-    {
+          canvas(nullptr), palette(nullptr) {
         palette = new Palette685();
     }
 
     void Renderer::updateWindowSize() {
-        glfwGetFramebufferSize(window, reinterpret_cast<int*>(&windowWidth), reinterpret_cast<int*>(&windowHeight));
+        glfwGetFramebufferSize(window, reinterpret_cast<int *>(&windowWidth), reinterpret_cast<int *>(&windowHeight));
     }
 
-    void Renderer::setCanvas(const Canvas& canvas) {
+    void Renderer::setCanvas(const Canvas &canvas) {
         this->canvas = &canvas;
     }
 
@@ -140,10 +103,8 @@ namespace blipcade::graphics {
         // Calculate the size of the square in normalized device coordinates
         float squareSize;
         if (windowAspectRatio > 1.0f) {
-            // Window is wider than it is tall
             squareSize = 1.0f;
         } else {
-            // Window is taller than it is wide
             squareSize = windowAspectRatio;
         }
 
@@ -154,7 +115,7 @@ namespace blipcade::graphics {
         glUniform1f(uWindowAspectRatioLocation, windowAspectRatio);
 
         const auto pixelData = canvas->getPixelsData();
-        const auto* pixels = pixelData.data();
+        const auto *pixels = pixelData.data();
 
         glBindTexture(GL_TEXTURE_2D, texture);
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, canvasWidth, canvasHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
@@ -176,6 +137,11 @@ namespace blipcade::graphics {
         if (instance) {
             instance->mainLoop();
         }
+    }
+
+    static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
+        if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+            glfwSetWindowShouldClose(window, GLFW_TRUE);
     }
 
     void Renderer::createWindow() {
@@ -210,6 +176,8 @@ namespace blipcade::graphics {
 
         glfwMakeContextCurrent(window);
 
+        glfwSetKeyCallback(window, key_callback);
+
         std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
         std::cout << "GLSL Version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
 
@@ -235,12 +203,12 @@ namespace blipcade::graphics {
 
     void Renderer::setupTexture() {
         const float vertices[] = {
-        // Positions   // TexCoords
-        -1.0f,  1.0f,   0.0f, 1.0f, // Top-left
-        -1.0f, -1.0f,   0.0f, 0.0f, // Bottom-left
-         1.0f, -1.0f,   1.0f, 0.0f, // Bottom-right
-         1.0f,  1.0f,   1.0f, 1.0f  // Top-right
-    };
+            // Positions   // TexCoords
+            -1.0f, 1.0f, 0.0f, 1.0f, // Top-left
+            -1.0f, -1.0f, 0.0f, 0.0f, // Bottom-left
+            1.0f, -1.0f, 1.0f, 0.0f, // Bottom-right
+            1.0f, 1.0f, 1.0f, 1.0f // Top-right
+        };
 
         const unsigned int indices[] = {
             0, 1, 2,
@@ -260,10 +228,10 @@ namespace blipcade::graphics {
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
         // Position attribute
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *) 0);
         glEnableVertexAttribArray(0);
         // Texture coord attribute
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *) (2 * sizeof(float)));
         glEnableVertexAttribArray(1);
 
         glBindVertexArray(0);

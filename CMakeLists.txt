@@ -11,6 +11,7 @@ include_directories(${CMAKE_SOURCE_DIR}/blipcade-renderer)
 include_directories(${CMAKE_SOURCE_DIR}/external/glfw-3.2.1/include)
 include_directories(${CMAKE_SOURCE_DIR}/external/quickjs)
 
+
 # Add your source files
 set(SOURCES
         main.cpp
@@ -66,6 +67,34 @@ endif()
 # Create the main executable target
 add_executable(blipcade_cmake ${SOURCES})
 
+# Add custom commands to generate shader headers
+add_custom_command(
+        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/shader_vert.h
+        COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/blipcade-renderer/shaders/convert_shaders.py
+        ${CMAKE_CURRENT_SOURCE_DIR}/blipcade-renderer/shaders/shader.vert
+        ${CMAKE_CURRENT_BINARY_DIR}/shader_vert.h
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/blipcade-renderer/shaders/shader.vert
+        COMMENT "Generating vertex shader header"
+)
+
+add_custom_command(
+        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/shader_frag.h
+        COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/blipcade-renderer/shaders/convert_shaders.py
+        ${CMAKE_CURRENT_SOURCE_DIR}/blipcade-renderer/shaders/shader.frag
+        ${CMAKE_CURRENT_BINARY_DIR}/shader_frag.h
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/blipcade-renderer/shaders/shader.frag
+        COMMENT "Generating fragment shader header"
+)
+
+# Add the generated headers to your target's sources
+target_sources(blipcade_cmake PRIVATE
+        ${CMAKE_CURRENT_BINARY_DIR}/shader_vert.h
+        ${CMAKE_CURRENT_BINARY_DIR}/shader_frag.h
+)
+
+# Make sure the binary dir is in the include path
+target_include_directories(blipcade_cmake PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+
 # Link libraries
 target_link_libraries(blipcade_cmake quickjs glfw ${OPENGL_LIBRARIES})
 
@@ -78,8 +107,3 @@ if (DEFINED EMSCRIPTEN)
 else()
     message(STATUS "Configuring for Desktop")
 endif(DEFINED EMSCRIPTEN)
-
-# Add math library for non-Emscripten builds
-#if(NOT EMSCRIPTEN)
-#    target_link_libraries(blipcade_cmake PRIVATE m)
-#endif()

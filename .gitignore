@@ -1,0 +1,5 @@
+.idea
+build-desktop
+build-emscripten
+cmake-build-debug
+cmake-build-emscripten

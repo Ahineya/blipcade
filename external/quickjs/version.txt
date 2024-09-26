@@ -1,0 +1,6 @@
+#ifndef QUICKJS_VERSION_H
+#define QUICKJS_VERSION_H
+
+#define QUICKJS_VERSION_STR "2024-01-13"
+
+#endif /* QUICKJS_VERSION_H */

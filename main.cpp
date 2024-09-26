@@ -2,20 +2,18 @@
 
 #include "canvas.h"
 #include "blipcade-renderer/renderer.h"
-#include "external/SDL2/include/SDL_events.h"
+
 extern "C" {
 #include "quickjs.h"
 }
 
 #if __EMSCRIPTEN__
     #include <emscripten/emscripten.h>
-    #include <SDL2/SDL.h>
 #else
-    #include <SDL.h>
 #endif
 
-blipcade::graphics::Renderer* g_renderer = nullptr;
-blipcade::graphics::Canvas* g_canvas = nullptr;
+blipcade::graphics::Renderer *g_renderer = nullptr;
+blipcade::graphics::Canvas *g_canvas = nullptr;
 
 JSRuntime *rt;
 JSContext *ctx;
@@ -65,73 +63,14 @@ void cleanupJS() {
     JS_FreeRuntime(rt);
 }
 
-void mainLoop() {
-    SDL_Event event;
-
-    // here we want to:
-    // 1. Cap the FPS
-    // 2. Run the update function
-    // 3. Run the render function
-    // 4. Handle input
-    // 5. Handle events
-    // 6. Rinse and repeat
-
-
-    g_renderer->clear();
-    g_renderer->present(*g_canvas);
-
-    while (SDL_PollEvent(&event)) {
-        if (event.type == SDL_QUIT) {
-            running = false;
-        }
-
-        // Handle input
-        if (event.type == SDL_KEYDOWN) {
-            switch (event.key.keysym.sym) {
-                case SDLK_UP:
-                    // Move up
-                    break;
-                case SDLK_DOWN:
-                    // Move down
-                    break;
-                case SDLK_LEFT:
-                    // Move left
-                    break;
-                case SDLK_RIGHT:
-                    // Move right
-                    break;
-                case SDLK_ESCAPE:
-                    running = false;
-                    break;
-                default:
-                    break;
-            }
-        }
-    }
-}
-
 int main() {
-    try {
-        g_renderer = new blipcade::graphics::Renderer(WIDTH, HEIGHT, SCALE);
-        g_canvas = new blipcade::graphics::Canvas(WIDTH, HEIGHT);
-        running = true;
+    initJS();
+    g_renderer = new blipcade::graphics::Renderer(WIDTH, HEIGHT, SCALE);
+    g_canvas = new blipcade::graphics::Canvas(WIDTH, HEIGHT);
 
-        initJS();
+    g_renderer->setCanvas(*g_canvas);
 
-#if __EMSCRIPTEN__
-        emscripten_set_main_loop(mainLoop, -1, 1);
-#else
-        while (running) {
-            mainLoop();
-        }
-#endif
+    g_renderer->createWindow();
 
-        cleanupJS();
-    } catch (const std::exception &e) {
-        std::cerr << "Exception: " << e.what() << std::endl;
-        return 1;
-    }
-    
-    delete g_renderer;
     return 0;
 }

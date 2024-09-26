@@ -6,7 +6,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Add the directory containing your header files
 include_directories(${CMAKE_SOURCE_DIR}/blipcade-renderer)
-include_directories(${CMAKE_SOURCE_DIR}/external/SDL2/include)
+#include_directories(${CMAKE_SOURCE_DIR}/external/SDL2/include)
+#include_directories(${CMAKE_SOURCE_DIR}/external/glad/include)
+include_directories(${CMAKE_SOURCE_DIR}/external/glfw-3.2.1/include)
 include_directories(${CMAKE_SOURCE_DIR}/external/quickjs)
 
 # Add your source files
@@ -16,7 +18,6 @@ set(SOURCES
         blipcade-renderer/palette.cpp
         blipcade-renderer/color.cpp
         blipcade-renderer/canvas.cpp
-        blipcade-renderer/canvas.h
 )
 
 # Add QuickJS source files
@@ -28,10 +29,18 @@ set(QUICKJS_SOURCES
         external/quickjs/cutils.c
 )
 
-# Read QuickJS version from the version file
-file(READ "${CMAKE_SOURCE_DIR}/external/quickjs/VERSION" QUICKJS_VERSION)
-string(STRIP "${QUICKJS_VERSION}" QUICKJS_VERSION)
+if("${CMAKE_SYSTEM}" MATCHES "Linux" OR "${CMAKE_SYSTEM}" MATCHES "Darwin-*")
 
+    find_package(OpenGL REQUIRED)
+
+    set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+    add_subdirectory(external/glfw-3.2.1)
+endif()
+
+
+# Compile QuickJS as a separate target
 add_library(quickjs STATIC ${QUICKJS_SOURCES})
 target_compile_definitions(quickjs PRIVATE CONFIG_VERSION="${QUICKJS_VERSION}")
 
@@ -54,27 +63,23 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     )
 endif()
 
+# Create the main executable target
 add_executable(blipcade_cmake ${SOURCES})
 
-# Link QuickJS
-target_link_libraries(blipcade_cmake PRIVATE quickjs)
+# Link libraries
+target_link_libraries(blipcade_cmake quickjs glfw ${OPENGL_LIBRARIES})
 
 # Detect if building with Emscripten
-if (EMSCRIPTEN)
+if (DEFINED EMSCRIPTEN)
+    set_target_properties(blipcade_cmake
+            PROPERTIES SUFFIX ".html"
+            LINK_FLAGS " --bind -s USE_GLFW=3 -s WASM=1 -g4 -s ALLOW_MEMORY_GROWTH=1 -s FULL_ES3=1 -s USE_WEBGL2=1")
     message(STATUS "Configuring for Emscripten")
-    set_target_properties(blipcade_cmake PROPERTIES
-            SUFFIX ".html"
-            LINK_FLAGS "-s WASM=1 -s USE_GLFW=3 -s USE_SDL=2 -s EXPORTED_RUNTIME_METHODS=['ccall','cwrap'] --shell-file ${CMAKE_SOURCE_DIR}/shell.html"
-    )
 else()
     message(STATUS "Configuring for Desktop")
-    # Find SDL2 package
-    find_package(SDL2 REQUIRED)
-    include_directories(${SDL2_INCLUDE_DIRS})
-    target_link_libraries(blipcade_cmake PRIVATE ${SDL2_LIBRARIES})
-endif()
+endif(DEFINED EMSCRIPTEN)
 
 # Add math library for non-Emscripten builds
-if(NOT EMSCRIPTEN)
-    target_link_libraries(blipcade_cmake PRIVATE m)
-endif()
+#if(NOT EMSCRIPTEN)
+#    target_link_libraries(blipcade_cmake PRIVATE m)
+#endif()

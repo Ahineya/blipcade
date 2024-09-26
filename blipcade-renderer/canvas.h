@@ -13,6 +13,8 @@ namespace blipcade::graphics {
 
         [[nodiscard]] const std::vector<uint8_t>& getPixels() const;
 
+        std::vector<uint32_t> getPixelsData() const;
+
     private:
         std::vector<uint8_t> pixels;
         std::array<uint8_t, 256> virtualPalette{};

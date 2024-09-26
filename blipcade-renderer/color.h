@@ -21,7 +21,7 @@ namespace blipcade {
             // Static methods
             static Color from_hex(uint32_t hex);
 
-            int to_hex() const;
+            [[nodiscard]] uint32_t to_hex() const;
 
             // Member functions
             std::array<uint8_t, 4> to_rgba() const;

@@ -1,41 +1,41 @@
-// renderer.h
-#ifndef BLIPCADE_GRAPHICS_CANVAS_HPP
-#define BLIPCADE_GRAPHICS_CANVAS_HPP
-
-#ifdef __EMSCRIPTEN__
-#include <SDL2/SDL.h>
-#else
-#include <SDL.h>
-#endif
-
 #include <cstdint>
-
 #include "canvas.h"
 #include "palette685.h"
 
-namespace blipcade {
-    namespace graphics {
-        class Renderer {
-        public:
-            Renderer(uint32_t width, uint32_t height, uint32_t scale);
-            ~Renderer();
+#pragma once
+namespace blipcade::graphics {
+    class Renderer {
+    public:
+        Renderer(uint32_t width, uint32_t height, uint32_t scale);
+        ~Renderer();
 
-            void clear() const;
-            void present(const Canvas& canvas) const;
+        void clear();
 
-        private:
-            uint32_t width;
-            uint32_t height;
-            uint32_t scale;
-            uint32_t real_width;
-            uint32_t real_height;
-            SDL_Window* window;
-            SDL_Renderer* renderer;
-            SDL_Texture* texture;
-            Palette685* palette;
-        };
+        void clear() const;
+        void present(const Canvas& canvas) const;
+        void setCanvas(const Canvas& canvas);
 
-    } // namespace graphics
-} // namespace blipcade
+        void mainLoop();
 
-#endif // BLIPCADE_GRAPHICS_CANVAS_HPP
+        static void staticMainLoop();
+
+        void createWindow();
+
+    private:
+        void render(const Canvas& canvas) const;
+        void initializeShaders();
+        void initializeBuffers();
+
+        void setupTexture();
+
+        uint32_t width;
+        uint32_t height;
+        uint32_t scale;
+        uint32_t real_width;
+        uint32_t real_height;
+        const Palette685* palette;
+        const Canvas *canvas;
+
+        static Renderer* instance;
+    };
+} // namespace blipcade::graphics

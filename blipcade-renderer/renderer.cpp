@@ -30,9 +30,18 @@ const char *vertexShaderSource =
         "layout (location = 0) in vec2 aPos;\n"
         "layout(location = 1) in vec2 aTexCoord;\n"
         "out vec2 TexCoord;\n"
+        "uniform float uSquareSize;\n"
+        "uniform float uWindowAspectRatio;\n"
         "void main() {\n"
-        "    gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);\n"
-        "    TexCoord = aTexCoord;\n"
+        "vec2 pos = aPos;"
+        // "pos.x /= uWindowAspectRatio;"
+        "if (uWindowAspectRatio > 1.0) {\n"
+        "pos.x /= uWindowAspectRatio;\n"
+        "} else {\n"
+        "pos.y *= uWindowAspectRatio;\n"
+        "}\n"
+        "gl_Position = vec4(pos, 0.0, 1.0);\n"
+        "TexCoord = aTexCoord;\n"
         "}\0";
 
 const char *fragmentShaderSource =
@@ -73,26 +82,22 @@ void checkProgramLinkErrors(GLuint program) {
 }
 
 void compileShaders() {
-    // vertex shader
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
     glCompileShader(vertexShader);
     checkShaderCompileErrors(vertexShader, "VERTEX");
 
-    // fragment Shader
     GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
     glCompileShader(fragmentShader);
     checkShaderCompileErrors(fragmentShader, "FRAGMENT");
 
-    // shader Program
     shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragmentShader);
     glLinkProgram(shaderProgram);
     checkProgramLinkErrors(shaderProgram);
 
-    // delete the shaders as they're linked into our program now and no longer necessary
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 }
@@ -105,49 +110,63 @@ namespace blipcade::graphics {
 
     Renderer* Renderer::instance = nullptr;
 
-    Renderer::Renderer(const uint32_t width, const uint32_t height, const uint32_t scale): width(width), height(height),
-        scale(scale),
-        palette(nullptr),
-        canvas(nullptr)
+    Renderer::Renderer(const uint32_t width, const uint32_t height, const uint32_t scale)
+        : canvasWidth(width), canvasHeight(height), scale(scale),
+          windowWidth(width * scale), windowHeight(height * scale),
+          canvas(nullptr), palette(nullptr)
     {
-        real_width = width * scale;
-        real_height = height * scale;
         palette = new Palette685();
     }
 
-    void Renderer::setCanvas(const Canvas &canvas) {
+    void Renderer::updateWindowSize() {
+        glfwGetFramebufferSize(window, reinterpret_cast<int*>(&windowWidth), reinterpret_cast<int*>(&windowHeight));
+    }
+
+    void Renderer::setCanvas(const Canvas& canvas) {
         this->canvas = &canvas;
     }
 
     void Renderer::mainLoop() {
-        int width, height;
-        glfwGetFramebufferSize(window, &width, &height);
-        glViewport(0, 0, width, height);
+        updateWindowSize();
+        glViewport(0, 0, windowWidth, windowHeight);
 
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(shaderProgram);
 
-        auto pixelData = canvas->getPixelsData();
-        uint32_t* pixels = pixelData.data();
+        // Calculate the aspect ratio of the window
+        float windowAspectRatio = static_cast<float>(windowWidth) / static_cast<float>(windowHeight);
+
+        // Calculate the size of the square in normalized device coordinates
+        float squareSize;
+        if (windowAspectRatio > 1.0f) {
+            // Window is wider than it is tall
+            squareSize = 1.0f;
+        } else {
+            // Window is taller than it is wide
+            squareSize = windowAspectRatio;
+        }
+
+        // Set uniforms
+        GLint uSquareSizeLocation = glGetUniformLocation(shaderProgram, "uSquareSize");
+        GLint uWindowAspectRatioLocation = glGetUniformLocation(shaderProgram, "uWindowAspectRatio");
+        glUniform1f(uSquareSizeLocation, squareSize);
+        glUniform1f(uWindowAspectRatioLocation, windowAspectRatio);
+
+        const auto pixelData = canvas->getPixelsData();
+        const auto* pixels = pixelData.data();
 
         glBindTexture(GL_TEXTURE_2D, texture);
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 128, 128, GL_RGBA, GL_UNSIGNED_BYTE, pixels); // Ensure size matches
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, canvasWidth, canvasHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
         glUniform1i(glGetUniformLocation(shaderProgram, "uTexture"), 0);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture);
 
-        // Bind VAO and draw
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-        // Unbind VAO and texture
         glBindVertexArray(0);
         glBindTexture(GL_TEXTURE_2D, 0);
-
-        // glBindVertexArray(VAO);
-        // glDrawArrays(GL_TRIANGLES, 0, 3);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -182,7 +201,7 @@ namespace blipcade::graphics {
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-        window = glfwCreateWindow(real_width, real_height, "Blipcade", nullptr, nullptr);
+        window = glfwCreateWindow(windowWidth, windowHeight, "Blipcade", nullptr, nullptr);
         if (!window) {
             std::cerr << "Failed to create GLFW window" << std::endl;
             glfwTerminate();
@@ -214,19 +233,16 @@ namespace blipcade::graphics {
         glfwTerminate();
     }
 
-    void Renderer::initializeBuffers() {
-    }
-
     void Renderer::setupTexture() {
-        float vertices[] = {
-            // Positions   // TexCoords
-            -1.0f,  1.0f,   0.0f, 1.0f, // Top-left
-            -1.0f, -1.0f,   0.0f, 0.0f, // Bottom-left
-             1.0f, -1.0f,   1.0f, 0.0f, // Bottom-right
-             1.0f,  1.0f,   1.0f, 1.0f  // Top-right
-        };
+        const float vertices[] = {
+        // Positions   // TexCoords
+        -1.0f,  1.0f,   0.0f, 1.0f, // Top-left
+        -1.0f, -1.0f,   0.0f, 0.0f, // Bottom-left
+         1.0f, -1.0f,   1.0f, 0.0f, // Bottom-right
+         1.0f,  1.0f,   1.0f, 1.0f  // Top-right
+    };
 
-        unsigned int indices[] = {
+        const unsigned int indices[] = {
             0, 1, 2,
             0, 2, 3
         };
@@ -257,15 +273,18 @@ namespace blipcade::graphics {
         glBindTexture(GL_TEXTURE_2D, texture);
 
         // Set texture parameters
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
         // Allocate texture storage
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 128, 128, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, canvasWidth, canvasHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 
         glBindTexture(GL_TEXTURE_2D, 0);
+
+        // clear the screen
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     }
 
     Renderer::~Renderer() {
@@ -275,11 +294,5 @@ namespace blipcade::graphics {
     void Renderer::clear() {
         // glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         // glClear(GL_COLOR_BUFFER_BIT);
-    }
-
-    void Renderer::present(const Canvas &canvas) const {
-        // TODO: Implement OpenGL rendering of the canvas
-        // For now, just swap buffers
-        // SDL_GL_SwapWindow(window);
     }
 } // namespace blipcade::graphics

@@ -23,16 +23,22 @@ namespace blipcade::graphics {
 
     private:
         void render(const Canvas& canvas) const;
-        void initializeShaders();
-        void initializeBuffers();
 
         void setupTexture();
+        void updateWindowSize();
 
-        uint32_t width;
-        uint32_t height;
+        // uint32_t width;
+        // uint32_t height;
+        // uint32_t scale;
+        // uint32_t real_width;
+        // uint32_t real_height;
+
+        uint32_t canvasWidth;
+        uint32_t canvasHeight;
         uint32_t scale;
-        uint32_t real_width;
-        uint32_t real_height;
+        uint32_t windowWidth;
+        uint32_t windowHeight;
+
         const Palette685* palette;
         const Canvas *canvas;
 

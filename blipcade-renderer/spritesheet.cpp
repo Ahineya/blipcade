@@ -23,6 +23,9 @@ namespace blipcade::graphics {
     Spritesheet Spritesheet::fromData(const std::vector<uint8_t> &pixelBuffer, const std::vector<uint8_t> &spriteData,
                                       const uint32_t width, const uint32_t height) {
         auto spritesheet = Spritesheet(width, height);
+
+        std::cout << "Spritesheet fromData: " << spritesheet << std::endl;
+
         spritesheet.pixelBuffer = pixelBuffer;
 
         for (size_t i = 0; i < spriteData.size() / 5; i++) {
@@ -34,7 +37,6 @@ namespace blipcade::graphics {
 
             spritesheet.sprites.push_back(Sprite{x, y, sprWidth, sprHeight, flags});
         }
-
 
         return spritesheet;
     }
@@ -69,9 +71,10 @@ namespace blipcade::graphics {
         data.reserve(width * height);
 
         for (uint32_t y = y0; y < y0 + height; y++) {
-            const auto start = y * width + x0;
+            const auto start = y * this->width + x0;
+            const auto end = start + width;
 
-            if (const auto end = start + width; end <= pixelBuffer.size()) {
+            if (end <= pixelBuffer.size()) {
                 data.insert(data.end(), pixelBuffer.begin() + start, pixelBuffer.begin() + end);
             } else {
                 return data;
@@ -82,14 +85,14 @@ namespace blipcade::graphics {
     }
 
     std::ostream &operator<<(std::ostream &os, const Spritesheet &spritesheet) {
-        os << "Spritesheet {\n"
+        os << std::dec<< "Spritesheet {\n"
                 << "  width: " << spritesheet.width << ",\n"
                 << "  height: " << spritesheet.height << ",\n"
                 << "  pixelBuffer size: " << spritesheet.pixelBuffer.size() << ",\n"
                 << "  sprites: [\n";
 
         for (const auto &sprite: spritesheet.sprites) {
-            os << "    Sprite { "
+            os << std::dec<< "    Sprite { "
                     << "x: " << std::setw(3) << sprite.x << ", "
                     << "y: " << std::setw(3) << sprite.y << ", "
                     << "width: " << std::setw(3) << sprite.width << ", "

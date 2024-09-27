@@ -4,6 +4,8 @@
 
 #include "font.h"
 
+#include <iostream>
+
 
 namespace blipcade::graphics {
     Font::Font(const Spritesheet spritesheet, const std::unordered_map<wchar_t, uint32_t> glyphs,
@@ -15,7 +17,7 @@ namespace blipcade::graphics {
     }
 
     Font Font::fromData(std::vector<uint8_t> data, Size sheetSize, Size glyphSize, std::wstring characters) {
-        constexpr std::vector<uint8_t> emptySpriteData(0, 0);
+        constexpr std::vector<uint8_t> emptySpriteData = {};
 
         auto spritesheet = Spritesheet::fromData(data, emptySpriteData, sheetSize.width, sheetSize.height);
         std::unordered_map<wchar_t, uint32_t> glyphs;
@@ -55,8 +57,8 @@ namespace blipcade::graphics {
     }
 
     std::optional<uint32_t> Font::getGlyphIndex(const wchar_t c) const {
-        if (const auto index = glyphs.find(c); index != glyphs.end()) {
-            return index->second;
+        if (glyphs.contains(c)) {
+            return glyphs.at(c);
         }
 
         return std::nullopt;

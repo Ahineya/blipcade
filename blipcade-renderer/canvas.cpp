@@ -347,6 +347,7 @@ namespace blipcade::graphics {
     void Canvas::drawSprite(int32_t x, int32_t y, bool flipX, bool flipY, const Spritesheet &spritesheet,
                             uint32_t index) {
         const auto spriteData = spritesheet.getSpriteData(index);
+
         const auto [a, b, width, height, flags] = spritesheet.getSprite(index);
         const auto spriteWidth = width;
         const auto spriteHeight = height;
@@ -366,28 +367,164 @@ namespace blipcade::graphics {
     }
 
     // TODO: Port optimized drawRectangleData from Rust
-    void Canvas::drawRectangleData(const int32_t x0, const int32_t y0, const int32_t x1, const int32_t y1,
-                                   const bool transparent, const std::vector<uint8_t> &data) {
-        const auto xStart = std::clamp(x0, 0, static_cast<int32_t>(width - 1));
-        const auto xEnd = std::clamp(x1, 0, static_cast<int32_t>(width - 1));
-        const auto yStart = std::clamp(y0, 0, static_cast<int32_t>(height - 1));
-        const auto yEnd = std::clamp(y1, 0, static_cast<int32_t>(height - 1));
+    /*
+     *    pub fn draw_rectangle_data(
+        &self,
+        x0: i32,
+        y0: i32,
+        x1: i32,
+        y1: i32,
+        draw_with_transparency: bool,
+        data: &[u8],
+        zoom: u8,
+    ) {
+        let src_width = (x1 - x0) as usize;
+        let src_height = (y1 - y0) as usize;
 
-        auto dataIdx = 0;
+        if data.len() != src_width * src_height {
+            eprintln!("Data length does not match rectangle size");
+            return;
+        }
 
-        for (int32_t y = yStart; y < yEnd; y++) {
-            for (int32_t x = xStart; x < xEnd; x++) {
+        let zoom = zoom.max(1) as usize;
+        let dst_width = src_width * zoom;
+        let dst_height = src_height * zoom;
 
-                if (transparent && data[dataIdx] != transparentColor) {
-                    drawPixel(x, y, data[dataIdx]);
-                } else if (!transparent) {
-                    drawPixel(x, y, data[dataIdx]);
+        let mut x_start = x0.max(0).min(self.width as i32) as usize;
+        let mut x_end = (x0 + dst_width as i32).max(0).min(self.width as i32) as usize;
+        let mut y_start = y0.max(0).min(self.height as i32) as usize;
+        let mut y_end = (y0 + dst_height as i32).max(0).min(self.height as i32) as usize;
+
+        if let Some((clip_x, clip_y, clip_width, clip_height)) = self.clipping_rect {
+            x_start = x_start.max(clip_x as usize);
+            x_end = x_end.min((clip_x + clip_width) as usize);
+            y_start = y_start.max(clip_y as usize);
+            y_end = y_end.min((clip_y + clip_height) as usize);
+        }
+
+        if x_start >= x_end || y_start >= y_end {
+            return;
+        }
+
+        // Handle zoom == 1 case separately
+        if zoom == 1 {
+            for dst_y in y_start..y_end {
+                let src_y = dst_y as i32 - y0;
+                let dst_start = dst_y * self.width as usize;
+                let src_row = &data[src_y as usize * src_width..(src_y as usize + 1) * src_width];
+
+                for dst_x in x_start..x_end {
+                    let src_x = dst_x as i32 - x0;
+                    let src_color = src_row[src_x as usize];
+
+                    if draw_with_transparency && src_color == self.transparent_color {
+                        continue;
+                    }
+
+                    let dst_color = self.palette.get_virtual_color_index(src_color);
+                    self.pixel_buffer.borrow_mut()[dst_start + dst_x] = dst_color;
+                }
+            }
+            return;
+        }
+
+        let zoom_inv = 1.0 / zoom as f32;
+
+        for dst_y in y_start..y_end {
+            let src_y = ((dst_y as i32 - y0) as f32 * zoom_inv) as usize;
+            let dst_start = dst_y * self.width as usize;
+            let src_row = &data[src_y * src_width..(src_y + 1) * src_width];
+
+            for dst_x in x_start..x_end {
+                let src_x = ((dst_x as i32 - x0) as f32 * zoom_inv) as usize;
+                let src_color = src_row[src_x];
+
+                if draw_with_transparency && src_color == self.transparent_color {
+                    continue;
                 }
 
-                dataIdx++;
+                let dst_color = self.palette.get_virtual_color_index(src_color);
+                self.pixel_buffer.borrow_mut()[dst_start + dst_x] = dst_color;
             }
         }
     }
+     */
+    void Canvas::drawRectangleData(const int32_t x0, const int32_t y0, const int32_t x1, const int32_t y1,
+                               const bool transparent, const std::vector<uint8_t> &data) {
+    auto srcWidth = x1 - x0;
+    auto srcHeight = y1 - y0;
+
+    if (data.size() != static_cast<size_t>(srcWidth * srcHeight)) {
+        std::cerr << "Data length does not match rectangle size" << std::endl;
+        return;
+    }
+
+    auto zoom = 1;
+
+    auto zoomValue = std::max(static_cast<size_t>(zoom), static_cast<size_t>(1));
+    auto dstWidth = static_cast<size_t>(srcWidth) * zoomValue;
+    auto dstHeight = static_cast<size_t>(srcHeight) * zoomValue;
+
+    auto xStart = std::clamp(x0, 0, static_cast<int32_t>(width));
+    auto xEnd = std::clamp(x0 + static_cast<int32_t>(dstWidth), 0, static_cast<int32_t>(width));
+    auto yStart = std::clamp(y0, 0, static_cast<int32_t>(height));
+    auto yEnd = std::clamp(y0 + static_cast<int32_t>(dstHeight), 0, static_cast<int32_t>(height));
+
+    if (clipRect.x != 0 || clipRect.y != 0 || clipRect.width != 0 || clipRect.height != 0) {
+        const auto& [clipX, clipY, clipWidth, clipHeight] = clipRect;
+        xStart = std::max(xStart, static_cast<int32_t>(clipX));
+        xEnd = std::min(xEnd, static_cast<int32_t>(clipX + clipWidth));
+        yStart = std::max(yStart, static_cast<int32_t>(clipY));
+        yEnd = std::min(yEnd, static_cast<int32_t>(clipY + clipHeight));
+    }
+
+    if (xStart >= xEnd || yStart >= yEnd) {
+        return;
+    }
+
+    // Handle zoom == 1 case separately
+    if (zoomValue == 1) {
+        for (auto dstY = yStart; dstY < yEnd; ++dstY) {
+            auto srcY = dstY - y0;
+            auto dstStart = dstY * width;
+            // &data[src_y as usize * src_width..(src_y as usize + 1) * src_width];
+            const auto* srcRow = &data[srcY * srcWidth];
+
+            for (auto dstX = xStart; dstX < xEnd; ++dstX) {
+                auto srcX = dstX - x0;
+                auto srcColor = srcRow[srcX];
+
+                if (transparent && srcColor == transparentColor) {
+                    continue;
+                }
+
+                auto dstColor = virtualPalette[srcColor];
+                pixels[dstStart + dstX] = dstColor;
+            }
+        }
+        return;
+    }
+
+    float zoomInv = 1.0f / static_cast<float>(zoomValue);
+
+    for (auto dstY = yStart; dstY < yEnd; ++dstY) {
+        auto srcY = static_cast<size_t>((static_cast<float>(dstY - y0) * zoomInv));
+        auto dstStart = dstY * width;
+        const auto* srcRow = &data[srcY * srcWidth];
+
+        for (auto dstX = xStart; dstX < xEnd; ++dstX) {
+            auto srcX = static_cast<size_t>((static_cast<float>(dstX - x0) * zoomInv));
+            auto srcColor = srcRow[srcX];
+
+            if (transparent && srcColor == transparentColor) {
+                continue;
+            }
+
+            auto dstColor = virtualPalette[srcColor];
+            pixels[dstStart + dstX] = dstColor;
+        }
+    }
+}
 
     void Canvas::drawText(const Font &font, const std::wstring &text, int32_t x, int32_t y, std::optional<uint8_t> color) {
         const auto colorValue = color.value_or(0xef);

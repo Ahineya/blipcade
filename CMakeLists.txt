@@ -19,6 +19,8 @@ set(SOURCES
         blipcade-renderer/font.cpp
         blipcade-renderer/spritesheet.cpp
         blipcade-renderer/canvas.cpp
+        blipcade-api/converters.cpp
+        blipcade-api/converters.h
 )
 
 # Add QuickJS source files

@@ -19,6 +19,9 @@
 #include "shader_vert.h"
 #include "shader_frag.h"
 
+#include "canvas.h"
+#include "runtime.h"
+
 GLFWwindow *window = nullptr;
 
 GLuint shaderProgram;
@@ -90,9 +93,22 @@ namespace blipcade::graphics {
         this->canvas = &canvas;
     }
 
+    void Renderer::setRuntime(runtime::Runtime &runtime) {
+        this->runtime = &runtime;
+    }
+
     void Renderer::mainLoop() {
+        static bool first_frame = true;
+        if (first_frame) {
+
+
+            first_frame = false;
+        }
+
+        runtime->update();
+        runtime->draw();
+
         updateWindowSize();
-        // glViewport(0, 0, windowWidth, windowHeight);
 
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -115,7 +131,8 @@ namespace blipcade::graphics {
         glUniform1f(uSquareSizeLocation, squareSize);
         glUniform1f(uWindowAspectRatioLocation, windowAspectRatio);
 
-        const auto pixelData = canvas->getPixelsData();
+        auto c = runtime->getCanvas();
+        const auto pixelData = c->getPixelsData();
         const auto *pixels = pixelData.data();
 
         glBindTexture(GL_TEXTURE_2D, texture);
@@ -219,7 +236,7 @@ namespace blipcade::graphics {
         compileShaders();
         setupTexture();
 
-        // setupTriangle();
+        runtime->init();
 
         std::cout << "Going into loop" << std::endl;
 #ifdef EMSCRIPTEN

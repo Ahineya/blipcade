@@ -6,8 +6,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Add the directory containing your header files
 include_directories(${CMAKE_SOURCE_DIR}/blipcade-renderer)
+include_directories(${CMAKE_SOURCE_DIR}/blipcade-api)
+include_directories(${CMAKE_SOURCE_DIR}/blipcade-runtime)
 include_directories(${CMAKE_SOURCE_DIR}/external/glfw-3.2.1/include)
-include_directories(${CMAKE_SOURCE_DIR}/external/quickjs)
+include_directories(${CMAKE_SOURCE_DIR}/external/quickjs-patched)
 
 
 # Add your source files
@@ -20,16 +22,17 @@ set(SOURCES
         blipcade-renderer/spritesheet.cpp
         blipcade-renderer/canvas.cpp
         blipcade-api/converters.cpp
-        blipcade-api/converters.h
+        blipcade-runtime/runtime.cpp
+        blipcade-runtime/runtime.h
 )
 
 # Add QuickJS source files
 set(QUICKJS_SOURCES
-        external/quickjs/libbf.c
-        external/quickjs/quickjs.c
-        external/quickjs/libregexp.c
-        external/quickjs/libunicode.c
-        external/quickjs/cutils.c
+        external/quickjs-patched/libbf.c
+        external/quickjs-patched/quickjs.c
+        external/quickjs-patched/libregexp.c
+        external/quickjs-patched/libunicode.c
+        external/quickjs-patched/cutils.c
 )
 
 if("${CMAKE_SYSTEM}" MATCHES "Linux" OR "${CMAKE_SYSTEM}" MATCHES "Darwin-*")

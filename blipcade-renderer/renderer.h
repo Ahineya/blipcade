@@ -1,9 +1,14 @@
 #pragma once
 #include <cstdint>
-#include "canvas.h"
-#include "palette685.h"
+
+namespace blipcade::runtime {
+    class Runtime;
+}
 
 namespace blipcade::graphics {
+    class Canvas;
+    class Palette685;
+
     class Renderer {
     public:
         Renderer(uint32_t width, uint32_t height, uint32_t scale);
@@ -17,6 +22,7 @@ namespace blipcade::graphics {
         void present(const Canvas &canvas) const;
 
         void setCanvas(const Canvas &canvas);
+        void setRuntime(runtime::Runtime &runtime);
 
         void mainLoop();
 
@@ -39,6 +45,7 @@ namespace blipcade::graphics {
 
         const Palette685 *palette;
         const Canvas *canvas;
+        runtime::Runtime *runtime;
 
         static Renderer *instance;
     };

@@ -12,8 +12,9 @@ namespace blipcade::graphics {
     Canvas::Canvas(const uint32_t width, const uint32_t height): width(width), height(height),
                                                                  palette(std::make_unique<Palette685>()) {
         pixels.resize(width * height);
+        std::cout << "Canvas constructed at " << this << " with pixels at " << pixels.data() << std::endl;
 
-        std::ranges::fill(pixels, 0x50);
+        std::ranges::fill(pixels, 0x00);
 
         for (int i = 0; i < 256; i++) {
             virtualPalette[i] = static_cast<uint8_t>(i);
@@ -25,14 +26,14 @@ namespace blipcade::graphics {
 
         transparentColor = 0xff;
 
-        drawPixel(64, 64, 0xfe);
-        drawHorizontalLine(0, 100, 100, 0xfe);
-        drawVerticalLine(75, 25, 140, 0x58);
-        drawLine(0, 0, 60, 120, 0x64);
-
-        drawCircle(100, 100, 50, 0x34);
-
-        drawFilledCircle(20, 20, 10, 0x24);
+        // drawPixel(64, 64, 0xfe);
+        // drawHorizontalLine(0, 100, 100, 0xfe);
+        // drawVerticalLine(75, 25, 140, 0x58);
+        // drawLine(0, 0, 60, 120, 0x64);
+        //
+        // drawCircle(100, 100, 50, 0x34);
+        //
+        // drawFilledCircle(20, 20, 10, 0x24);
     }
 
     Canvas::~Canvas() = default;

@@ -5,10 +5,11 @@
 #include "runtime.h"
 
 #include <canvas.h>
-#include <codecvt>
 #include <converters.h>
 #include <iostream>
 #include <quickjs.hpp>
+
+#include "JsBindings.h"
 
 // Header for reference:
 
@@ -104,10 +105,10 @@ namespace blipcade::runtime {
 */
 
 namespace blipcade::runtime {
-    Runtime::Runtime() {
+    Runtime::Runtime(): canvas(nullptr), font(nullptr), js_bindings(std::make_unique<JSBindings>(*this)) {
         canvas = std::make_shared<graphics::Canvas>(128, 128);
         std::cout << "Runtime constructed at " << this << " with Canvas at " << canvas.get()
-              << " and pixels at " << canvas->getPixels().data() << std::endl;
+                << " and pixels at " << canvas->getPixels().data() << std::endl;
         spritesheet = std::make_shared<graphics::Spritesheet>(0, 0);
 
         std::string fontHeader = "40 24 04 06";
@@ -123,17 +124,17 @@ namespace blipcade::runtime {
         auto fontImageValues = api::split(fontImage, ' ');
         auto fontImageBytes = api::convertToBytes(fontImageValues);
 
-        auto characters = blipcade::api::decodeBeBytesToWstring(fontBytes);
+        auto characters = api::decodeBeBytesToWstring(fontBytes);
 
         auto fontSpritesheetWidth = fontHeaderBytes[0];
         auto fontSpritesheetHeight = fontHeaderBytes[1];
         auto fontGlyphWidth = fontHeaderBytes[2];
         auto fontGlyphHeight = fontHeaderBytes[3];
 
-        const auto font_obj = blipcade::graphics::Font::fromData(fontImageBytes,
-                                                                 {fontSpritesheetWidth, fontSpritesheetHeight}, {
-                                                                     fontGlyphWidth, fontGlyphHeight
-                                                                 }, characters);
+        const auto font_obj = graphics::Font::fromData(fontImageBytes,
+                                                       {fontSpritesheetWidth, fontSpritesheetHeight}, {
+                                                           fontGlyphWidth, fontGlyphHeight
+                                                       }, characters);
 
         font = std::make_shared<graphics::Font>(font_obj);
     }
@@ -142,34 +143,17 @@ namespace blipcade::runtime {
         return canvas;
     }
 
+    std::shared_ptr<graphics::Font> Runtime::getFont() const {
+        return font;
+    }
+
     void Runtime::init() {
         js_runtime = std::make_unique<quickjs::runtime>();
         context = std::make_shared<quickjs::context>(js_runtime->new_context());
 
         quickjs::value global = context->get_global_object();
-        global.set_property("log",
-            [&](const std::string& val)
-            {
-                std::cout << "log: " << val << std::endl;
-                return val;
-            });
 
-        global.set_property("text",
-            [&](const std::string& val)
-            {
-                std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-                std::wstring wide = converter.from_bytes(val);
-
-                canvas->drawText(*font, wide, 70, 70, std::nullopt);
-                return val;
-            });
-
-        // global.set_property("playSound",
-        //     [&](const int& val, const int& val2)
-        //     {
-        //         std::cout << "playSound: " << val << std::endl;
-        //         return val;
-        //     });
+        js_bindings->registerAll(global);
 
         auto code = R"javascript(
 function init() {
@@ -182,36 +166,31 @@ function draw() {
 }
         )javascript";
 
-        evalWithStacktrace(context, code);
-        evalWithStacktrace(context, "init()");
+        evalWithStacktrace(code);
+        evalWithStacktrace("init()");
     }
 
-    void Runtime::update() {
-        evalWithStacktrace(context, "update()");
+    void Runtime::update() const {
+        evalWithStacktrace("update()");
     }
 
-    void Runtime::draw() {
-        // canvas->drawText(*font, L"` !boobs", 70, 70, std::nullopt);
-        // canvas->drawText(*font, L"` !boobs", 70, 80, 0x39);
-        // auto code = R"javascript(draw())javascript";
-
-        evalWithStacktrace(context, "draw()");
+    void Runtime::draw() const {
+        evalWithStacktrace("draw()");
     }
 
-    void Runtime::evalWithStacktrace(const std::shared_ptr<quickjs::context>& context, const char* code) {
+    // TODO: I am not sure this works correctly in all the cases. Perhaps it would be better to handle it with C api directly.
+    void Runtime::evalWithStacktrace(const char *code) const {
         try {
             quickjs::value ret = context->eval(
                 code,
                 "code.js"
-                );
-            // std::cout << "Value returned: " << (ret.valid() ? ret.as_cstring() : "[invalid]") << std::endl;
-        }
-        catch (const quickjs::value_error& e) {
+            );
+        } catch (const quickjs::value_error &e) {
             std::cerr << "JavaScript error: " << e.what() << std::endl;
             if (e.stack()) {
                 std::cerr << "Stack trace: " << e.stack() << std::endl;
             }
-        } catch (const quickjs::value_exception& e) {
+        } catch (const quickjs::value_exception &e) {
             auto val = e.val();
             if (val.valid()) {
                 std::cerr << "JavaScript exception: " << val.as_cstring().c_str() << std::endl;
@@ -226,18 +205,17 @@ function draw() {
             } else {
                 std::cerr << "Invalid JavaScript exception value" << std::endl;
             }
-        } catch (const quickjs::value_error& e) {
+        } catch (const quickjs::value_error &e) {
             std::cerr << "JavaScript error: " << e.what() << std::endl;
             if (e.stack()) {
                 std::cerr << "Stack trace:\n" << e.stack() << std::endl;
             }
-        } catch (const quickjs::exception& e) {
+        } catch (const quickjs::exception &e) {
             std::cerr << "QuickJS exception: " << e.what() << std::endl;
-            // if (e.stack()) {
-                // std::cerr << "Stack trace:\n" << e.stack() << std::endl;
-            // }
-        } catch (const std::exception& e) {
+        } catch (const std::exception &e) {
             std::cerr << "C++ exception: " << e.what() << std::endl;
+        } catch (...) {
+            std::cerr << "Unknown exception" << std::endl;
         }
     }
 } // runtime

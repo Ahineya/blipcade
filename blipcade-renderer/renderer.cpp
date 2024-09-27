@@ -7,7 +7,6 @@
 #include <OpenGL/gl3.h>
 #endif
 
-#include <iostream>
 #include <GLFW/glfw3.h>
 
 #ifdef EMSCRIPTEN
@@ -30,10 +29,10 @@ GLuint texture;
 
 void checkShaderCompileErrors(GLuint shader, const char *type) {
     GLint success;
-    GLchar infoLog[1024];
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
     if (!success) {
-        glGetShaderInfoLog(shader, 1024, NULL, infoLog);
+        GLchar infoLog[1024];
+        glGetShaderInfoLog(shader, 1024, nullptr, infoLog);
         std::cout << "ERROR::SHADER_COMPILATION_ERROR of type: " << type << "\n" << infoLog
                 << "\n -- --------------------------------------------------- -- " << std::endl;
     }
@@ -41,23 +40,23 @@ void checkShaderCompileErrors(GLuint shader, const char *type) {
 
 void checkProgramLinkErrors(GLuint program) {
     GLint success;
-    GLchar infoLog[1024];
     glGetProgramiv(program, GL_LINK_STATUS, &success);
     if (!success) {
-        glGetProgramInfoLog(program, 1024, NULL, infoLog);
+        GLchar infoLog[1024];
+        glGetProgramInfoLog(program, 1024, nullptr, infoLog);
         std::cout << "ERROR::PROGRAM_LINKING_ERROR\n" << infoLog
                 << "\n -- --------------------------------------------------- -- " << std::endl;
     }
 }
 
 void compileShaders() {
-    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &shader_vertexSource, NULL);
+    const GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertexShader, 1, &shader_vertexSource, nullptr);
     glCompileShader(vertexShader);
     checkShaderCompileErrors(vertexShader, "VERTEX");
 
     GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &shader_fragmentSource, NULL);
+    glShaderSource(fragmentShader, 1, &shader_fragmentSource, nullptr);
     glCompileShader(fragmentShader);
     checkShaderCompileErrors(fragmentShader, "FRAGMENT");
 
@@ -81,7 +80,7 @@ namespace blipcade::graphics {
     Renderer::Renderer(const uint32_t width, const uint32_t height, const uint32_t scale)
         : canvasWidth(width), canvasHeight(height), scale(scale),
           windowWidth(width * scale), windowHeight(height * scale),
-          canvas(nullptr), palette(nullptr) {
+          palette(nullptr), canvas(nullptr), runtime(nullptr) {
         palette = new Palette685();
     }
 
@@ -252,7 +251,7 @@ namespace blipcade::graphics {
         glfwTerminate();
     }
 
-    void Renderer::setupTexture() {
+    void Renderer::setupTexture() const {
         const float vertices[] = {
             // Positions   // TexCoords
             -1.0f, 1.0f, 0.0f, 1.0f, // Top-left
@@ -279,10 +278,10 @@ namespace blipcade::graphics {
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
         // Position attribute
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *) 0);
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), nullptr);
         glEnableVertexAttribArray(0);
         // Texture coord attribute
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *) (2 * sizeof(float)));
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), reinterpret_cast<void *>(2 * sizeof(float)));
         glEnableVertexAttribArray(1);
 
         glBindVertexArray(0);

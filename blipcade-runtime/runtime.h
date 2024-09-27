@@ -24,8 +24,9 @@ namespace blipcade::graphics {
 }
 
 namespace blipcade::runtime {
+    class JSBindings;
 
-/*
+    /*
  * So Runtime should be a singleton class that will be responsible for the main loop of the engine.
  *
  * It should know about:
@@ -62,14 +63,16 @@ namespace blipcade::runtime {
             // RuntimeCartList runtime_cart_list
         );
 
-        void evalWithStacktrace(const std::shared_ptr<quickjs::context> & shared, const char * str);
+        void evalWithStacktrace(const char *code) const;
 
         void init();
-        void update();
-        void draw();
+        void update() const;
+        void draw() const;
 
         // Let's make it possible to get a pointer to the canvas
         [[nodiscard]] std::shared_ptr<graphics::Canvas> getCanvas() const;
+
+        std::shared_ptr<graphics::Font> getFont() const;
 
     private:
         std::unique_ptr<quickjs::runtime> js_runtime;
@@ -82,6 +85,8 @@ namespace blipcade::runtime {
         // std::shared_ptr<KeyState> key_flags;
         // std::shared_ptr<MouseState> mouse_state;
         std::shared_ptr<graphics::Font> font;
+
+        std::unique_ptr<JSBindings> js_bindings;
         // std::shared_ptr<RuntimeControl> runtime_state;
 
 // #if !defined(__EMSCRIPTEN__)

@@ -33,8 +33,7 @@ namespace blipcade::graphics {
     private:
         void render(const Canvas &canvas) const;
 
-        void setupTexture();
-
+        void setupTexture() const;
         void updateWindowSize();
 
         uint32_t canvasWidth;

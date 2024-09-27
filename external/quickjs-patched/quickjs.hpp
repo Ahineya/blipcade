@@ -804,7 +804,7 @@ namespace quickjs
 			validate();
 
 			using traits = detail::func_traits<decltype(f)>;
-			val_ = detail::closures<typename traits::template arg<0>::type>::template create(ctx_, f);
+			val_ = detail::closures<typename traits::template arg<0>::type>::create(ctx_, f);
 			check_throw(false);
 
 			track();
@@ -817,7 +817,7 @@ namespace quickjs
 			QJSCPP_DEBUG("value(JSContext*, int, [function]) @" << (void*)this);
 			validate();
 
-			val_ = detail::closures<void>::template create(ctx_, f);
+			val_ = detail::closures<void>::create(ctx_, f);
 			check_throw(false);
 
 			track();
@@ -831,7 +831,7 @@ namespace quickjs
 			validate();
 
 			using traits = detail::func_traits<decltype(f)>;
-			val_ = detail::closures<typename traits::template arg<0>::type>::template create(ctx_, std::move(f));
+			val_ = detail::closures<typename traits::template arg<0>::type>::create(ctx_, std::move(f));
 			check_throw(false);
 
 			track();

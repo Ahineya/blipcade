@@ -24,6 +24,8 @@ set(SOURCES
         blipcade-api/converters.cpp
         blipcade-runtime/runtime.cpp
         blipcade-runtime/runtime.h
+        blipcade-runtime/JsBindings.cpp
+        blipcade-runtime/JsBindings.h
 )
 
 # Add QuickJS source files

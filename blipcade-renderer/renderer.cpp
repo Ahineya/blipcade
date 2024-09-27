@@ -12,6 +12,7 @@
 
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
+#include <emscripten/html5.h>
 #include <GLES3/gl3.h>
 #endif
 
@@ -91,7 +92,7 @@ namespace blipcade::graphics {
 
     void Renderer::mainLoop() {
         updateWindowSize();
-        glViewport(0, 0, windowWidth, windowHeight);
+        // glViewport(0, 0, windowWidth, windowHeight);
 
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -167,22 +168,55 @@ namespace blipcade::graphics {
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
+
+        // glfwSetWindowSize(
+        //     mWindow,
+        //     width * device_pixel_ratio,
+        //     height * device_pixel_ratio
+        // );
+        // glViewport(
+        //     0,
+        //     0,
+        //     width * device_pixel_ratio,
+        //     height * device_pixel_ratio
+        // );
+        //
+        // auto canvas_css_resize_result = emscripten_set_element_css_size(
+        //     "canvas",
+        //     windowWidth,
+        //     windowHeight
+        // );
+
+        #ifdef EMSCRIPTEN
+        auto dpi = emscripten_get_device_pixel_ratio();
+        uint32_t real_width = windowWidth * dpi;
+        uint32_t real_height = windowHeight * dpi;
+        window = glfwCreateWindow(windowWidth * dpi,  windowHeight * dpi, "Blipcade", nullptr, nullptr);
+        if (!window) {
+            std::cerr << "Failed to create GLFW window" << std::endl;
+            glfwTerminate();
+            return;
+        }
+        #else
         window = glfwCreateWindow(windowWidth, windowHeight, "Blipcade", nullptr, nullptr);
         if (!window) {
             std::cerr << "Failed to create GLFW window" << std::endl;
             glfwTerminate();
             return;
         }
+        #endif
+
+        #ifdef EMSCRIPTEN
+        emscripten_set_element_css_size("canvas", windowWidth, windowHeight);
+        #endif
 
         glfwMakeContextCurrent(window);
-
         glfwSetKeyCallback(window, key_callback);
 
         std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
         std::cout << "GLSL Version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
 
         compileShaders();
-
         setupTexture();
 
         // setupTriangle();

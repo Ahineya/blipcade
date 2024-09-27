@@ -265,35 +265,6 @@ namespace blipcade::graphics {
         }
     }
 
-    /*
-    *pub fn draw_filled_circle(&mut self, center_x: i32, center_y: i32, radius: u32, color: u8) {
-        let r = radius as i32;
-        let mut x = r;
-        let mut y = 0;
-        let mut decision = 1 - r;
-
-        let color = self.palette.get_virtual_color_index(color);
-
-        while x >= y {
-            self.draw_horizontal_line(center_x - x, center_x + x, center_y + y, color);
-            self.draw_horizontal_line(center_x - x, center_x + x, center_y - y, color);
-
-            if x > y {
-                self.draw_horizontal_line(center_x - y, center_x + y, center_y + x, color);
-                self.draw_horizontal_line(center_x - y, center_x + y, center_y - x, color);
-            }
-
-            y += 1;
-            if decision <= 0 {
-                decision += 2 * y + 1;
-            } else {
-                x -= 1;
-                decision += 2 * (y - x) + 1;
-            }
-        }
-    }
-     */
-
     void Canvas::drawFilledCircle(const int32_t center_x, const int32_t center_y, const uint32_t radius, const uint8_t color) {
         const auto r = static_cast<int32_t>(radius);
         auto x = r;
@@ -359,5 +330,5 @@ namespace blipcade::graphics {
         drawFilledRectangle(x0, y0, x1, y1, color);
     }
 
-    
+
 }

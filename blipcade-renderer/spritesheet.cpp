@@ -39,6 +39,10 @@ namespace blipcade::graphics {
         return spritesheet;
     }
 
+    void Spritesheet::addSprite(uint32_t x, uint32_t y, uint32_t width, uint32_t height, uint8_t flags) {
+        sprites.push_back(Sprite{x, y, width, height, flags});
+    }
+
     const Sprite &Spritesheet::getSprite(const uint32_t index) const {
         if (index < sprites.size()) {
             return sprites[index];

@@ -72,7 +72,7 @@ int main() {
     g_renderer->setCanvas(*g_canvas);
 
     std::vector<uint8_t> pixels(3*3, 0xfe);
-    pixels[8] = 0x16;
+    pixels[8] = 0xFF;
 
     const std::vector<uint8_t> spriteData = {0, 0, 3, 3, 0};
     const auto spritesheet = blipcade::graphics::Spritesheet::fromData(pixels, spriteData, 3, 3);
@@ -86,6 +86,9 @@ int main() {
     std::cout << std::endl;
 
     g_canvas->drawSprite(0, 0, false, false, spritesheet, 0);
+
+    const auto font = blipcade::graphics::Font::fromData(pixels, {0x3, 0x3}, {3, 3}, L"A");
+    g_canvas->drawText(font, L"A", 50, 50, std::nullopt);
 
     g_renderer->createWindow();
 

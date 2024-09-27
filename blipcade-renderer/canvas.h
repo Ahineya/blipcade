@@ -4,25 +4,12 @@
 #include <palette685.h>
 #include <vector>
 
+#include "font.h"
+#include "graphics_types.h"
 #include "spritesheet.h"
 
 namespace blipcade::graphics {
-    struct Rect {
-        int32_t x = 0;
-        int32_t y = 0;
-        int32_t width = 0;
-        int32_t height = 0;
-    };
-
-    struct Vector2 {
-        int32_t x = 0;
-        int32_t y = 0;
-    };
-
-    struct Size {
-        uint32_t width = 0;
-        uint32_t height = 0;
-    };
+    struct Font;
 
     class Canvas {
     public:
@@ -90,6 +77,8 @@ namespace blipcade::graphics {
 
         void drawRectangleData(int32_t x0, int32_t y0, int32_t x1, int32_t y1, bool transparent,
                                const std::vector<uint8_t> &data);
+
+        void drawText(const Font &font, const std::wstring &text, int32_t x, int32_t y, std::optional<uint8_t> color);
 
         void clear();
 

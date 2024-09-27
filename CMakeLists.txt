@@ -6,8 +6,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Add the directory containing your header files
 include_directories(${CMAKE_SOURCE_DIR}/blipcade-renderer)
-#include_directories(${CMAKE_SOURCE_DIR}/external/SDL2/include)
-#include_directories(${CMAKE_SOURCE_DIR}/external/glad/include)
 include_directories(${CMAKE_SOURCE_DIR}/external/glfw-3.2.1/include)
 include_directories(${CMAKE_SOURCE_DIR}/external/quickjs)
 
@@ -18,11 +16,9 @@ set(SOURCES
         blipcade-renderer/renderer.cpp
         blipcade-renderer/palette.cpp
         blipcade-renderer/color.cpp
-        blipcade-renderer/canvas.cpp
-        blipcade-renderer/spritesheet.cpp
-        blipcade-renderer/spritesheet.h
         blipcade-renderer/font.cpp
-        blipcade-renderer/font.h
+        blipcade-renderer/spritesheet.cpp
+        blipcade-renderer/canvas.cpp
 )
 
 # Add QuickJS source files

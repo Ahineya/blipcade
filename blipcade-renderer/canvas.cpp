@@ -6,6 +6,8 @@
 
 #include <iostream>
 
+#include "font.h"
+
 namespace blipcade::graphics {
     Canvas::Canvas(const uint32_t width, const uint32_t height): width(width), height(height),
                                                                  palette(std::make_unique<Palette685>()) {
@@ -20,6 +22,8 @@ namespace blipcade::graphics {
         for (int i = 0; i < 256; i++) {
             colorLookup[i] = palette->get_color(i).to_hex();
         }
+
+        transparentColor = 0xff;
 
         drawPixel(64, 64, 0xfe);
         drawHorizontalLine(0, 100, 100, 0xfe);
@@ -373,14 +377,35 @@ namespace blipcade::graphics {
 
         for (int32_t y = yStart; y < yEnd; y++) {
             for (int32_t x = xStart; x < xEnd; x++) {
-                if (data[dataIdx] != transparent) {
-                    drawPixel(x, y, data[dataIdx]);
 
-                    // std::cout << "Drawing pixel at (" << x << ", " << y << ") with color " << static_cast<int>(colorLookup[data[dataIdx]]) << std::endl;
+                if (transparent && data[dataIdx] != transparentColor) {
+                    drawPixel(x, y, data[dataIdx]);
+                } else if (!transparent) {
+                    drawPixel(x, y, data[dataIdx]);
                 }
 
                 dataIdx++;
             }
         }
+    }
+
+    void Canvas::drawText(const Font &font, const std::wstring &text, int32_t x, int32_t y, std::optional<uint8_t> color) {
+        const auto colorValue = color.value_or(0xef);
+        const auto newColorIndex = virtualPalette[colorValue];
+        const auto oldColor = virtualPalette[0xef];
+
+        const auto glyphIndexes = font.getTextRun(text);
+
+        const auto oldTransparentColor = transparentColor;
+        virtualPalette[0xef] = newColorIndex;
+        transparentColor = 0xff;
+
+        for (size_t i = 0; i < glyphIndexes.size(); i++) {
+            const auto x1 = static_cast<int32_t>(i * font.glyphSize.width) + x;
+            drawSprite(x1, y, false, false, font.spritesheet, glyphIndexes[i]);
+        }
+
+        virtualPalette[0xef] = oldColor;
+        transparentColor = oldTransparentColor;
     }
 }

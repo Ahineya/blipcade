@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "canvas.h"
+#include "spritesheet.h"
 #include "blipcade-renderer/renderer.h"
 
 extern "C" {
@@ -69,6 +70,22 @@ int main() {
     g_canvas = new blipcade::graphics::Canvas(WIDTH, HEIGHT);
 
     g_renderer->setCanvas(*g_canvas);
+
+    std::vector<uint8_t> pixels(3*3, 0xfe);
+    pixels[8] = 0x16;
+
+    const std::vector<uint8_t> spriteData = {0, 0, 3, 3, 0};
+    const auto spritesheet = blipcade::graphics::Spritesheet::fromData(pixels, spriteData, 3, 3);
+
+    std::cout << spritesheet << std::endl;
+
+    const auto data = spritesheet.getRectangleData(0, 0, 3, 3);
+    for (const auto &d : data) {
+        std::cout << "0x" << std::hex << (int)d << " ";
+    }
+    std::cout << std::endl;
+
+    g_canvas->drawSprite(0, 0, false, false, spritesheet, 0);
 
     g_renderer->createWindow();
 

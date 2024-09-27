@@ -4,8 +4,11 @@
 
 #include "canvas.h"
 
+#include <iostream>
+
 namespace blipcade::graphics {
-    Canvas::Canvas(const uint32_t width, const uint32_t height): width(width), height(height), palette(std::make_unique<Palette685>()) {
+    Canvas::Canvas(const uint32_t width, const uint32_t height): width(width), height(height),
+                                                                 palette(std::make_unique<Palette685>()) {
         pixels.resize(width * height);
 
         std::ranges::fill(pixels, 0x50);
@@ -35,10 +38,9 @@ namespace blipcade::graphics {
     }
 
     std::vector<uint32_t> Canvas::getPixelsData() const {
-
         std::vector<uint32_t> colors;
         colors.reserve(pixels.size());
-        for (const auto pixel : pixels) {
+        for (const auto pixel: pixels) {
             colors.push_back(colorLookup[virtualPalette[pixel]]);
         }
 
@@ -77,7 +79,8 @@ namespace blipcade::graphics {
             return true;
         }
 
-        return x >= clipRect.x && x < clipRect.x + clipRect.width && y >= clipRect.y && y < clipRect.y + clipRect.height;
+        return x >= clipRect.x && x < clipRect.x + clipRect.width && y >= clipRect.y && y < clipRect.y + clipRect.
+               height;
     }
 
     void Canvas::drawPixel(const int32_t x, const int32_t y, const uint8_t color) {
@@ -237,7 +240,8 @@ namespace blipcade::graphics {
         }
     }
 
-    void Canvas::drawCirclePoints(Canvas &canvas, const int32_t cx, const int32_t cy, const int32_t x, const int32_t y, const uint8_t color) {
+    void Canvas::drawCirclePoints(Canvas &canvas, const int32_t cx, const int32_t cy, const int32_t x, const int32_t y,
+                                  const uint8_t color) {
         canvas.drawPixel(cx + x, cy + y, color);
         canvas.drawPixel(cx - x, cy + y, color);
         canvas.drawPixel(cx + x, cy - y, color);
@@ -248,7 +252,8 @@ namespace blipcade::graphics {
         canvas.drawPixel(cx - y, cy - x, color);
     }
 
-    void Canvas::drawCircle(const int32_t center_x, const int32_t center_y, const uint32_t radius, const uint8_t color) {
+    void Canvas::drawCircle(const int32_t center_x, const int32_t center_y, const uint32_t radius,
+                            const uint8_t color) {
         auto x = static_cast<int32_t>(radius);
         auto y = 0;
         auto decision = 1 - x;
@@ -265,7 +270,8 @@ namespace blipcade::graphics {
         }
     }
 
-    void Canvas::drawFilledCircle(const int32_t center_x, const int32_t center_y, const uint32_t radius, const uint8_t color) {
+    void Canvas::drawFilledCircle(const int32_t center_x, const int32_t center_y, const uint32_t radius,
+                                  const uint8_t color) {
         const auto r = static_cast<int32_t>(radius);
         auto x = r;
         auto y = 0;
@@ -292,14 +298,16 @@ namespace blipcade::graphics {
         }
     }
 
-    void Canvas::drawRectangle(const int32_t x0, const int32_t y0, const int32_t x1, const int32_t y1, const uint8_t color) {
+    void Canvas::drawRectangle(const int32_t x0, const int32_t y0, const int32_t x1, const int32_t y1,
+                               const uint8_t color) {
         drawLine(x0, y0, x1, y0, color);
         drawLine(x1, y0, x1, y1, color);
         drawLine(x1, y1, x0, y1, color);
         drawLine(x0, y1, x0, y0, color);
     }
 
-    void Canvas::drawRectangleW(const int32_t x, const int32_t y, const int32_t width, const int32_t height, const uint8_t color) {
+    void Canvas::drawRectangleW(const int32_t x, const int32_t y, const int32_t width, const int32_t height,
+                                const uint8_t color) {
         const auto x0 = x;
         const auto y0 = y;
         const auto x1 = x + width - 1;
@@ -308,7 +316,8 @@ namespace blipcade::graphics {
         drawRectangle(x0, y0, x1, y1, color);
     }
 
-    void Canvas::drawFilledRectangle(const int32_t x0, const int32_t y0, const int32_t x1, const int32_t y1, const uint8_t color) {
+    void Canvas::drawFilledRectangle(const int32_t x0, const int32_t y0, const int32_t x1, const int32_t y1,
+                                     const uint8_t color) {
         const auto xStart = std::clamp(x0, 0, static_cast<int32_t>(width - 1));
         const auto xEnd = std::clamp(x1, 0, static_cast<int32_t>(width - 1));
         const auto yStart = std::clamp(y0, 0, static_cast<int32_t>(height - 1));
@@ -321,7 +330,8 @@ namespace blipcade::graphics {
         }
     }
 
-    void Canvas::drawFilledRectangleW(const int32_t x, const int32_t y, const int32_t width, const int32_t height, const uint8_t color) {
+    void Canvas::drawFilledRectangleW(const int32_t x, const int32_t y, const int32_t width, const int32_t height,
+                                      const uint8_t color) {
         const auto x0 = x;
         const auto y0 = y;
         const auto x1 = x + width - 1;
@@ -330,5 +340,47 @@ namespace blipcade::graphics {
         drawFilledRectangle(x0, y0, x1, y1, color);
     }
 
+    void Canvas::drawSprite(int32_t x, int32_t y, bool flipX, bool flipY, const Spritesheet &spritesheet,
+                            uint32_t index) {
+        const auto spriteData = spritesheet.getSpriteData(index);
+        const auto [a, b, width, height, flags] = spritesheet.getSprite(index);
+        const auto spriteWidth = width;
+        const auto spriteHeight = height;
 
+        if (flipX) {
+            // flip_x(&mut sprite, sprite_width, sprite_height);
+        }
+
+        if (flipY) {
+            // flip_y(&mut sprite, sprite_width, sprite_height);
+        }
+
+        const auto x1 = x + offsetX;
+        const auto y1 = y + offsetY;
+
+        drawRectangleData(x1, y1, x1 + spriteWidth, y1 + spriteHeight, true, spriteData);
+    }
+
+    // TODO: Port optimized drawRectangleData from Rust
+    void Canvas::drawRectangleData(const int32_t x0, const int32_t y0, const int32_t x1, const int32_t y1,
+                                   const bool transparent, const std::vector<uint8_t> &data) {
+        const auto xStart = std::clamp(x0, 0, static_cast<int32_t>(width - 1));
+        const auto xEnd = std::clamp(x1, 0, static_cast<int32_t>(width - 1));
+        const auto yStart = std::clamp(y0, 0, static_cast<int32_t>(height - 1));
+        const auto yEnd = std::clamp(y1, 0, static_cast<int32_t>(height - 1));
+
+        auto dataIdx = 0;
+
+        for (int32_t y = yStart; y < yEnd; y++) {
+            for (int32_t x = xStart; x < xEnd; x++) {
+                if (data[dataIdx] != transparent) {
+                    drawPixel(x, y, data[dataIdx]);
+
+                    // std::cout << "Drawing pixel at (" << x << ", " << y << ") with color " << static_cast<int>(colorLookup[data[dataIdx]]) << std::endl;
+                }
+
+                dataIdx++;
+            }
+        }
+    }
 }

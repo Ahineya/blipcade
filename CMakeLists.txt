@@ -19,6 +19,10 @@ set(SOURCES
         blipcade-renderer/palette.cpp
         blipcade-renderer/color.cpp
         blipcade-renderer/canvas.cpp
+        blipcade-renderer/spritesheet.cpp
+        blipcade-renderer/spritesheet.h
+        blipcade-renderer/font.cpp
+        blipcade-renderer/font.h
 )
 
 # Add QuickJS source files

@@ -7,6 +7,7 @@
 #include <canvas.h>
 #include <converters.h>
 #include <iostream>
+#include <nlohmann/json.hpp>
 #include <quickjs.hpp>
 
 #include "JsBindings.h"
@@ -647,6 +648,10 @@ function draw() {
 
 
         )javascript";
+
+        // let's convert code to escaped string, so it will be possible to save it as a part of JSON:
+        std::string code_escaped = nlohmann::json(code).dump();
+        std::cout << code_escaped << std::endl;
 
         evalWithStacktrace(code);
         evalWithStacktrace("init()");

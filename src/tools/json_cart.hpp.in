@@ -1,0 +1,10 @@
+#ifndef JSON_CART_HPP
+#define JSON_CART_HPP
+
+#include <string>
+
+constexpr const char* json_cart_data = R"DELIM(
+@JSON_CONTENT@
+)DELIM";
+
+#endif // CART_HPP

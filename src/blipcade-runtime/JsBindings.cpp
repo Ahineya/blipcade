@@ -136,7 +136,7 @@ namespace blipcade::runtime {
      *
      * @param {number} x - The x-coordinate of the pixel.
      * @param {number} y - The y-coordinate of the pixel.
-     * @color {number} color - The color of the pixel.
+     * @param {number} color - The color of the pixel.
      *
      * @description Puts a pixel on the canvas.
      *

@@ -10,6 +10,7 @@ include_directories(${CMAKE_SOURCE_DIR}/src/blipcade-api)
 include_directories(${CMAKE_SOURCE_DIR}/src/blipcade-runtime)
 include_directories(${CMAKE_SOURCE_DIR}/external/glfw-3.2.1/include)
 include_directories(${CMAKE_SOURCE_DIR}/external/quickjs-patched)
+include_directories(${CMAKE_SOURCE_DIR}/external/json)
 
 
 # Add your source files
@@ -37,9 +38,7 @@ set(QUICKJS_SOURCES
 )
 
 if("${CMAKE_SYSTEM}" MATCHES "Linux" OR "${CMAKE_SYSTEM}" MATCHES "Darwin-*")
-
     find_package(OpenGL REQUIRED)
-
     set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
     set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
     set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)

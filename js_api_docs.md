@@ -98,7 +98,7 @@ Graphics.fillScreen(0xff); // Fills the screen with white color.
 
 ---
 #### Function: `putPixel`
-**Description:**  @color {number} color - The color of the pixel.  Puts a pixel on the canvas. 
+**Description:**   Puts a pixel on the canvas. 
 
 **Parameters (Required):**
 
@@ -106,6 +106,7 @@ Graphics.fillScreen(0xff); // Fills the screen with white color.
 |------|------|-------------|
 | `x` | `number` | The x-coordinate of the pixel. |
 | `y` | `number` | The y-coordinate of the pixel. |
+| `color` | `number` | The color of the pixel. |
 
 **Example:**
 

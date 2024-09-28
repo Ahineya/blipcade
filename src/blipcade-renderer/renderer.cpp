@@ -111,11 +111,17 @@ namespace blipcade::graphics {
             first_frame = false;
         }
 
-        if (const double now = glfwGetTime(); now - lastFrameTime >= fpsLimit) {
+        const double now = glfwGetTime();
+
+// In case we're running in the browser, we don't want to limit the frame rate here — it is handled by emscripten_set_main_loop
+// Still need to check everything, I feel it may not work as intended
+#ifndef EMSCRIPTEN
+        if (now - lastFrameTime >= fpsLimit) {
+#endif
 
             frameCount++;
             if (now - lastFPSTime >= 1.0) { // Every second
-                std::cout << "FPS: " << frameCount / (now - lastFPSTime) << std::endl;
+                // std::cout << "FPS: " << frameCount / (now - lastFPSTime) << std::endl;
                 frameCount = 0;
                 lastFPSTime = now;
             }
@@ -167,10 +173,13 @@ namespace blipcade::graphics {
 
             lastFrameTime = now;
             lastUpdateTime = now;
+#ifndef EMSCRIPTEN
         } else {
             double sleepTime = fpsLimit - (now - lastFrameTime);
             glfwWaitEventsTimeout(sleepTime / 2.0); // Dividing by two here to get as close to 30 fps as possible
         }
+#endif
+
     }
 
     void Renderer::staticMainLoop() {
@@ -178,15 +187,6 @@ namespace blipcade::graphics {
             instance->mainLoop();
         }
     }
-
-    auto const Left = 0b00000001;
-    auto const Right = 0b00000010;
-    auto const Up = 0b00000100;
-    auto const Down = 0b00001000;
-    auto const A = 0b00010000;
-    auto const B = 0b00100000;
-    auto const Start = 0b01000000;
-    auto const Select = 0b10000000;
 
     void Renderer::staticKeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
         if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
@@ -296,7 +296,7 @@ namespace blipcade::graphics {
 
         std::cout << "Going into loop" << std::endl;
 #ifdef EMSCRIPTEN
-        emscripten_set_main_loop(Renderer::staticMainLoop, 0, 1);
+        emscripten_set_main_loop(Renderer::staticMainLoop, 30, 1);
 #else
         while (!glfwWindowShouldClose(window)) {
             mainLoop();

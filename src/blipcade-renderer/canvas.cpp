@@ -177,21 +177,27 @@ namespace blipcade::graphics {
         const auto yStart = std::clamp(y1, 0, static_cast<int32_t>(height - 1));
         const auto yEnd = std::clamp(y2, 0, static_cast<int32_t>(height - 1));
 
+        // TODO: Figure out what is going on with the line on the test blipcart: spiral
         for (int32_t y = yStart; y <= yEnd; y++) {
-            const auto index = static_cast<size_t>(y * width + x1);
-            pixels[index] = colorIndex;
+            const auto index = y * width + x1;
+
+            if (index >= pixels.size()) {
+                std::cerr << "Index out of bounds: " << index << std::endl;
+            } else {
+                pixels[index] = colorIndex;
+            }
         }
     }
 
     void Canvas::drawLine(const int32_t x0, const int32_t y0, const int32_t x1, const int32_t y1, const uint8_t color) {
-        if (x0 == x1) {
+        if (x0 == x1 && y0 != y1) {
             const auto yStart = std::min(y0, y1);
             const auto yEnd = std::max(y0, y1);
             drawVerticalLine(x0, yStart, yEnd, color);
             return;
         }
 
-        if (y0 == y1) {
+        if (y0 == y1 && x0 != x1) {
             const auto xStart = std::min(x0, x1);
             const auto xEnd = std::max(x0, x1);
             drawHorizontalLine(xStart, xEnd, y0, color);
@@ -209,6 +215,11 @@ namespace blipcade::graphics {
         dx = std::abs(dx);
         dy = std::abs(dy);
 
+        // Check that color is within the palette
+        if (color >= 256) {
+            std::cerr << "Color out of bounds: " << color << std::endl;
+            return;
+        }
         const auto colorIndex = virtualPalette[color];
 
         if (dx > dy) {
@@ -219,7 +230,12 @@ namespace blipcade::graphics {
             for (int i = 0; i < dx; i++) {
                 if (x >= 0 && x < static_cast<int32_t>(width) && y >= 0 && y < static_cast<int32_t>(height)) {
                     const auto index = static_cast<size_t>(y * width + x);
-                    pixels[index] = colorIndex;
+
+                    if (index >= pixels.size()) {
+                        std::cerr << "Index out of bounds: " << index << std::endl;
+                    } else {
+                        pixels[index] = colorIndex;
+                    }
                 }
 
                 if (p < 0) {
@@ -238,8 +254,12 @@ namespace blipcade::graphics {
 
             for (int i = 0; i < dy; i++) {
                 if (x >= 0 && x < static_cast<int32_t>(width) && y >= 0 && y < static_cast<int32_t>(height)) {
-                    const auto index = static_cast<size_t>(y * width + x);
-                    pixels[index] = colorIndex;
+                    const auto index = y * width + x;
+                    if (index >= pixels.size()) {
+                        std::cerr << "Index out of bounds: " << index << std::endl;
+                    } else {
+                        pixels[index] = colorIndex;
+                    }
                 }
 
                 if (p < 0) {

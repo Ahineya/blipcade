@@ -22,8 +22,10 @@ namespace blipcade::runtime {
         // Graphics
         bindGraphicsGlobalObject(global);
         bindFillScreen(global);
-        bindDrawFilledCircle(global);
         bindPutPixel(global);
+        bindDrawLine(global);
+        bindDrawCircle(global);
+        bindDrawFilledCircle(global);
 
         // Input
         bindInputGlobalObject(global);
@@ -158,6 +160,38 @@ namespace blipcade::runtime {
     }
 
     /**
+     * @function drawLine
+     *
+     * @param {number} x1 - The x-coordinate of the starting point of the line.
+     * @param {number} y1 - The y-coordinate of the starting point of the line.
+     * @param {number} x2 - The x-coordinate of the ending point of the line.
+     * @param {number} y2 - The y-coordinate of the ending point of the line.
+     * @param {number} color - The color of the line.
+     *
+     * @description Draws a line on the canvas.
+     *
+     * @example Graphics.drawLine(0, 0, 100, 100, 0xfe); // Draws a line from (0, 0) to (100, 100) with white color.
+     */
+    void JSBindings::bindDrawLine(quickjs::value &global) {
+        auto graphics = global.get_property("Graphics");
+
+        graphics.set_property("drawLine", [this](const quickjs::args &a) {
+            auto argsCount = a.size();
+
+            int32_t x1 = 0, y1 = 0, x2 = 0, y2 = 0;
+            uint8_t color = 0x00;
+
+            if (argsCount >= 1) x1 = a[0].as_int32();
+            if (argsCount >= 2) y1 = a[1].as_int32();
+            if (argsCount >= 3) x2 = a[2].as_int32();
+            if (argsCount >= 4) y2 = a[3].as_int32();
+            if (argsCount >= 5) color = a[4].as_int32();
+
+            m_runtime.getCanvas()->drawLine(x1, y1, x2, y2, color);
+        });
+    }
+
+    /**
      * @function drawFilledCircle
      *
      * @param {number} center_x - The x-coordinate of the center of the circle.
@@ -185,6 +219,37 @@ namespace blipcade::runtime {
             if (argsCount >= 4) color = a[3].as_int32();
 
             m_runtime.getCanvas()->drawFilledCircle(center_x, center_y, radius, color);
+        });
+    }
+
+    /**
+    * @function drawCircle
+    *
+    * @param {number} center_x - The x-coordinate of the center of the circle.
+    * @param {number} center_y - The y-coordinate of the center of the circle.
+    * @param {number} radius - The radius of the circle.
+    * @param {number} color - The color of the circle.
+    *
+    * @description Draws a circle on the canvas.
+    *
+    * @example Graphics.drawCircle(100, 100, 50, 0x50); // Draws a filled circle with a radius of 50 at (100, 100).
+    */
+    void JSBindings::bindDrawCircle(quickjs::value &global) {
+        auto graphics = global.get_property("Graphics");
+
+        graphics.set_property("drawCircle", [this](const quickjs::args &a) {
+            auto argsCount = a.size();
+
+            int32_t center_x = 0, center_y = 0;
+            uint32_t radius = 0;
+            uint8_t color = 0x00;
+
+            if (argsCount >= 1) center_x = a[0].as_int32();
+            if (argsCount >= 2) center_y = a[1].as_int32();
+            if (argsCount >= 3) radius = a[2].as_int32();
+            if (argsCount >= 4) color = a[3].as_int32();
+
+            m_runtime.getCanvas()->drawCircle(center_x, center_y, radius, color);
         });
     }
 
@@ -221,16 +286,8 @@ namespace blipcade::runtime {
             }
 
             int key = a[0].as_int32();
-
             auto isKeyPressed = m_runtime.isKeyPressed(static_cast<Key>(key));
-
-            return quickjs::value(*ctx, isKeyPressed);
-
-            // Create the boolean value
-        // quickjs::value result(*ctx, );
-
-        // Return the value
-        // return result;
+            return {*ctx, isKeyPressed};
 
         });
     }

@@ -9,7 +9,9 @@
 - [Namespace: Graphics](#namespace-graphics)
    - [Function: fillScreen](#function-fillscreen)
    - [Function: putPixel](#function-putpixel)
+   - [Function: drawLine](#function-drawline)
    - [Function: drawFilledCircle](#function-drawfilledcircle)
+   - [Function: drawCircle](#function-drawcircle)
 - [Namespace: Input](#namespace-input)
    - [Function: isKeyPressed](#function-iskeypressed)
 
@@ -112,6 +114,26 @@ Graphics.putPixel(100, 100, 0xfe); // Puts a pixel at (100, 100) with white colo
 ```
 
 ---
+#### Function: `drawLine`
+**Description:**   Draws a line on the canvas. 
+
+**Parameters (Required):**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `x1` | `number` | The x-coordinate of the starting point of the line. |
+| `y1` | `number` | The y-coordinate of the starting point of the line. |
+| `x2` | `number` | The x-coordinate of the ending point of the line. |
+| `y2` | `number` | The y-coordinate of the ending point of the line. |
+| `color` | `number` | The color of the line. |
+
+**Example:**
+
+```javascript
+Graphics.drawLine(0, 0, 100, 100, 0xfe); // Draws a line from (0, 0) to (100, 100) with white color.
+```
+
+---
 #### Function: `drawFilledCircle`
 **Description:**   Draws a filled circle on the canvas. 
 
@@ -128,6 +150,25 @@ Graphics.putPixel(100, 100, 0xfe); // Puts a pixel at (100, 100) with white colo
 
 ```javascript
 Graphics.drawFilledCircle(100, 100, 50, 0x50); // Draws a filled circle with a radius of 50 at (100, 100).
+```
+
+---
+#### Function: `drawCircle`
+**Description:**   Draws a circle on the canvas. 
+
+**Parameters (Required):**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `center_x` | `number` | The x-coordinate of the center of the circle. |
+| `center_y` | `number` | The y-coordinate of the center of the circle. |
+| `radius` | `number` | The radius of the circle. |
+| `color` | `number` | The color of the circle. |
+
+**Example:**
+
+```javascript
+Graphics.drawCircle(100, 100, 50, 0x50); // Draws a filled circle with a radius of 50 at (100, 100).
 ```
 
 ---

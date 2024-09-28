@@ -28,7 +28,11 @@ namespace blipcade {
 
             void bindPutPixel(quickjs::value &global);
 
+            void bindDrawLine(quickjs::value &global);
+
             void bindDrawFilledCircle(quickjs::value &global);
+
+            void bindDrawCircle(quickjs::value &global);
 
             void bindInputGlobalObject(quickjs::value &global);
 

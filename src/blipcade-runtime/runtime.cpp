@@ -342,7 +342,7 @@ class Background {
                     ];
                     for(let i = 0; i < 256; i++){
                         const z = Math.floor(i / 40) + 1;
-                        drawFilledCircle((this.rand[i] - this.t * z * z) % 140 - 8, this.rand2[i], z, PICO8_COLORS[p[z]] || 0xfe);
+                        Graphics.drawFilledCircle((this.rand[i] - this.t * z * z) % 140 - 8, this.rand2[i], z, PICO8_COLORS[p[z]] || 0xfe);
                     }
                     this.t += 0.05;
                 }
@@ -362,7 +362,7 @@ class Background {
                         let j = (p + Math.sin(this.t) - this.t * 9) % 11 + 0.1;
                         let k = this.rand[i] - 5 + Math.cos(this.t);
                         if (Math.floor(p) === 7) p = 14;
-                        drawFilledCircle(k / j * 50 + 64, 80 / j - 20, 9 / j, PICO8_COLORS[Math.floor(p)] || 0xfe);
+                        Graphics.drawFilledCircle(k / j * 50 + 64, 80 / j - 20, 9 / j, PICO8_COLORS[Math.floor(p)] || 0xfe);
                     }
                     this.t += 0.01;
                 }
@@ -379,7 +379,7 @@ class Background {
                     for(let n = 0; n < m * m; n++){
                         const x = n % m;
                         const y = Math.floor(n / m);
-                        drawFilledCircle(x * 12, y * 12, 12 + 4 * Math.cos(this.t + y / 5) + 4 * Math.sin(this.t + x / 7), PICO8_COLORS[8 + (x + y) % 8] || 0xfe);
+                        Graphics.drawFilledCircle(x * 12, y * 12, 12 + 4 * Math.cos(this.t + y / 5) + 4 * Math.sin(this.t + x / 7), PICO8_COLORS[8 + (x + y) % 8] || 0xfe);
                     }
                 }
             },
@@ -398,7 +398,7 @@ class Background {
                         const u = x, v = y;
                         x = x + j * Math.sin(j);
                         y = y + j * Math.cos(j);
-                        drawLine(u, v, x, y, PICO8_COLORS[7 + Math.floor(i / 60)] || 0xfe);
+                        Graphics.drawLine(u, v, x, y, PICO8_COLORS[7 + Math.floor(i / 60)] || 0xfe);
                     }
                 }
             },
@@ -412,7 +412,7 @@ class Background {
                     this.t += 0.01;
                     for(let k = 0; k <= 16; k++)for(let n = 1; n <= 9; n++){
                         const h = k / 16 + this.t;
-                        drawCircle(64 + Math.cos(h + this.t / 3) * n * 8, 64 + Math.sin(h) * (n * n + Math.cos(this.t) * 16), n, PICO8_COLORS[11 - Math.floor(n / 3)] || 0xfe);
+                        Graphics.drawCircle(64 + Math.cos(h + this.t / 3) * n * 8, 64 + Math.sin(h) * (n * n + Math.cos(this.t) * 16), n, PICO8_COLORS[11 - Math.floor(n / 3)] || 0xfe);
                     }
                 }
             },
@@ -425,7 +425,7 @@ class Background {
                 draw: ()=>{
                     let x = 64, y = 64, r = 1, a = 0;
                     for(let i = 0; i <= 150; i++){
-                        drawFilledCircle(x, y, r / 2, PICO8_COLORS[6 + i % 3] || 0xfe);
+                        Graphics.drawFilledCircle(x, y, r / 2, PICO8_COLORS[6 + i % 3] || 0xfe);
                         x += Math.cos(a) * r;
                         y += Math.sin(a) * r;
                         r += 1 / 4;
@@ -447,9 +447,9 @@ class Background {
                     for(let i = 0; i <= n; i++){
                         const z = i * n + this.t % n;
                         const y = w * n / z + 32;
-                        drawLine(0, y, w, y, PICO8_COLORS[gridcolor]);
+                        Graphics.drawLine(0, y, w, y, PICO8_COLORS[gridcolor]);
                         const v = i + this.t % n / n - n / 2;
-                        drawLine(v * 9 + 64, 40, v * 60 + 64, w, PICO8_COLORS[gridcolor] || 0xfe);
+                        Graphics.drawLine(v * 9 + 64, 40, v * 60 + 64, w, PICO8_COLORS[gridcolor] || 0xfe);
                     }
                 }
             },
@@ -489,14 +489,14 @@ class Background {
                 mbg: PICO8_COLORS[3],
                 hfg: PICO8_COLORS[11],
                 pbg: PICO8_COLORS[3],
-                draw: ()=>{
+                draw: () => {
                     for(let j = 3; j <= 99; j++){
                         let c = 11;
                         const x = j * 593;
                         for(let y = 1; y <= x % c; y++){
                             const n = Math.pow(j, y) % 7 + 1;
                             const __char = "5&y$%z?$*".charAt(n - 1);
-                            text(x % 126, (this.t + x) * j / 8 % 256 - y * 6, __char, PICO8_COLORS[c] || 0xfe);
+                            text(__char, x % 126, (this.t + x) * j / 8 % 256 - y * 6, PICO8_COLORS[c] || 0xfe);
                             c = 3;
                         }
                     }

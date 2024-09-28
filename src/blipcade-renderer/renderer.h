@@ -1,6 +1,8 @@
 #pragma once
 #include <cstdint>
 
+#include "GLFW/glfw3.h"
+
 namespace blipcade::runtime {
     class Runtime;
 }
@@ -27,6 +29,9 @@ namespace blipcade::graphics {
         void mainLoop();
 
         static void staticMainLoop();
+
+        static void staticKeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
+
         void renderFrame();
 
         void createWindow();

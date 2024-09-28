@@ -222,10 +222,9 @@ namespace blipcade::runtime {
 
             int key = a[0].as_int32();
 
-            // TODO: Remove this stub
-            // return quickjs::value(*ctx, false);
+            auto isKeyPressed = m_runtime.isKeyPressed(static_cast<Key>(key));
 
-            return quickjs::value(*ctx, false);
+            return quickjs::value(*ctx, isKeyPressed);
 
             // Create the boolean value
         // quickjs::value result(*ctx, );

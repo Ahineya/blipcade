@@ -99,7 +99,7 @@ namespace blipcade::graphics {
     }
 
     static const double fpsLimit = 1.0 / 30.0;
-    static double lastUpdateTime = 0;  // number of seconds since the last loop
+    static double lastUpdateTime = 0;
     static double lastFrameTime = 0;
 
     static double lastFPSTime = 0;
@@ -111,13 +111,7 @@ namespace blipcade::graphics {
             first_frame = false;
         }
 
-        double now = glfwGetTime();
-        double deltaTime = now - lastUpdateTime;
-
-        // runtime->update();
-        // runtime->draw();
-
-        if (now - lastFrameTime >= fpsLimit) {
+        if (const double now = glfwGetTime(); now - lastFrameTime >= fpsLimit) {
 
             frameCount++;
             if (now - lastFPSTime >= 1.0) { // Every second
@@ -125,6 +119,8 @@ namespace blipcade::graphics {
                 frameCount = 0;
                 lastFPSTime = now;
             }
+
+            glfwPollEvents();
 
             runtime->update();
             runtime->draw();
@@ -168,19 +164,13 @@ namespace blipcade::graphics {
             glBindTexture(GL_TEXTURE_2D, 0);
 
             glfwSwapBuffers(window);
-            glfwPollEvents();
 
             lastFrameTime = now;
             lastUpdateTime = now;
         } else {
-            // double waitTime = fpsLimit - (now - lastFrameTime);
-            // glfwWaitEventsTimeout(waitTime);
-            // std::this_thread::sleep_for(std::chrono::milliseconds(1));
             double sleepTime = fpsLimit - (now - lastFrameTime);
-            // Wait for events or timeout
-            glfwWaitEventsTimeout(sleepTime);
+            glfwWaitEventsTimeout(sleepTime / 2.0); // Dividing by two here to get as close to 30 fps as possible
         }
-
     }
 
     void Renderer::staticMainLoop() {
@@ -189,9 +179,61 @@ namespace blipcade::graphics {
         }
     }
 
-    static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
-        if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+    auto const Left = 0b00000001;
+    auto const Right = 0b00000010;
+    auto const Up = 0b00000100;
+    auto const Down = 0b00001000;
+    auto const A = 0b00010000;
+    auto const B = 0b00100000;
+    auto const Start = 0b01000000;
+    auto const Select = 0b10000000;
+
+    void Renderer::staticKeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
+        if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
             glfwSetWindowShouldClose(window, GLFW_TRUE);
+        }
+
+        if (key == GLFW_KEY_LEFT && action == GLFW_PRESS) {
+            instance->runtime->keyDown(runtime::Key::Left);
+        } else if (key == GLFW_KEY_LEFT && action == GLFW_RELEASE) {
+            instance->runtime->keyUp(runtime::Key::Left);
+        }
+
+        if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS) {
+            instance->runtime->keyDown(runtime::Key::Right);
+        } else if (key == GLFW_KEY_RIGHT && action == GLFW_RELEASE) {
+            instance->runtime->keyUp(runtime::Key::Right);
+        }
+
+        if (key == GLFW_KEY_UP && action == GLFW_PRESS) {
+            instance->runtime->keyDown(runtime::Key::Up);
+        } else if (key == GLFW_KEY_UP && action == GLFW_RELEASE) {
+            instance->runtime->keyUp(runtime::Key::Up);
+        }
+
+        if (key == GLFW_KEY_DOWN && action == GLFW_PRESS) {
+            instance->runtime->keyDown(runtime::Key::Down);
+        } else if (key == GLFW_KEY_DOWN && action == GLFW_RELEASE) {
+            instance->runtime->keyUp(runtime::Key::Down);
+        }
+
+        if (key == GLFW_KEY_Z && action == GLFW_PRESS) {
+            instance->runtime->keyDown(runtime::Key::A);
+        } else if (key == GLFW_KEY_Z && action == GLFW_RELEASE) {
+            instance->runtime->keyUp(runtime::Key::A);
+        }
+
+        if (key == GLFW_KEY_C && action == GLFW_PRESS) {
+            instance->runtime->keyDown(runtime::Key::A);
+        } else if (key == GLFW_KEY_C && action == GLFW_RELEASE) {
+            instance->runtime->keyUp(runtime::Key::A);
+        }
+
+        if (key == GLFW_KEY_X && action == GLFW_PRESS) {
+            instance->runtime->keyDown(runtime::Key::B);
+        } else if (key == GLFW_KEY_X && action == GLFW_RELEASE) {
+            instance->runtime->keyUp(runtime::Key::B);
+        }
     }
 
     void Renderer::createWindow() {
@@ -206,35 +248,16 @@ namespace blipcade::graphics {
             exit(EXIT_FAILURE);
         }
 
-#ifdef EMSCRIPTEN
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_ANY_PROFILE);
-#else
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
-
-
-        // glfwSetWindowSize(
-        //     mWindow,
-        //     width * device_pixel_ratio,
-        //     height * device_pixel_ratio
-        // );
-        // glViewport(
-        //     0,
-        //     0,
-        //     width * device_pixel_ratio,
-        //     height * device_pixel_ratio
-        // );
-        //
-        // auto canvas_css_resize_result = emscripten_set_element_css_size(
-        //     "canvas",
-        //     windowWidth,
-        //     windowHeight
-        // );
+        #ifdef EMSCRIPTEN
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_ANY_PROFILE);
+        #else
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+            glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+        #endif
 
         #ifdef EMSCRIPTEN
         auto dpi = emscripten_get_device_pixel_ratio();
@@ -261,7 +284,7 @@ namespace blipcade::graphics {
 
         glfwMakeContextCurrent(window);
         glfwSwapInterval(1); // Enable vsync
-        glfwSetKeyCallback(window, key_callback);
+        glfwSetKeyCallback(window, staticKeyCallback);
 
         std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
         std::cout << "GLSL Version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;

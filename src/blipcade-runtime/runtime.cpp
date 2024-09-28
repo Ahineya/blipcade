@@ -10,6 +10,7 @@
 #include <quickjs.hpp>
 
 #include "JsBindings.h"
+#include "keystate.h"
 
 // Header for reference:
 
@@ -105,7 +106,8 @@ namespace blipcade::runtime {
 */
 
 namespace blipcade::runtime {
-    Runtime::Runtime(): canvas(nullptr), font(nullptr), js_bindings(std::make_unique<JSBindings>(*this)) {
+    Runtime::Runtime(): canvas(nullptr), key_flags(std::make_shared<Keystate>()), font(nullptr),
+                        js_bindings(std::make_unique<JSBindings>(*this)) {
         canvas = std::make_shared<graphics::Canvas>(128, 128);
         std::cout << "Runtime constructed at " << this << " with Canvas at " << canvas.get()
                 << " and pixels at " << canvas->getPixels().data() << std::endl;
@@ -150,7 +152,6 @@ namespace blipcade::runtime {
     std::shared_ptr<quickjs::context> Runtime::getContext() const {
         return context;
     }
-
 
     void Runtime::init() {
         js_runtime = std::make_unique<quickjs::runtime>();
@@ -308,11 +309,6 @@ class Background {
                     //this.rand.forEach((p, i)=>{});
                 },
                 draw: ()=>{
-//this.rand.forEach((r, i) => {
-  //                      const x = i % 128;
-    //                    const y = (i / 128) | 0;
-      //                  putPixel(x, y, PICO8_COLORS[(Math.random() * 16) | 0]);
-//});
                     this.rand.forEach((p, i)=>{
                         const x = i % 128;
                         const y = Math.floor(i / 128);
@@ -704,5 +700,18 @@ function draw() {
             std::cerr << "Unknown exception" << std::endl;
         }
     }
+
+    void Runtime::keyDown(Key key) {
+        key_flags->setKey(key, true);
+    }
+
+    void Runtime::keyUp(Key key) {
+        key_flags->setKey(key, false);
+    }
+
+    bool Runtime::isKeyPressed(const Key key) const {
+        return key_flags->isKeyPressed(key);
+    }
+
 } // runtime
 // blipcade

@@ -8,6 +8,8 @@
 #include <optional>
 #include <string>
 
+#include "keystate.h"
+
 namespace quickjs {
     class context;
 }
@@ -25,6 +27,7 @@ namespace blipcade::graphics {
 
 namespace blipcade::runtime {
     class JSBindings;
+    class Keystate;
 
     /*
  * So Runtime should be a singleton class that will be responsible for the main loop of the engine.
@@ -65,6 +68,12 @@ namespace blipcade::runtime {
 
         void evalWithStacktrace(const char *code) const;
 
+        void keyDown(Key key);
+
+        void keyUp(Key key);
+
+        bool isKeyPressed(Key key) const;
+
         void init();
         void update() const;
         void draw() const;
@@ -85,7 +94,7 @@ namespace blipcade::runtime {
         std::shared_ptr<graphics::Spritesheet> spritesheet;
         // std::shared_ptr<Maps> maps;
         std::shared_ptr<std::string> code;
-        // std::shared_ptr<KeyState> key_flags;
+        std::shared_ptr<Keystate> key_flags;
         // std::shared_ptr<MouseState> mouse_state;
         std::shared_ptr<graphics::Font> font;
 

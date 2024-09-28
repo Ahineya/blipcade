@@ -17,9 +17,24 @@ namespace blipcade {
             Runtime& m_runtime;
 
             void bindLogFunction(quickjs::value& global);
+
+            void bindSetTransparentColor(quickjs::value &global);
+
             void bindTextFunction(quickjs::value& global);
 
-            void bindGlobalObject(quickjs::value &global);
+            void bindGraphicsGlobalObject(quickjs::value &global);
+
+            void bindFillScreen(quickjs::value &global);
+
+            void bindPutPixel(quickjs::value &global);
+
+            void bindDrawFilledCircle(quickjs::value &global);
+
+            void bindInputGlobalObject(quickjs::value &global);
+
+            void bindInputIsKeyPressed(quickjs::value &global);
+
+            void createNamespace(quickjs::value &global, const std::string &name);
         };
     }
 }

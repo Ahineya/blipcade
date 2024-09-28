@@ -27,6 +27,7 @@ namespace blipcade::graphics {
         void mainLoop();
 
         static void staticMainLoop();
+        void renderFrame();
 
         void createWindow();
 

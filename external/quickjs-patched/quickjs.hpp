@@ -706,6 +706,14 @@ namespace quickjs
 			}
 		}
 
+		value(JSContext* ctx, bool b)
+		: ctx_(ctx), val_(JS_NewBool(ctx, b))
+		{
+			QJSCPP_DEBUG("value(JSContext*, bool) @" << (void*)this);
+			validate();
+			track();
+		}
+
 		explicit value(JSContext *ctx, const value& other)
 		{
 			QJSCPP_DEBUG("value(JSContext, const value& @" << (void*)&other << ") @" << (void*)this << " -> " << (other.valid() ? other.as_cstring() : "[nothing]"));

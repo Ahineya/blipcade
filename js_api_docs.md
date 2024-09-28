@@ -2,16 +2,20 @@
 
 ## Table of Contents
 
-- [Namespace: Global](#namespace-global)
+- [Namespace: global](#namespace-global)
    - [Function: log](#function-log)
+   - [Function: setTransparentColor](#function-settransparentcolor)
    - [Function: text](#function-text)
-- [Namespace: User](#namespace-user)
-   - [Property: name](#property-name)
-   - [Function: greet](#function-greet)
+- [Namespace: Graphics](#namespace-graphics)
+   - [Function: fillScreen](#function-fillscreen)
+   - [Function: putPixel](#function-putpixel)
+   - [Function: drawFilledCircle](#function-drawfilledcircle)
+- [Namespace: Input](#namespace-input)
+   - [Function: isKeyPressed](#function-iskeypressed)
 
 ---
 
-Namespace: `Global`
+Namespace: `global`
 ---
 ### These are global functions that can be called from the JavaScript code.
 
@@ -27,6 +31,22 @@ Namespace: `Global`
 | `message` | `string` | `N/A` | The message to log. |
 
 ---
+#### Function: `setTransparentColor`
+**Description:** Sets the color to use as transparent when drawing. 
+
+**Parameters (Optional):**
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| `color` | `number` | `0xff` | The color to use as transparent. |
+
+**Example:**
+
+```javascript
+setTransparentColor(0x00); // Black color will be transparent
+```
+
+---
 #### Function: `text`
 **Description:** Draws text on the canvas.  
 
@@ -35,12 +55,12 @@ Namespace: `Global`
 | Name | Type | Description |
 |------|------|-------------|
 | `text` | `string` | The text to draw. |
-| `x` | `number` | The x-coordinate of the text. |
 
 **Parameters (Optional):**
 
 | Name | Type | Default | Description |
 |------|------|---------|-------------|
+| `x` | `number` | `0` | The x-coordinate of the text. |
 | `y` | `number` | `0` | The y-coordinate of the text. |
 | `color` | `number` | `0xfe` | The color of the text (default is 0xfe). |
 
@@ -53,25 +73,85 @@ text("Hello, Blipcade!", 10, 20, 0xff);
 ```
 
 ---
-Namespace: `User`
+Namespace: `Graphics`
 ---
-### Provides user-related functionalities.
+### Provides graphics-related functionalities.
 
 
 
-**Properties:**
+#### Function: `fillScreen`
+**Description:** Fills the screen with a color.
 
-| Name | Type | Description |
-|------|------|-------------|
-| `name` | `string` | The name of the user. |
+**Parameters (Optional):**
 
-#### Function: `greet`
-**Description:** Greets the user with their name. 
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| `color` | `number` | `0x00` | The color to fill the screen with. |
 
 **Example:**
 
 ```javascript
-User.greet();
+Graphics.fillScreen(0xff); // Fills the screen with white color.
+```
+
+---
+#### Function: `putPixel`
+**Description:**  @color {number} color - The color of the pixel.  Puts a pixel on the canvas. 
+
+**Parameters (Required):**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `x` | `number` | The x-coordinate of the pixel. |
+| `y` | `number` | The y-coordinate of the pixel. |
+
+**Example:**
+
+```javascript
+Graphics.putPixel(100, 100, 0xfe); // Puts a pixel at (100, 100) with white color.
+```
+
+---
+#### Function: `drawFilledCircle`
+**Description:**   Draws a filled circle on the canvas. 
+
+**Parameters (Required):**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `center_x` | `number` | The x-coordinate of the center of the circle. |
+| `center_y` | `number` | The y-coordinate of the center of the circle. |
+| `radius` | `number` | The radius of the circle. |
+| `color` | `number` | The color of the circle. |
+
+**Example:**
+
+```javascript
+Graphics.drawFilledCircle(100, 100, 50, 0x50); // Draws a filled circle with a radius of 50 at (100, 100).
+```
+
+---
+Namespace: `Input`
+---
+### Provides input-related functionalities.
+
+
+
+#### Function: `isKeyPressed`
+**Description:**  Checks if a key is currently pressed. A key codes are defined in the `Key` enum.  
+
+**Parameters (Required):**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `key` | `number` | The key code to check. |
+
+**Returns:** boolean - `true` if the key is pressed, `false` otherwise.
+
+**Example:**
+
+```javascript
+Input.isKeyPressed(Key.ArrowUp); // Returns true if the up arrow key is pressed.
 ```
 
 ---

@@ -25,6 +25,8 @@ namespace blipcade::graphics {
 
         void setTransparentColor(uint8_t index);
 
+        void fillScreen(uint8_t color);
+
         void setClipRect(Rect rect);
 
         bool isWithinClippingRect(int32_t x, int32_t y) const;

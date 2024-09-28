@@ -70,6 +70,15 @@ namespace blipcade::graphics {
         return transparentColor;
     }
 
+    void Canvas::setTransparentColor(const uint8_t color) {
+        transparentColor = color;
+    }
+
+    void Canvas::fillScreen(const uint8_t color) {
+        const auto colorIndex = virtualPalette[color];
+        std::ranges::fill(pixels, colorIndex);
+    }
+
     void Canvas::setClipRect(const Rect rect) {
         const int32_t x = rect.x < 0 ? 0 : rect.x;
         const int32_t y = rect.y < 0 ? 0 : rect.y;

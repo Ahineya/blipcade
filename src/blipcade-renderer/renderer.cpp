@@ -15,6 +15,8 @@
 #include <GLES3/gl3.h>
 #endif
 
+#include <thread>
+
 #include "shader_vert.h"
 #include "shader_frag.h"
 
@@ -96,58 +98,89 @@ namespace blipcade::graphics {
         this->runtime = &runtime;
     }
 
+    static const double fpsLimit = 1.0 / 30.0;
+    static double lastUpdateTime = 0;  // number of seconds since the last loop
+    static double lastFrameTime = 0;
+
+    static double lastFPSTime = 0;
+    static int frameCount = 0;
+
     void Renderer::mainLoop() {
         static bool first_frame = true;
         if (first_frame) {
-
-
             first_frame = false;
         }
 
-        runtime->update();
-        runtime->draw();
+        double now = glfwGetTime();
+        double deltaTime = now - lastUpdateTime;
 
-        updateWindowSize();
+        // runtime->update();
+        // runtime->draw();
 
-        glClear(GL_COLOR_BUFFER_BIT);
+        if (now - lastFrameTime >= fpsLimit) {
 
-        glUseProgram(shaderProgram);
+            frameCount++;
+            if (now - lastFPSTime >= 1.0) { // Every second
+                std::cout << "FPS: " << frameCount / (now - lastFPSTime) << std::endl;
+                frameCount = 0;
+                lastFPSTime = now;
+            }
 
-        // Calculate the aspect ratio of the window
-        float windowAspectRatio = static_cast<float>(windowWidth) / static_cast<float>(windowHeight);
+            runtime->update();
+            runtime->draw();
+            updateWindowSize();
 
-        // Calculate the size of the square in normalized device coordinates
-        float squareSize;
-        if (windowAspectRatio > 1.0f) {
-            squareSize = 1.0f;
+            glClear(GL_COLOR_BUFFER_BIT);
+
+            glUseProgram(shaderProgram);
+
+            // Calculate the aspect ratio of the window
+            float windowAspectRatio = static_cast<float>(windowWidth) / static_cast<float>(windowHeight);
+
+            // Calculate the size of the square in normalized device coordinates
+            float squareSize;
+            if (windowAspectRatio > 1.0f) {
+                squareSize = 1.0f;
+            } else {
+                squareSize = windowAspectRatio;
+            }
+
+            // Set uniforms
+            GLint uSquareSizeLocation = glGetUniformLocation(shaderProgram, "uSquareSize");
+            GLint uWindowAspectRatioLocation = glGetUniformLocation(shaderProgram, "uWindowAspectRatio");
+            glUniform1f(uSquareSizeLocation, squareSize);
+            glUniform1f(uWindowAspectRatioLocation, windowAspectRatio);
+
+            auto c = runtime->getCanvas();
+            const auto pixelData = c->getPixelsData();
+            const auto *pixels = pixelData.data();
+
+            glBindTexture(GL_TEXTURE_2D, texture);
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, canvasWidth, canvasHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+            glUniform1i(glGetUniformLocation(shaderProgram, "uTexture"), 0);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, texture);
+
+            glBindVertexArray(VAO);
+            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+            glBindVertexArray(0);
+            glBindTexture(GL_TEXTURE_2D, 0);
+
+            glfwSwapBuffers(window);
+            glfwPollEvents();
+
+            lastFrameTime = now;
+            lastUpdateTime = now;
         } else {
-            squareSize = windowAspectRatio;
+            // double waitTime = fpsLimit - (now - lastFrameTime);
+            // glfwWaitEventsTimeout(waitTime);
+            // std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            double sleepTime = fpsLimit - (now - lastFrameTime);
+            // Wait for events or timeout
+            glfwWaitEventsTimeout(sleepTime);
         }
 
-        // Set uniforms
-        GLint uSquareSizeLocation = glGetUniformLocation(shaderProgram, "uSquareSize");
-        GLint uWindowAspectRatioLocation = glGetUniformLocation(shaderProgram, "uWindowAspectRatio");
-        glUniform1f(uSquareSizeLocation, squareSize);
-        glUniform1f(uWindowAspectRatioLocation, windowAspectRatio);
-
-        auto c = runtime->getCanvas();
-        const auto pixelData = c->getPixelsData();
-        const auto *pixels = pixelData.data();
-
-        glBindTexture(GL_TEXTURE_2D, texture);
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, canvasWidth, canvasHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-        glUniform1i(glGetUniformLocation(shaderProgram, "uTexture"), 0);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture);
-
-        glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-        glBindVertexArray(0);
-        glBindTexture(GL_TEXTURE_2D, 0);
-
-        glfwSwapBuffers(window);
-        glfwPollEvents();
     }
 
     void Renderer::staticMainLoop() {
@@ -227,6 +260,7 @@ namespace blipcade::graphics {
         #endif
 
         glfwMakeContextCurrent(window);
+        glfwSwapInterval(1); // Enable vsync
         glfwSetKeyCallback(window, key_callback);
 
         std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;

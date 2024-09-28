@@ -69,10 +69,13 @@ namespace blipcade::runtime {
         void update() const;
         void draw() const;
 
+        std::shared_ptr<quickjs::context> getContext() const;
+
         // Let's make it possible to get a pointer to the canvas
         [[nodiscard]] std::shared_ptr<graphics::Canvas> getCanvas() const;
 
         std::shared_ptr<graphics::Font> getFont() const;
+
 
     private:
         std::unique_ptr<quickjs::runtime> js_runtime;

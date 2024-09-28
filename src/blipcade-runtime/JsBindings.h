@@ -18,6 +18,8 @@ namespace blipcade {
 
             void bindLogFunction(quickjs::value& global);
             void bindTextFunction(quickjs::value& global);
+
+            void bindGlobalObject(quickjs::value &global);
         };
     }
 }

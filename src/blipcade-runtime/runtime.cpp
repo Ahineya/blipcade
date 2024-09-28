@@ -147,6 +147,11 @@ namespace blipcade::runtime {
         return font;
     }
 
+    std::shared_ptr<quickjs::context> Runtime::getContext() const {
+        return context;
+    }
+
+
     void Runtime::init() {
         js_runtime = std::make_unique<quickjs::runtime>();
         context = std::make_shared<quickjs::context>(js_runtime->new_context());
@@ -157,12 +162,12 @@ namespace blipcade::runtime {
 
         auto code = R"javascript(
 function init() {
-
+    log(User.greet());
 }
 function update() {}
 function draw() {
-    log("Hello from JavaScript!");
-    text("Hello from JavaScript!");
+    //log("Hello from JavaScript!");
+    //text("Hello from JavaScript!");
 }
         )javascript";
 

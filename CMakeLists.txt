@@ -5,9 +5,9 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Add the directory containing your header files
-include_directories(${CMAKE_SOURCE_DIR}/blipcade-renderer)
-include_directories(${CMAKE_SOURCE_DIR}/blipcade-api)
-include_directories(${CMAKE_SOURCE_DIR}/blipcade-runtime)
+include_directories(${CMAKE_SOURCE_DIR}/src/blipcade-renderer)
+include_directories(${CMAKE_SOURCE_DIR}/src/blipcade-api)
+include_directories(${CMAKE_SOURCE_DIR}/src/blipcade-runtime)
 include_directories(${CMAKE_SOURCE_DIR}/external/glfw-3.2.1/include)
 include_directories(${CMAKE_SOURCE_DIR}/external/quickjs-patched)
 
@@ -15,17 +15,15 @@ include_directories(${CMAKE_SOURCE_DIR}/external/quickjs-patched)
 # Add your source files
 set(SOURCES
         main.cpp
-        blipcade-renderer/renderer.cpp
-        blipcade-renderer/palette.cpp
-        blipcade-renderer/color.cpp
-        blipcade-renderer/font.cpp
-        blipcade-renderer/spritesheet.cpp
-        blipcade-renderer/canvas.cpp
-        blipcade-api/converters.cpp
-        blipcade-runtime/runtime.cpp
-        blipcade-runtime/runtime.h
-        blipcade-runtime/JsBindings.cpp
-        blipcade-runtime/JsBindings.h
+        src/blipcade-renderer/renderer.cpp
+        src/blipcade-renderer/palette.cpp
+        src/blipcade-renderer/color.cpp
+        src/blipcade-renderer/font.cpp
+        src/blipcade-renderer/spritesheet.cpp
+        src/blipcade-renderer/canvas.cpp
+        src/blipcade-api/converters.cpp
+        src/blipcade-runtime/runtime.cpp
+        src/blipcade-runtime/JsBindings.cpp
 )
 
 # Add QuickJS source files
@@ -77,19 +75,19 @@ add_executable(blipcade_cmake ${SOURCES})
 # Add custom commands to generate shader headers
 add_custom_command(
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/shader_vert.h
-        COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/blipcade-renderer/shaders/convert_shaders.py
-        ${CMAKE_CURRENT_SOURCE_DIR}/blipcade-renderer/shaders/shader.vert
+        COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/src/blipcade-renderer/shaders/convert_shaders.py
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/blipcade-renderer/shaders/shader.vert
         ${CMAKE_CURRENT_BINARY_DIR}/shader_vert.h
-        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/blipcade-renderer/shaders/shader.vert
+        DEPENDS src/blipcade-renderer/shaders/shader.vert
         COMMENT "Generating vertex shader header"
 )
 
 add_custom_command(
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/shader_frag.h
-        COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/blipcade-renderer/shaders/convert_shaders.py
-        ${CMAKE_CURRENT_SOURCE_DIR}/blipcade-renderer/shaders/shader.frag
+        COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/src/blipcade-renderer/shaders/convert_shaders.py
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/blipcade-renderer/shaders/shader.frag
         ${CMAKE_CURRENT_BINARY_DIR}/shader_frag.h
-        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/blipcade-renderer/shaders/shader.frag
+        DEPENDS src/blipcade-renderer/shaders/shader.frag
         COMMENT "Generating fragment shader header"
 )
 
@@ -114,3 +112,23 @@ if (DEFINED EMSCRIPTEN)
 else()
     message(STATUS "Configuring for Desktop")
 endif(DEFINED EMSCRIPTEN)
+
+# Find Python
+find_package(Python COMPONENTS Interpreter REQUIRED)
+
+# Add a custom command to run the Python JSDoc extractor
+add_custom_command(
+        OUTPUT ${CMAKE_BINARY_DIR}/js_api_docs.md
+        COMMAND ${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/src/tools/extract_jsdoc.py
+        ${CMAKE_SOURCE_DIR}/src/blipcade-runtime/JsBindings.cpp
+        -o ${CMAKE_SOURCE_DIR}/js_api_docs.md
+        DEPENDS ${CMAKE_SOURCE_DIR}/src/blipcade-runtime/JsBindings.cpp
+        ${CMAKE_SOURCE_DIR}/src/tools/extract_jsdoc.py
+        COMMENT "Extracting JavaScript API documentation"
+)
+
+# Add a custom target for documentation generation
+add_custom_target(generate_js_docs DEPENDS ${CMAKE_BINARY_DIR}/js_api_docs.md)
+
+# Make the main target depend on the documentation
+add_dependencies(blipcade_cmake generate_js_docs)

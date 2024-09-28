@@ -1,13 +1,9 @@
 #include <codecvt>
 #include <iostream>
 
-#include "canvas.h"
-#include "spritesheet.h"
-#include "blipcade-api/converters.h"
-#include "blipcade-renderer/renderer.h"
-
-#include "quickjs.hpp"
-#include "runtime.h"
+#include <renderer.h>
+#include <quickjs.hpp>
+#include <runtime.h>
 
 #if __EMSCRIPTEN__
     #include <emscripten/emscripten.h>

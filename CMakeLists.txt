@@ -25,9 +25,9 @@ set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE) # don't build the supplied examples
 set(BUILD_GAMES    OFF CACHE BOOL "" FORCE) # don't build the supplied example games
 
 if (DEFINED EMSCRIPTEN)
+add_compile_definitions(GRAPHICS_API_OPENGL_ES3) # use OpenGL ES 3.0
 set(PLATFORM "Web" CACHE STRING "" FORCE) # build for web
 endif ()
-
 
 FetchContent_Declare(
         raylib
@@ -157,10 +157,20 @@ add_custom_command(
         COMMENT "Generating fragment shader header"
 )
 
+add_custom_command(
+        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/palette_shader.h
+        COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/src/blipcade-renderer/shaders/convert_shaders.py
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/blipcade-renderer/shaders/palette_shader.frag
+        ${CMAKE_CURRENT_BINARY_DIR}/palette_shader.h
+        DEPENDS src/blipcade-renderer/shaders/palette_shader.frag
+        COMMENT "Generating palette fragment shader header"
+)
+
 # Add the generated headers to your target's sources
 target_sources(blipcade_cmake PRIVATE
         ${CMAKE_CURRENT_BINARY_DIR}/shader_vert.h
         ${CMAKE_CURRENT_BINARY_DIR}/shader_frag.h
+        ${CMAKE_CURRENT_BINARY_DIR}/palette_shader.h
 )
 
 # Make sure the binary dir is in the include path
@@ -177,7 +187,7 @@ if (DEFINED EMSCRIPTEN)
 
     set_target_properties(blipcade_cmake
             PROPERTIES SUFFIX ".html"
-            LINK_FLAGS " --bind -s WASM=1 -s ASYNCIFY -s ALLOW_MEMORY_GROWTH=1")
+            LINK_FLAGS " --bind -s WASM=1 -s ASYNCIFY -s ALLOW_MEMORY_GROWTH=1 -sFULL_ES3")
     string(REPLACE "-rdynamic" "" CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "${CMAKE_SHARED_LIBRARY_LINK_C_FLAGS}")
 
     message(STATUS "Configuring for Emscripten")

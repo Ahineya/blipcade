@@ -112,8 +112,6 @@ namespace blipcade::runtime {
     Runtime::Runtime(): cartridge(nullptr), canvas(nullptr), key_flags(std::make_shared<Keystate>()), font(nullptr),
                         js_bindings(std::make_unique<JSBindings>(*this)) {
         canvas = std::make_shared<graphics::Canvas>(128, 128);
-        std::cout << "Runtime constructed at " << this << " with Canvas at " << canvas.get()
-                << " and pixels at " << canvas->getPixels().data() << std::endl;
         spritesheet = std::make_shared<graphics::Spritesheet>(0, 0);
 
         std::string fontHeader = "40 24 04 06";

@@ -20,12 +20,9 @@ namespace blipcade::graphics {
         sprites.clear();
     }
 
-    Spritesheet Spritesheet::fromData(const std::vector<uint8_t> &pixelBuffer, const std::vector<uint8_t> &spriteData,
-                                      const uint32_t width, const uint32_t height) {
+    Spritesheet Spritesheet::fromData(const std::vector<uint8_t>& pixelBuffer, const std::vector<uint8_t>& spriteData,
+                                      uint32_t width, uint32_t height) {
         auto spritesheet = Spritesheet(width, height);
-
-        std::cout << "Spritesheet fromData: " << spritesheet << std::endl;
-
         spritesheet.pixelBuffer = pixelBuffer;
 
         for (size_t i = 0; i < spriteData.size() / 5; i++) {
@@ -38,7 +35,45 @@ namespace blipcade::graphics {
             spritesheet.sprites.push_back(Sprite{x, y, sprWidth, sprHeight, flags});
         }
 
+        // Create the Texture
+        spritesheet.createTexture();
+
         return spritesheet;
+    }
+
+    // void Spritesheet::createTexture(const std::array<Color, 256>& colorLookup, uint8_t transparentColorIndex) {
+    //     colorData.resize(width * height);
+    //     for (size_t i = 0; i < pixelBuffer.size(); i++) {
+    //         uint8_t index = pixelBuffer[i];
+    //         Color color = colorLookup[index];
+    //         if (index == transparentColorIndex) {
+    //             color.a = 0; // Set transparency
+    //         }
+    //         colorData[i] = color;
+    //     }
+    //
+    //     Image image;
+    //     image.data = colorData.data();
+    //     image.width = width;
+    //     image.height = height;
+    //     image.mipmaps = 1;
+    //     image.format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
+    //
+    //     texture = LoadTextureFromImage(image);
+    // }
+
+    void Spritesheet::createTexture() {
+        Image image;
+        image.data = pixelBuffer.data();
+        image.width = static_cast<int>(width);
+        image.height = static_cast<int>(height);
+        image.mipmaps = 1;
+        image.format = PIXELFORMAT_UNCOMPRESSED_GRAYSCALE; // Single-channel format
+
+        texture = LoadTextureFromImage(image);
+
+        // Set texture filtering to point sampling to avoid color bleeding
+        SetTextureFilter(texture, TEXTURE_FILTER_POINT);
     }
 
     void Spritesheet::addSprite(uint32_t x, uint32_t y, uint32_t width, uint32_t height, uint8_t flags) {

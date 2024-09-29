@@ -62,6 +62,14 @@ namespace blipcade::graphics {
         return colors; // Return a copy
     }
 
+    std::array<Color, 256> Palette685::getColorLookup() const {
+        std::array<Color, 256> colorLookup;
+        for (size_t i = 0; i < colors.size(); ++i) {
+            colorLookup[i] = colors[i];
+        }
+        return colorLookup;
+    }
+
     Color Palette685::get_color(uint8_t index) const {
         if (index >= colors.size()) {
             // Handle out-of-bounds access

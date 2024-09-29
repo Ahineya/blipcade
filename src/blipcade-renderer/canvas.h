@@ -92,7 +92,7 @@ namespace blipcade::graphics {
         uint32_t width = 0;
         uint32_t height = 0;
 
-        std::array<Color, 256> colorLookup{};
+        std::array<Color, 256> colorLookup;
         std::vector<uint8_t> pixels;
         std::array<uint8_t, 256> virtualPalette{};
         std::unique_ptr<Palette685> palette;
@@ -103,6 +103,20 @@ namespace blipcade::graphics {
         uint8_t transparentColor = 0;
 
         Rect clipRect = {0, 0, 0, 0};
+
+        Shader paletteShader;
+        int paletteLoc;
+
+        Texture2D paletteTexture;
+
+
+        void updateShaderPalette();
+
+        void createPaletteTexture();
+
+        void updatePaletteTexture();
+
+        void setPalette(const std::array<uint8_t, 256> &virtualPalette, const std::array<Color, 256> &colorLookup);
     };
 }
 

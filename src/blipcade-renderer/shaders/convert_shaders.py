@@ -16,7 +16,7 @@ def glsl_to_cpp_header(input_file, output_file):
         cpp_file.write("#if defined(EMSCRIPTEN)\n")
         cpp_file.write(f"const char* {shader_name}Source = R\"glsl(")
         cpp_file.write("#version 300 es\n")
-        if shader_name == "shader_fragment":
+        if ext == ".frag":
             cpp_file.write("precision mediump float;\n")
         cpp_file.write(glsl_code)
         cpp_file.write(")glsl\";\n")

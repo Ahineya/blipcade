@@ -1,12 +1,19 @@
 #include "renderer.h"
 #include "palette685.h"
 #include <iostream>
+#include <json_cart_data.hpp>
 
 #include <raylib.h>
 #include <thread>
 
 #include "canvas.h"
+#include "cartridge.h"
 #include "runtime.h"
+
+#ifdef EMSCRIPTEN
+#include <emscripten.h>
+#include <emscripten/html5.h>
+#endif
 
 void errorCallback(int error, const char *description) {
     std::cerr << "GLFW Error " << error << ": " << description << std::endl;
@@ -20,10 +27,6 @@ namespace blipcade::graphics {
           windowWidth(width * scale), windowHeight(height * scale),
           palette(nullptr), canvas(nullptr), runtime(nullptr) {
         palette = new Palette685();
-    }
-
-    void Renderer::updateWindowSize() {
-        // glfwGetFramebufferSize(window, reinterpret_cast<int *>(&windowWidth), reinterpret_cast<int *>(&windowHeight));
     }
 
     void Renderer::setCanvas(const Canvas &canvas) {
@@ -85,11 +88,21 @@ namespace blipcade::graphics {
     void Renderer::createWindow() {
         instance = this;
 
-        // SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+
+
+
+#ifndef EMSCRIPTEN
+        SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+#endif
         InitWindow(windowWidth, windowHeight, "Blipcade");
         SetTargetFPS(30);
 
-        RenderTexture2D renderTexture = LoadRenderTexture(canvasWidth, canvasHeight);
+        const auto runtime = new runtime::Runtime();
+        const auto cart = std::make_shared<Cartridge>(Cartridge::fromJson(json_cart_data));
+        runtime->setCartridge(cart);
+        setRuntime(*runtime);
+
+        const RenderTexture2D renderTexture = LoadRenderTexture(canvasWidth, canvasHeight);
 
         BeginTextureMode(renderTexture);
         runtime->init();
@@ -97,7 +110,6 @@ namespace blipcade::graphics {
 
         while (!WindowShouldClose()) // Detect window close button or ESC key
         {
-
             if (IsKeyDown(KEY_LEFT)) {
                 runtime->keyDown(runtime::Key::Left);
             } else {
@@ -150,8 +162,6 @@ namespace blipcade::graphics {
 
             EndTextureMode();
 
-            // --- Calculate Scaling and Positioning ---
-            // Calculate aspect ratios
             float canvasAspectRatio = static_cast<float>(canvasWidth) / static_cast<float>(canvasHeight);
             float windowAspectRatio = static_cast<float>(windowWidth) / static_cast<float>(windowHeight);
 
@@ -166,7 +176,6 @@ namespace blipcade::graphics {
                 offsetX = (windowWidth - scaledWidth) / 2.0f;
                 offsetY = 0.0f;
             } else {
-                // Window is taller relative to canvas aspect ratio
                 scaleFactor = static_cast<float>(windowWidth) / static_cast<float>(canvasWidth);
                 scaledWidth = windowWidth;
                 scaledHeight = canvasHeight * scaleFactor;
@@ -174,12 +183,11 @@ namespace blipcade::graphics {
                 offsetY = (windowHeight - scaledHeight) / 2.0f;
             }
 
-            // Define the destination rectangle with scaling and centering
             Rectangle destRect = {
-                offsetX, // X position
-                offsetY, // Y position
-                scaledWidth, // Width after scaling
-                scaledHeight // Height after scaling
+                offsetX,
+                offsetY,
+                scaledWidth,
+                scaledHeight
             };
 
             Rectangle srcRect = {
@@ -196,14 +204,13 @@ namespace blipcade::graphics {
             BeginDrawing();
 
             DrawTexturePro(
-                renderTexture.texture, // Texture to draw
-                srcRect, // Source rectangle (what part of the texture to draw)
-                destRect, // Destination rectangle (where and how to draw it on screen)
-                origin, // Origin point for rotation and scaling
-                rotation, // Rotation angle
-                {255, 255, 255, 255} // Tint color
+                renderTexture.texture,
+                srcRect,
+                destRect,
+                origin,
+                rotation,
+                {255, 255, 255, 255}
             );
-            DrawPixel(30, 30, RED);
 
             EndDrawing();
         }

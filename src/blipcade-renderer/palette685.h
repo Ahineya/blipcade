@@ -29,6 +29,7 @@ namespace blipcade::graphics {
         [[nodiscard]] static uint8_t get_size() ;
 
         [[nodiscard]] std::vector<Color> get_colors() const;
+        [[nodiscard]] std::array<Color, 256> getColorLookup() const;
 
         [[nodiscard]] Color get_color(uint8_t index) const;
 

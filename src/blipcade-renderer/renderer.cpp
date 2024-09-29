@@ -102,7 +102,9 @@ namespace blipcade::graphics {
         runtime->init();
         EndTextureMode();
 
-        HideCursor();
+#ifndef EMSCRIPTEN
+        HideCursor(); // For some unholy reason this cancels getting mouse position in emscripten
+#endif
 
         while (!WindowShouldClose()) // Detect window close button or ESC key
         {
@@ -195,17 +197,13 @@ namespace blipcade::graphics {
 
             Vector2 origin = {0.0f, 0.0f};
 
-            float rotation = 0.0f;
+            const float rotation = 0.0f;
 
             // Mouse input
-            auto mouse_pos = GetMousePosition();
-            // runtime->mouseMove(mouse_pos.x, mouse_pos.y);
-
-            // Need to convert to canvas coordinates
-            // runtime->mouseMove(mouse_pos.x / scale, mouse_pos.y / scale);
+            const auto mouse_pos = GetMousePosition();
 
             // Need to convert to canvas coordinates and account for position of canvas
-            runtime->mouseMove((mouse_pos.x - offsetX) / scaleFactor, (mouse_pos.y - offsetY) / scaleFactor);
+            runtime->mouseMove((mouse_pos.x - offsetX) / scaleFactor, (mouse_pos.y - offsetY) / scaleFactor); // TODO: Check if this is correct
 
             if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
                 runtime->mouseDown(runtime::MouseButton::Left);

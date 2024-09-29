@@ -2,24 +2,8 @@
 #include "palette685.h"
 #include <iostream>
 
-#ifdef __APPLE__
-#define GL_SILENCE_DEPRECATION
-#include <OpenGL/gl3.h>
-#endif
-
-#include <GLFW/glfw3.h>
-
-#ifdef EMSCRIPTEN
-#include <emscripten.h>
-#include <emscripten/html5.h>
-#include <GLES3/gl3.h>
-#endif
-
 #include <raylib.h>
 #include <thread>
-
-#include "shader_vert.h"
-#include "shader_frag.h"
 
 #include "canvas.h"
 #include "runtime.h"
@@ -48,59 +32,6 @@ namespace blipcade::graphics {
 
     void Renderer::setRuntime(runtime::Runtime &runtime) {
         this->runtime = &runtime;
-    }
-
-    static const double fpsLimit = 1.0 / 30.0;
-    static double lastUpdateTime = 0;
-    static double lastFrameTime = 0;
-
-    static double lastFPSTime = 0;
-    static int frameCount = 0;
-
-    void Renderer::mainLoop() {
-        static bool first_frame = true;
-        if (first_frame) {
-            first_frame = false;
-        }
-
-        const double now = glfwGetTime();
-
-        // In case we're running in the browser, we don't want to limit the frame rate here — it is handled by emscripten_set_main_loop
-        // Still need to check everything, I feel it may not work as intended
-#ifndef EMSCRIPTEN
-        if (now - lastFrameTime >= fpsLimit) {
-#endif
-
-            frameCount++;
-            if (now - lastFPSTime >= 1.0) {
-                // Every second
-                // std::cout << "FPS: " << frameCount / (now - lastFPSTime) << std::endl;
-                frameCount = 0;
-                lastFPSTime = now;
-            }
-
-
-            runtime->update();
-            runtime->draw();
-            updateWindowSize();
-
-            glClear(GL_COLOR_BUFFER_BIT);
-
-
-            lastFrameTime = now;
-            lastUpdateTime = now;
-#ifndef EMSCRIPTEN
-        } else {
-            double sleepTime = fpsLimit - (now - lastFrameTime);
-            glfwWaitEventsTimeout(sleepTime / 2.0); // Dividing by two here to get as close to 30 fps as possible
-        }
-#endif
-    }
-
-    void Renderer::staticMainLoop() {
-        if (instance) {
-            instance->mainLoop();
-        }
     }
 
     void Renderer::staticKeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
@@ -154,14 +85,9 @@ namespace blipcade::graphics {
     void Renderer::createWindow() {
         instance = this;
 
-        SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+        // SetConfigFlags(FLAG_WINDOW_RESIZABLE);
         InitWindow(windowWidth, windowHeight, "Blipcade");
         SetTargetFPS(30);
-
-
-#ifdef EMSCRIPTEN
-        emscripten_set_element_css_size("canvas", windowWidth, windowHeight);
-#endif
 
         RenderTexture2D renderTexture = LoadRenderTexture(canvasWidth, canvasHeight);
 
@@ -256,29 +182,19 @@ namespace blipcade::graphics {
                 scaledHeight // Height after scaling
             };
 
-            // Define the source rectangle, flipping vertically as needed
-            // Raylib's render textures are flipped vertically by default
             Rectangle srcRect = {
                 0.0f,
-                (float) renderTexture.texture.height, // Start from bottom
-                (float) renderTexture.texture.width,
-                (float) -renderTexture.texture.height // Negative height to flip
+                0.0f,
+                static_cast<float>(renderTexture.texture.width),
+                static_cast<float>(-renderTexture.texture.height)
             };
 
-            // Define the origin (top-left corner)
             Vector2 origin = {0.0f, 0.0f};
 
-            // Rotation angle (0 for no rotation)
             float rotation = 0.0f;
 
-            // Color tint (WHITE to keep original colors)
-            auto tint = {255, 255, 255, 255};
-
-            // --- Draw to Screen ---
             BeginDrawing();
-            // ClearBackground(BLACK); // Optional: clear the screen with a background color
 
-            // Draw the render texture to the screen with scaling and centering
             DrawTexturePro(
                 renderTexture.texture, // Texture to draw
                 srcRect, // Source rectangle (what part of the texture to draw)
@@ -287,6 +203,7 @@ namespace blipcade::graphics {
                 rotation, // Rotation angle
                 {255, 255, 255, 255} // Tint color
             );
+            DrawPixel(30, 30, RED);
 
             EndDrawing();
         }

@@ -91,6 +91,10 @@ namespace blipcade::graphics {
         SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 #endif
         InitWindow(windowWidth, windowHeight, "Blipcade");
+        InitAudioDevice();
+
+        auto sound = LoadSound("resources/blipcade.wav");
+
         SetTargetFPS(30);
 
         const auto runtime = new runtime::Runtime();
@@ -145,6 +149,7 @@ namespace blipcade::graphics {
             }
 
             if (IsKeyDown(KEY_X)) {
+                PlaySound(sound);
                 runtime->keyDown(runtime::Key::B);
             } else {
                 runtime->keyUp(runtime::Key::B);

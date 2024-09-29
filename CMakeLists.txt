@@ -189,7 +189,8 @@ if (DEFINED EMSCRIPTEN)
 
     set_target_properties(blipcade_cmake
             PROPERTIES SUFFIX ".html"
-            LINK_FLAGS " --bind -s WASM=1 -s ASYNCIFY -s ALLOW_MEMORY_GROWTH=1 -sFULL_ES3")
+            LINK_FLAGS " --bind -s WASM=1 -s ASYNCIFY -s ALLOW_MEMORY_GROWTH=1 -sFULL_ES3 --preload-file ${CMAKE_SOURCE_DIR}/src/resources@/resources"
+            )
     string(REPLACE "-rdynamic" "" CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "${CMAKE_SHARED_LIBRARY_LINK_C_FLAGS}")
 
     message(STATUS "Configuring for Emscripten")
@@ -220,6 +221,9 @@ add_custom_command(
         ${CMAKE_SOURCE_DIR}/src/tools/extract_d_ts.py
         COMMENT "Extracting TypeScript definitions"
 )
+
+# Copy "resources" folder to build directory
+file(COPY ${CMAKE_SOURCE_DIR}/src/resources DESTINATION ${CMAKE_BINARY_DIR})
 
 # Add a custom target for documentation generation
 add_custom_target(generate_js_docs DEPENDS ${CMAKE_BINARY_DIR}/js_api_docs.md)

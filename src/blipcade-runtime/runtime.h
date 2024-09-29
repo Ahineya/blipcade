@@ -10,6 +10,10 @@
 
 #include "keystate.h"
 
+namespace blipcade {
+    class Cartridge;
+}
+
 namespace quickjs {
     class context;
 }
@@ -78,17 +82,19 @@ namespace blipcade::runtime {
         void update() const;
         void draw() const;
 
-        std::shared_ptr<quickjs::context> getContext() const;
+        [[nodiscard]] std::shared_ptr<quickjs::context> getContext() const;
 
-        // Let's make it possible to get a pointer to the canvas
         [[nodiscard]] std::shared_ptr<graphics::Canvas> getCanvas() const;
 
-        std::shared_ptr<graphics::Font> getFont() const;
+        [[nodiscard]] std::shared_ptr<graphics::Font> getFont() const;
 
+        void setCartridge(std::shared_ptr<Cartridge>);
 
     private:
         std::unique_ptr<quickjs::runtime> js_runtime;
         std::shared_ptr<quickjs::context> context;
+
+        std::shared_ptr<Cartridge> cartridge;
 
         std::shared_ptr<graphics::Canvas> canvas;
         std::shared_ptr<graphics::Spritesheet> spritesheet;

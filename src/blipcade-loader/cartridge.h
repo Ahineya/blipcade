@@ -10,11 +10,17 @@ namespace blipcade {
 
 class Cartridge {
 public:
-    Cartridge();
+    Cartridge(std::string code);
+
     ~Cartridge();
 
     static Cartridge fromJson(const std::string &cartJson);
+
+    [[nodiscard]] std::string getCode() const {
+        return code;
+    }
 private:
+    std::string code;
 };
 
 } // blipcade

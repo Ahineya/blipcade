@@ -215,11 +215,6 @@ namespace blipcade::graphics {
         dx = std::abs(dx);
         dy = std::abs(dy);
 
-        // Check that color is within the palette
-        if (color >= 256) {
-            std::cerr << "Color out of bounds: " << color << std::endl;
-            return;
-        }
         const auto colorIndex = virtualPalette[color];
 
         if (dx > dy) {

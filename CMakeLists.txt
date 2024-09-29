@@ -11,11 +11,8 @@ include_directories(${CMAKE_SOURCE_DIR}/src/blipcade-renderer)
 include_directories(${CMAKE_SOURCE_DIR}/src/blipcade-api)
 include_directories(${CMAKE_SOURCE_DIR}/src/blipcade-runtime)
 include_directories(${CMAKE_SOURCE_DIR}/src/blipcade-loader)
-include_directories(${CMAKE_SOURCE_DIR}/external/glfw-3.2.1/include)
 include_directories(${CMAKE_SOURCE_DIR}/external/quickjs-patched)
-#include_directories(${CMAKE_SOURCE_DIR}/external/json)
 
-# Add nlohmann/json as a dependency using FetchContent
 FetchContent_Declare(
         json
         GIT_REPOSITORY https://github.com/nlohmann/json.git
@@ -25,7 +22,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(json)
 
 
-if (NOT DEFINED EMSCRIPTEN)
+if (NOT DEFINED EMSCRIPTEN) # For Emscripten, we don't need to fetch GLFW, it's already included.
 FetchContent_Declare(
         glfw
         GIT_REPOSITORY https://github.com/glfw/glfw.git
@@ -33,7 +30,6 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(glfw)
 endif()
-
 
 # Add your source files
 set(SOURCES
@@ -53,17 +49,28 @@ set(SOURCES
 )
 
 # Path to the JSON file
-set(JSON_FILE "${CMAKE_CURRENT_SOURCE_DIR}/src/cart.json")
+set(JSON_FILE "${CMAKE_CURRENT_SOURCE_DIR}/src/carts/testcart-build.json")
 
-# Read the JSON file content
-file(READ "${JSON_FILE}" JSON_CONTENT)
+# Path to the header template
+set(HEADER_TEMPLATE "${CMAKE_CURRENT_SOURCE_DIR}/src/tools/json_cart.hpp.in")
 
-# Configure the header file from the template
-configure_file(
-        "${CMAKE_CURRENT_SOURCE_DIR}/src/tools/json_cart.hpp.in"
-        "${CMAKE_CURRENT_BINARY_DIR}/json_cart.hpp"
-        @ONLY
+# Path to the generated header
+set(GENERATED_HEADER "${CMAKE_CURRENT_BINARY_DIR}/json_cart_data.hpp")
+
+# Path to the CMake script
+set(GENERATE_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/generate_header.cmake")
+
+# Add a custom command to generate data.hpp from data.json
+add_custom_command(
+        OUTPUT "${GENERATED_HEADER}"
+        COMMAND ${CMAKE_COMMAND} -DJSON_FILE="${JSON_FILE}" -DHEADER_FILE="${GENERATED_HEADER}" -P "${GENERATE_SCRIPT}"
+        DEPENDS "${JSON_FILE}" "${HEADER_TEMPLATE}" "${GENERATE_SCRIPT}"
+        COMMENT "Generating json_cart_data.hpp from src/cart.json"
 )
+
+# Add a custom target that depends on the generated header
+add_custom_target(generate_data_header DEPENDS "${GENERATED_HEADER}")
+add_dependencies(generate_data_header build_carts)
 
 # Add QuickJS source files
 set(QUICKJS_SOURCES
@@ -106,6 +113,13 @@ endif ()
 
 # Create the main executable target
 add_executable(blipcade_cmake ${SOURCES})
+
+# custom target to build carts
+add_custom_target(build_carts ALL
+        COMMAND ${CMAKE_COMMAND} -E echo "Building carts..."
+        COMMAND CMAKE_SOURCE_DIR=${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/src/tools/build-carts.sh
+        COMMENT "Building carts"
+)
 
 # Add custom commands to generate shader headers
 add_custom_command(
@@ -162,8 +176,21 @@ add_custom_command(
         COMMENT "Extracting JavaScript API documentation"
 )
 
+add_custom_command(
+        OUTPUT ${CMAKE_BINARY_DIR}/blipcade.d.ts
+        COMMAND ${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/src/tools/extract_d_ts.py
+        ${CMAKE_SOURCE_DIR}/src/blipcade-runtime/JsBindings.cpp
+        -o ${CMAKE_SOURCE_DIR}/blipcade.d.ts
+        DEPENDS ${CMAKE_SOURCE_DIR}/src/blipcade-runtime/JsBindings.cpp
+        ${CMAKE_SOURCE_DIR}/src/tools/extract_d_ts.py
+        COMMENT "Extracting TypeScript definitions"
+)
+
 # Add a custom target for documentation generation
 add_custom_target(generate_js_docs DEPENDS ${CMAKE_BINARY_DIR}/js_api_docs.md)
 
+# Add a custom target for TypeScript definitions
+add_custom_target(generate_d_ts DEPENDS ${CMAKE_BINARY_DIR}/blipcade.d.ts)
+
 # Make the main target depend on the documentation
-add_dependencies(blipcade_cmake generate_js_docs)
+add_dependencies(blipcade_cmake generate_js_docs generate_d_ts generate_data_header)

@@ -1,13 +1,9 @@
-#include <codecvt>
-#include <fstream>
-#include <iostream>
-
 #include <renderer.h>
 #include <quickjs.hpp>
 #include <runtime.h>
 
 #include "cartridge.h"
-#include "json_cart.hpp"
+#include "json_cart_data.hpp"
 
 #if __EMSCRIPTEN__
     #include <emscripten/emscripten.h>
@@ -25,12 +21,12 @@ static constexpr uint32_t HEIGHT = 128;
 static constexpr uint32_t SCALE = 3;
 
 int main() {
-    blipcade::Cartridge cart = blipcade::Cartridge::fromJson(json_cart_data);
-
-    auto g_renderer = new blipcade::graphics::Renderer(WIDTH, HEIGHT, SCALE);
-    auto runtime = new blipcade::runtime::Runtime();
-    g_renderer->setRuntime(*runtime);
-    g_renderer->createWindow();
+    const auto cart = std::make_shared<blipcade::Cartridge>(blipcade::Cartridge::fromJson(json_cart_data));
+    const auto renderer = new blipcade::graphics::Renderer(WIDTH, HEIGHT, SCALE);
+    const auto runtime = new blipcade::runtime::Runtime();
+    runtime->setCartridge(cart);
+    renderer->setRuntime(*runtime);
+    renderer->createWindow();
 
     return 0;
 }

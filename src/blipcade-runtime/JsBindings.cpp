@@ -17,10 +17,10 @@ namespace blipcade::runtime {
     void JSBindings::registerAll(quickjs::value &global) {
         bindLogFunction(global);
         bindTextFunction(global);
-        bindSetTransparentColor(global);
 
         // Graphics
         bindGraphicsGlobalObject(global);
+        bindSetTransparentColor(global);
         bindFillScreen(global);
         bindPutPixel(global);
         bindDrawLine(global);
@@ -45,26 +45,6 @@ namespace blipcade::runtime {
     void JSBindings::bindLogFunction(quickjs::value &global) {
         global.set_property("log", [this](const std::string &val) {
             std::cout << "log: " << val << std::endl;
-        });
-    }
-
-    /**
-     *
-     * @function setTransparentColor
-     * @param {number} [color=0xff] - The color to use as transparent.
-     * @description Sets the color to use as transparent when drawing.
-     *
-     * @example setTransparentColor(0x00); // Black color will be transparent
-     */
-    void JSBindings::bindSetTransparentColor(quickjs::value &global) {
-        global.set_property("setTransparentColor", [this](const quickjs::args &a) {
-            auto argsCount = a.size();
-
-            uint8_t color = 0xff;
-
-            if (argsCount >= 1) color = a[0].as_int32();
-
-            m_runtime.getCanvas()->setTransparentColor(color);
         });
     }
 
@@ -109,6 +89,28 @@ namespace blipcade::runtime {
      */
     void JSBindings::bindGraphicsGlobalObject(quickjs::value &global) {
         createNamespace(global, "Graphics");
+    }
+
+    /**
+     *
+     * @function setTransparentColor
+     * @param {number} [color=0xff] - The color to use as transparent.
+     * @description Sets the color to use as transparent when drawing.
+     *
+     * @example Graphics.setTransparentColor(0x00); // Black color will be transparent
+     */
+    void JSBindings::bindSetTransparentColor(quickjs::value &global) {
+        auto graphics = global.get_property("Graphics");
+
+        graphics.set_property("setTransparentColor", [this](const quickjs::args &a) {
+            auto argsCount = a.size();
+
+            uint8_t color = 0xff;
+
+            if (argsCount >= 1) color = a[0].as_int32();
+
+            m_runtime.getCanvas()->setTransparentColor(color);
+        });
     }
 
     /**
@@ -268,7 +270,7 @@ namespace blipcade::runtime {
      *
      * @description Checks if a key is currently pressed. A key codes are defined in the `Key` enum.
      *
-     * @return boolean - `true` if the key is pressed, `false` otherwise.
+     * @return {boolean} - `true` if the key is pressed, `false` otherwise.
      *
      * @example Input.isKeyPressed(Key.ArrowUp); // Returns true if the up arrow key is pressed.
      */

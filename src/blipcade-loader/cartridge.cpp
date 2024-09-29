@@ -8,7 +8,7 @@
 #include <nlohmann/json.hpp>
 
 namespace blipcade {
-    Cartridge::Cartridge() = default;
+    Cartridge::Cartridge(std::string code): code(std::move(code)) {}
     Cartridge::~Cartridge() = default;
 
     Cartridge Cartridge::fromJson(const std::string &cartJson) {
@@ -16,6 +16,6 @@ namespace blipcade {
 
         std::cout << json.dump() << std::endl;
 
-        return {};
+        return {json["code"].get<std::string>()};
     }
 } // blipcade

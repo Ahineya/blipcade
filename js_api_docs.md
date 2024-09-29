@@ -4,9 +4,9 @@
 
 - [Namespace: global](#namespace-global)
    - [Function: log](#function-log)
-   - [Function: setTransparentColor](#function-settransparentcolor)
    - [Function: text](#function-text)
 - [Namespace: Graphics](#namespace-graphics)
+   - [Function: setTransparentColor](#function-settransparentcolor)
    - [Function: fillScreen](#function-fillscreen)
    - [Function: putPixel](#function-putpixel)
    - [Function: drawLine](#function-drawline)
@@ -31,22 +31,6 @@ Namespace: `global`
 | Name | Type | Default | Description |
 |------|------|---------|-------------|
 | `message` | `string` | `N/A` | The message to log. |
-
----
-#### Function: `setTransparentColor`
-**Description:** Sets the color to use as transparent when drawing. 
-
-**Parameters (Optional):**
-
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
-| `color` | `number` | `0xff` | The color to use as transparent. |
-
-**Example:**
-
-```javascript
-setTransparentColor(0x00); // Black color will be transparent
-```
 
 ---
 #### Function: `text`
@@ -81,6 +65,22 @@ Namespace: `Graphics`
 
 
 
+#### Function: `setTransparentColor`
+**Description:** Sets the color to use as transparent when drawing. 
+
+**Parameters (Optional):**
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| `color` | `number` | `0xff` | The color to use as transparent. |
+
+**Example:**
+
+```javascript
+Graphics.setTransparentColor(0x00); // Black color will be transparent
+```
+
+---
 #### Function: `fillScreen`
 **Description:** Fills the screen with a color.
 
@@ -188,7 +188,7 @@ Namespace: `Input`
 |------|------|-------------|
 | `key` | `number` | The key code to check. |
 
-**Returns:** boolean - `true` if the key is pressed, `false` otherwise.
+**Returns:** {boolean} - `true` if the key is pressed, `false` otherwise.
 
 **Example:**
 

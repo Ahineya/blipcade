@@ -7,6 +7,7 @@
 #include <canvas.h>
 #include <codecvt>
 #include <iostream>
+#include <raylib.h>
 
 #include "runtime.h"
 

@@ -9,6 +9,7 @@
 #include <vector>
 #include <cstdint>
 #include <any>
+#include <raylib.h>
 
 
 namespace blipcade::graphics {

@@ -2,7 +2,6 @@
 // Created by Pavlo Yevsehnieiev
 //
 
-#include "palette.h"
 #include "palette685.h"
 
 namespace blipcade::graphics {
@@ -68,7 +67,7 @@ namespace blipcade::graphics {
             // Handle out-of-bounds access
             return {};
         }
-        return colors[index].clone();
+        return colors[index];
     }
 
     Color Palette685::get_virtual_color(uint8_t index) const {
@@ -79,7 +78,7 @@ namespace blipcade::graphics {
         if (virtual_index >= colors.size()) {
             return {};
         }
-        return colors[virtual_index].clone();
+        return colors[virtual_index];
     }
 
     uint8_t Palette685::get_virtual_color_index(uint8_t index) const {

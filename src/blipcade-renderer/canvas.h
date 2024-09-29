@@ -37,7 +37,7 @@ namespace blipcade::graphics {
 
         void drawVerticalLine(int32_t x, int32_t y1, int32_t y2, uint8_t color);
 
-        void drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint8_t color);
+        void drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint8_t color) const;
 
         void drawCirclePoints(Canvas &canvas, int32_t cx, int32_t cy, int32_t x, int32_t y, uint8_t color);
 
@@ -92,7 +92,7 @@ namespace blipcade::graphics {
         uint32_t width = 0;
         uint32_t height = 0;
 
-        std::array<uint32_t, 256> colorLookup{};
+        std::array<Color, 256> colorLookup{};
         std::vector<uint8_t> pixels;
         std::array<uint8_t, 256> virtualPalette{};
         std::unique_ptr<Palette685> palette;

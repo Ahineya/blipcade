@@ -5,7 +5,7 @@ const gridcolor = 12;
 export class Background {
     constructor() {
         this.t = 0;
-        this.list = ["loopy", "starfield", "grid", "balls", "flurry", "ballspiral", "flight", "circles", "rainbow", "spiral", "matrix"];
+        this.list = [ "starfield","loopy", "grid", "balls", "flurry", "ballspiral", "flight", "circles", "rainbow", "spiral", "matrix"];
         this.rand = [];
         this.rand2 = [];
         this.current = null;
@@ -77,13 +77,7 @@ export class Background {
                     }
                 },
                 draw: () => {
-                    for (let i = 0; i < 500; i++) {
-                        let p = 9 - i / 50;
-                        let j = (p + Math.sin(this.t) - this.t * 9) % 11 + 0.1;
-                        let k = this.rand[i] - 5 + Math.cos(this.t);
-                        if (Math.floor(p) === 7) p = 14;
-                        Graphics.drawFilledCircle(k / j * 50 + 64, 80 / j - 20, 9 / j, PICO8_COLORS[Math.floor(p)] || 0xfe);
-                    }
+                    Graphics.drawFilledCircle(64, 64, 64, PICO8_COLORS[7]);
                     this.t += 0.01;
                 }
             },

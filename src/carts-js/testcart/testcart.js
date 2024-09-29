@@ -72,6 +72,8 @@ function draw() {
 
     state.background.draw();
 
+    // Graphics.drawLine(0, 0, 127, 127, state.color);
+
     text(state.background.currentName || "", 1, 1, 0xfe);
 
     drawFPSCounter();

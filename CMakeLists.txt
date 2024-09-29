@@ -21,15 +21,32 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(json)
 
+set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE) # don't build the supplied examples
+set(BUILD_GAMES    OFF CACHE BOOL "" FORCE) # don't build the supplied example games
 
-if (NOT DEFINED EMSCRIPTEN) # For Emscripten, we don't need to fetch GLFW, it's already included.
+if (DEFINED EMSCRIPTEN)
+set(PLATFORM "Web" CACHE STRING "" FORCE) # build for web
+endif ()
+
+
 FetchContent_Declare(
-        glfw
-        GIT_REPOSITORY https://github.com/glfw/glfw.git
-        GIT_TAG 3.4
+        raylib
+        GIT_REPOSITORY "https://github.com/raysan5/raylib.git"
+        GIT_TAG "master"
+        GIT_PROGRESS TRUE
 )
-FetchContent_MakeAvailable(glfw)
-endif()
+
+FetchContent_MakeAvailable(raylib)
+
+
+#if (NOT DEFINED EMSCRIPTEN) # For Emscripten, we don't need to fetch GLFW, it's already included.
+#FetchContent_Declare(
+#        glfw
+#        GIT_REPOSITORY https://github.com/glfw/glfw.git
+#        GIT_TAG 3.4
+#)
+#FetchContent_MakeAvailable(glfw)
+#endif()
 
 # Add your source files
 set(SOURCES
@@ -81,12 +98,12 @@ set(QUICKJS_SOURCES
         external/quickjs-patched/cutils.c
 )
 
-if ("${CMAKE_SYSTEM}" MATCHES "Linux" OR "${CMAKE_SYSTEM}" MATCHES "Darwin-*")
-    find_package(OpenGL REQUIRED)
-    set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-    set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-    set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-endif ()
+#if ("${CMAKE_SYSTEM}" MATCHES "Linux" OR "${CMAKE_SYSTEM}" MATCHES "Darwin-*")
+#    find_package(OpenGL REQUIRED)
+#    set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+#    set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+#    set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+#endif ()
 
 # Compile QuickJS as a separate target
 add_library(quickjs STATIC ${QUICKJS_SOURCES})
@@ -150,13 +167,19 @@ target_sources(blipcade_cmake PRIVATE
 target_include_directories(blipcade_cmake PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 # Link libraries
-target_link_libraries(blipcade_cmake quickjs glfw ${OPENGL_LIBRARIES} nlohmann_json::nlohmann_json)
+target_link_libraries(blipcade_cmake quickjs raylib ${OPENGL_LIBRARIES} nlohmann_json::nlohmann_json)
 
 # Detect if building with Emscripten
 if (DEFINED EMSCRIPTEN)
+    set(USE_WAYLAND_DISPLAY OFF CACHE BOOL "" FORCE)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Os")
+    list(REMOVE_ITEM example_sources ${CMAKE_CURRENT_SOURCE_DIR}/others/rlgl_standalone.c)
+
     set_target_properties(blipcade_cmake
             PROPERTIES SUFFIX ".html"
-            LINK_FLAGS " --bind -s USE_GLFW=3 -s WASM=1 -g4 -s ALLOW_MEMORY_GROWTH=1 -s FULL_ES3=1 -s USE_WEBGL2=1")
+            LINK_FLAGS " --bind -s WASM=1 -s ASYNCIFY -s ALLOW_MEMORY_GROWTH=1")
+    string(REPLACE "-rdynamic" "" CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "${CMAKE_SHARED_LIBRARY_LINK_C_FLAGS}")
+
     message(STATUS "Configuring for Emscripten")
 else ()
     message(STATUS "Configuring for Desktop")

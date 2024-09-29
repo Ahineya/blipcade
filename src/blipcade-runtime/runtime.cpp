@@ -7,6 +7,7 @@
 #include <canvas.h>
 #include <converters.h>
 #include <iostream>
+#include <json_cart_data.hpp>
 #include <nlohmann/json.hpp>
 #include <quickjs.hpp>
 #include <utility>
@@ -15,104 +16,11 @@
 #include "JsBindings.h"
 #include "keystate.h"
 
-// Header for reference:
-
-/*
-// Created by Pavlo Yevsehnieiev
-//
-
-#define RUNTIME_H
-#include <memory>
-#include <optional>
-#include <string>
-
-
-namespace blipcade::runtime {
-
- * So Runtime should be a singleton class that will be responsible for the main loop of the engine.
- *
- * It should know about:
- * - canvas
- * - quickjs runtime
- * - input
- * - audio
-
-
-    // class JsRuntime;
-    // class Context;
-    class Canvas;
-    class Palette685;
-    class Spritesheet;
-    // class Maps;
-    // class KeyState;
-    // class MouseState;
-    class Font;
-    // class RuntimeControl;
-    // class AudioEngine;
-    // class RuntimeCartList;
-
-    class Runtime {
-    public:
-        Runtime(
-            std::shared_ptr<Canvas> canvas,
-            std::shared_ptr<Spritesheet> spritesheet,
-            // std::shared_ptr<Maps> maps,
-            // std::shared_ptr<KeyState> key_state,
-            // std::shared_ptr<MouseState> mouse_state,
-            // std::shared_ptr<RuntimeControl> runtime_state,
-            std::shared_ptr<Font> font
-            // #if !defined(__EMSCRIPTEN__)
-            // std::shared_ptr<AudioEngine> audio_engine,
-            // #else
-            // std::shared_ptr<AudioEngine> audio_engine,
-            // #endif
-            // RuntimeCartList runtime_cart_list
-        );
-
-        void init();
-        void update();
-        void draw();
-
-        // Let's make it possible to get a pointer to the canvas
-        [[nodiscard]] std::shared_ptr<Canvas> getCanvas() const;
-
-    private:
-        // std::unique_ptr<JsRuntime> js_runtime;
-        // std::shared_ptr<Context> context;
-        std::shared_ptr<Canvas> canvas;
-        std::shared_ptr<Spritesheet> spritesheet;
-        // std::shared_ptr<Maps> maps;
-        std::shared_ptr<std::string> code;
-        // std::shared_ptr<KeyState> key_flags;
-        // std::shared_ptr<MouseState> mouse_state;
-        std::shared_ptr<Font> font;
-        // std::shared_ptr<RuntimeControl> runtime_state;
-
-// #if !defined(__EMSCRIPTEN__)
-        // std::shared_ptr<AudioEngine> audio_engine;
-// #else
-        // std::shared_ptr<AudioEngine> audio_engine;
-// #endif
-
-        // RuntimeCartList runtime_cart_list;
-
-        std::string cart_to_load;
-
-        std::shared_ptr<std::optional<std::pair<uint32_t, uint32_t>>> resize_request;
-
-        void register_global_functions();
-    };
-
-} // runtime
-// blipcade
-
-*/
-
 namespace blipcade::runtime {
     Runtime::Runtime(): cartridge(nullptr), canvas(nullptr), key_flags(std::make_shared<Keystate>()), font(nullptr),
-                        js_bindings(std::make_unique<JSBindings>(*this)) {
-        canvas = std::make_shared<graphics::Canvas>(128, 128);
-        spritesheet = std::make_shared<graphics::Spritesheet>(0, 0);
+                        js_bindings(std::make_unique<JSBindings>(*this)), mouse_state(std::make_shared<Mousestate>()) {
+        canvas = std::make_shared<graphics::Canvas>(128, 128); // TODO: make this configurable
+        spritesheets = std::make_shared<std::vector<graphics::Spritesheet>>();
 
         std::string fontHeader = "40 24 04 06";
         std::string fontData =
@@ -140,7 +48,19 @@ namespace blipcade::runtime {
                                                        }, characters);
 
         font = std::make_shared<graphics::Font>(font_obj);
+
+        const auto cart = std::make_shared<Cartridge>(Cartridge::fromJson(json_cart_data));
+        cartridge = cart;
+
+        const auto spritesheets = cart->getSpritesheets();
+        for (const auto &spritesheet : spritesheets) {
+            this->spritesheets->push_back(spritesheet);
+        }
+
+        std::cout << "Loaded " << spritesheets.size() << " spritesheets" << std::endl;
     }
+
+
 
     std::shared_ptr<graphics::Canvas> Runtime::getCanvas() const {
         return canvas;
@@ -152,6 +72,10 @@ namespace blipcade::runtime {
 
     std::shared_ptr<quickjs::context> Runtime::getContext() const {
         return context;
+    }
+
+    std::shared_ptr<std::vector<graphics::Spritesheet>> Runtime::getSpritesheets() const {
+        return spritesheets;
     }
 
     void Runtime::setCartridge(std::shared_ptr<Cartridge> cart) {
@@ -241,6 +165,28 @@ namespace blipcade::runtime {
 
     bool Runtime::isKeyPressed(const Key key) const {
         return key_flags->isKeyPressed(key);
+    }
+
+    void Runtime::mouseDown(MouseButton button) {
+        mouse_state->setButton(button, true);
+    }
+
+    void Runtime::mouseUp(MouseButton button) {
+        mouse_state->setButton(button, false);
+    }
+
+    void Runtime::mouseMove(int x, int y) {
+        mouse_state->setPos(x, y);
+    }
+
+    // Vector2 getMousePos(int &x, int &y) const;
+    Vector2 Runtime::getMousePos() const {
+        return mouse_state->getPos();
+    }
+
+    // bool isButtonPressed(MouseButton button) const;
+    bool Runtime::isButtonPressed(MouseButton button) const {
+        return mouse_state->isButtonPressed(button);
     }
 
 } // runtime

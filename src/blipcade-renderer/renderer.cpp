@@ -8,6 +8,7 @@
 
 #include "canvas.h"
 #include "cartridge.h"
+#include "mousestate.h"
 #include "runtime.h"
 
 #ifdef EMSCRIPTEN
@@ -86,11 +87,6 @@ namespace blipcade::graphics {
     }
 
     void Renderer::createWindow() {
-        instance = this;
-
-
-
-
 #ifndef EMSCRIPTEN
         SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 #endif
@@ -98,8 +94,6 @@ namespace blipcade::graphics {
         SetTargetFPS(30);
 
         const auto runtime = new runtime::Runtime();
-        const auto cart = std::make_shared<Cartridge>(Cartridge::fromJson(json_cart_data));
-        runtime->setCartridge(cart);
         setRuntime(*runtime);
 
         const RenderTexture2D renderTexture = LoadRenderTexture(canvasWidth, canvasHeight);
@@ -107,6 +101,8 @@ namespace blipcade::graphics {
         BeginTextureMode(renderTexture);
         runtime->init();
         EndTextureMode();
+
+        HideCursor();
 
         while (!WindowShouldClose()) // Detect window close button or ESC key
         {
@@ -200,6 +196,28 @@ namespace blipcade::graphics {
             Vector2 origin = {0.0f, 0.0f};
 
             float rotation = 0.0f;
+
+            // Mouse input
+            auto mouse_pos = GetMousePosition();
+            // runtime->mouseMove(mouse_pos.x, mouse_pos.y);
+
+            // Need to convert to canvas coordinates
+            // runtime->mouseMove(mouse_pos.x / scale, mouse_pos.y / scale);
+
+            // Need to convert to canvas coordinates and account for position of canvas
+            runtime->mouseMove((mouse_pos.x - offsetX) / scaleFactor, (mouse_pos.y - offsetY) / scaleFactor);
+
+            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
+                runtime->mouseDown(runtime::MouseButton::Left);
+            } else {
+                runtime->mouseUp(runtime::MouseButton::Left);
+            }
+
+            if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) {
+                runtime->mouseDown(runtime::MouseButton::Right);
+            } else {
+                runtime->mouseUp(runtime::MouseButton::Right);
+            }
 
             BeginDrawing();
 

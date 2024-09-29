@@ -26,6 +26,11 @@ declare global {
         function fillScreen(color?: number): void;
 
         /**
+         * @descriotion Draws a sprite on the canvas.
+         */
+        function drawSprite(x: number, y: number, spriteIndex: number, spriteSheetIndex?: number, flipX?: boolean, flipY?: boolean): void;
+
+        /**
          * Puts a pixel on the canvas.
          */
         function putPixel(x: number, y: number, color: number): void;
@@ -52,6 +57,13 @@ declare global {
          * Checks if a key is currently pressed. A key codes are defined in the `Key` enum.
          */
         function isKeyPressed(key: number): boolean;
+
+        /**
+         * Gets the current mouse position.
+         */
+        function getMousePos(): object;
+
+        function isMouseButtonPressed(button: number): boolean;
 
     }
 

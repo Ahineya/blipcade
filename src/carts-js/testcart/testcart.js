@@ -72,13 +72,13 @@ function draw() {
 
     state.background.draw();
 
-    // Graphics.drawLine(0, 0, 127, 127, state.color);
+    text(state.background.currentName || "", 1, 1);
 
-    text(state.background.currentName || "", 1, 1, 0xfe);
+    const mousePos = Input.getMousePos();
+
+    Graphics.drawSprite(mousePos.x, mousePos.y, state.SPRITES.CURSOR, false, false);
 
     drawFPSCounter();
-
-    // drawSprite(Mouse.coords.x, Mouse.coords.y, state.SPRITES.CURSOR, false, false);
 }
 
 globalThis.draw = draw;

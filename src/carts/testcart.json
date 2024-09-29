@@ -1,4 +1,22 @@
 {
   "name": "testcart",
-  "code": "../carts-js/lib/testcart.js"
+  "code": "../carts-js/lib/testcart.js",
+  "spritesheets": [
+    {
+      "texture": {
+        "width": 13,
+        "height": 13,
+        "data": "00 FF FF FF FF FF FF FF FF FF FF FF FF 00 00 FF FF FF FF FF FF FF FF FF FF FF 00 EF 00 FF FF FF FF FF FF FF FF FF FF 00 EF EF 00 FF FF FF FF FF FF FF FF FF 00 EF EF EF 00 FF FF FF FF FF FF FF FF 00 EF EF EF EF 00 FF FF FF FF FF FF FF 00 EF EF EF EF EF 00 FF FF FF FF FF FF 00 EF EF EF EF EF EF 00 FF FF FF FF FF 00 EF EF EF EF 00 00 00 FF FF FF FF FF 00 EF 00 EF EF 00 FF FF FF FF FF FF FF 00 00 FF 00 EF EF 00 FF FF FF FF FF FF FF FF FF 00 EF EF 00 FF FF FF FF FF FF FF FF FF FF 00 00 FF FF FF FF FF FF FF"
+      },
+      "sprites": [
+        {
+          "x": 0,
+          "y": 0,
+          "width": 8,
+          "height": 13,
+          "flags": 0
+        }
+      ]
+    }
+  ]
 }

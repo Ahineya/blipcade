@@ -8,12 +8,15 @@
 - [Namespace: Graphics](#namespace-graphics)
    - [Function: setTransparentColor](#function-settransparentcolor)
    - [Function: fillScreen](#function-fillscreen)
+   - [Function: drawSprite](#function-drawsprite)
    - [Function: putPixel](#function-putpixel)
    - [Function: drawLine](#function-drawline)
    - [Function: drawFilledCircle](#function-drawfilledcircle)
    - [Function: drawCircle](#function-drawcircle)
 - [Namespace: Input](#namespace-input)
    - [Function: isKeyPressed](#function-iskeypressed)
+   - [Function: getMousePos](#function-getmousepos)
+   - [Function: isMouseButtonPressed](#function-ismousebuttonpressed)
 
 ---
 
@@ -94,6 +97,32 @@ Graphics.setTransparentColor(0x00); // Black color will be transparent
 
 ```javascript
 Graphics.fillScreen(0xff); // Fills the screen with white color.
+```
+
+---
+#### Function: `drawSprite`
+**Description:**    @descriotion Draws a sprite on the canvas. 
+
+**Parameters (Required):**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `x` | `number` | The x-coordinate of the sprite. |
+| `y` | `number` | The y-coordinate of the sprite. |
+| `spriteIndex` | `number` | The index of the sprite to draw. |
+
+**Parameters (Optional):**
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| `spriteSheetIndex` | `number` | `0` | The index of the sprite sheet to use. |
+| `flipX` | `boolean` | `false` | Whether to flip the sprite horizontally. |
+| `flipY` | `boolean` | `false` | Whether to flip the sprite vertically. |
+
+**Example:**
+
+```javascript
+Graphics.drawSprite(100, 100, 0); // Draws the first sprite from the first spritesheet at (100, 100).
 ```
 
 ---
@@ -194,6 +223,36 @@ Namespace: `Input`
 
 ```javascript
 Input.isKeyPressed(Key.ArrowUp); // Returns true if the up arrow key is pressed.
+```
+
+---
+#### Function: `getMousePos`
+**Description:**  Gets the current mouse position.  
+
+**Returns:** {object} - An object with `x` and `y` properties representing the mouse position.
+
+**Example:**
+
+```javascript
+Input.getMousePos(); // Returns an object with `x` and `y` properties representing the mouse position.
+```
+
+---
+#### Function: `isMouseButtonPressed`
+**Description:**   
+
+**Parameters (Required):**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `button` | `number` | The button code to check. 1 for left, 2 for right, 3 for middle. |
+
+**Returns:** {boolean} - `true` if the button is pressed, `false` otherwise.
+
+**Example:**
+
+```javascript
+Input.isMouseButtonPressed(1); // Returns true if the left mouse button is pressed.
 ```
 
 ---

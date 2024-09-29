@@ -63,6 +63,8 @@ set(SOURCES
         src/blipcade-runtime/keystate.cpp
         src/blipcade-loader/cartridge.cpp
         src/blipcade-loader/cartridge.h
+        src/blipcade-runtime/mousestate.cpp
+        src/blipcade-runtime/mousestate.h
 )
 
 # Path to the JSON file

@@ -714,6 +714,38 @@ namespace quickjs
 			track();
 		}
 
+		value(JSContext* ctx, int32_t val)
+: ctx_(ctx), val_(JS_NewInt32(ctx, val))
+		{
+			QJSCPP_DEBUG("value(JSContext*, int32_t) @" << (void*)this);
+			validate();
+			track();
+		}
+
+		value(JSContext* ctx, uint32_t val)
+			: ctx_(ctx), val_(JS_NewUint32(ctx, val))
+		{
+			QJSCPP_DEBUG("value(JSContext*, uint32_t) @" << (void*)this);
+			validate();
+			track();
+		}
+
+		value(JSContext* ctx, int64_t val)
+			: ctx_(ctx), val_(JS_NewInt64(ctx, val))
+		{
+			QJSCPP_DEBUG("value(JSContext*, int64_t) @" << (void*)this);
+			validate();
+			track();
+		}
+
+		value(JSContext* ctx, double val)
+			: ctx_(ctx), val_(JS_NewFloat64(ctx, val))
+		{
+			QJSCPP_DEBUG("value(JSContext*, double) @" << (void*)this);
+			validate();
+			track();
+		}
+
 		explicit value(JSContext *ctx, const value& other)
 		{
 			QJSCPP_DEBUG("value(JSContext, const value& @" << (void*)&other << ") @" << (void*)this << " -> " << (other.valid() ? other.as_cstring() : "[nothing]"));

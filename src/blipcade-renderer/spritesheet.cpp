@@ -35,32 +35,10 @@ namespace blipcade::graphics {
             spritesheet.sprites.push_back(Sprite{x, y, sprWidth, sprHeight, flags});
         }
 
-        // Create the Texture
         spritesheet.createTexture();
 
         return spritesheet;
     }
-
-    // void Spritesheet::createTexture(const std::array<Color, 256>& colorLookup, uint8_t transparentColorIndex) {
-    //     colorData.resize(width * height);
-    //     for (size_t i = 0; i < pixelBuffer.size(); i++) {
-    //         uint8_t index = pixelBuffer[i];
-    //         Color color = colorLookup[index];
-    //         if (index == transparentColorIndex) {
-    //             color.a = 0; // Set transparency
-    //         }
-    //         colorData[i] = color;
-    //     }
-    //
-    //     Image image;
-    //     image.data = colorData.data();
-    //     image.width = width;
-    //     image.height = height;
-    //     image.mipmaps = 1;
-    //     image.format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
-    //
-    //     texture = LoadTextureFromImage(image);
-    // }
 
     void Spritesheet::createTexture() {
         Image image;

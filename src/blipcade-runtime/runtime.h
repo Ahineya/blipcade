@@ -6,9 +6,11 @@
 #define RUNTIME_H
 #include <memory>
 #include <optional>
+#include <raylib.h>
 #include <string>
 
 #include "keystate.h"
+#include "mousestate.h"
 
 namespace blipcade {
     class Cartridge;
@@ -78,6 +80,14 @@ namespace blipcade::runtime {
 
         bool isKeyPressed(Key key) const;
 
+        Vector2 getMousePos() const;
+
+        bool isButtonPressed(MouseButton button) const;
+
+        void mouseDown(MouseButton button);
+        void mouseUp(MouseButton button);
+        void mouseMove(int x, int y);
+
         void init();
         void update() const;
         void draw() const;
@@ -88,6 +98,9 @@ namespace blipcade::runtime {
 
         [[nodiscard]] std::shared_ptr<graphics::Font> getFont() const;
 
+        [[nodiscard]] std::shared_ptr<std::vector<graphics::Spritesheet>> getSpritesheets() const;
+
+
         void setCartridge(std::shared_ptr<Cartridge>);
 
     private:
@@ -97,11 +110,11 @@ namespace blipcade::runtime {
         std::shared_ptr<Cartridge> cartridge;
 
         std::shared_ptr<graphics::Canvas> canvas;
-        std::shared_ptr<graphics::Spritesheet> spritesheet;
+        std::shared_ptr<std::vector<graphics::Spritesheet>> spritesheets;
         // std::shared_ptr<Maps> maps;
         std::shared_ptr<std::string> code;
         std::shared_ptr<Keystate> key_flags;
-        // std::shared_ptr<MouseState> mouse_state;
+        std::shared_ptr<Mousestate> mouse_state;
         std::shared_ptr<graphics::Font> font;
 
         std::unique_ptr<JSBindings> js_bindings;

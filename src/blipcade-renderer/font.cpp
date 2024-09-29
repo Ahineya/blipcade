@@ -19,8 +19,6 @@ namespace blipcade::graphics {
     Font Font::fromData(std::vector<uint8_t> data, Size sheetSize, Size glyphSize, std::wstring characters) {
         constexpr std::vector<uint8_t> emptySpriteData = {};
 
-        auto palette = Palette685();
-        auto colorLookup = palette.getColorLookup();
         auto spritesheet = Spritesheet::fromData(data, emptySpriteData, sheetSize.width, sheetSize.height);
         std::unordered_map<wchar_t, uint32_t> glyphs;
 

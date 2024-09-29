@@ -7,7 +7,6 @@
 #include <canvas.h>
 #include <codecvt>
 #include <iostream>
-#include <raylib.h>
 
 #include "runtime.h"
 
@@ -27,10 +26,13 @@ namespace blipcade::runtime {
         bindDrawLine(global);
         bindDrawCircle(global);
         bindDrawFilledCircle(global);
+        bindDrawSprite(global);
 
         // Input
         bindInputGlobalObject(global);
         bindInputIsKeyPressed(global);
+        bindInputGetMousePos(global);
+        bindInputIsMouseButtonPressed(global);
     }
 
     /**
@@ -131,6 +133,51 @@ namespace blipcade::runtime {
             if (argsCount >= 1) color = a[0].as_int32();
 
             m_runtime.getCanvas()->fillScreen(color);
+        });
+    }
+
+    /**
+     * @function drawSprite
+     *
+     * @param {number} x - The x-coordinate of the sprite.
+     * @param {number} y - The y-coordinate of the sprite.
+     * @param {number} spriteIndex - The index of the sprite to draw.
+     *
+     * @param {number} [spriteSheetIndex=0] - The index of the sprite sheet to use.
+     * @param {boolean} [flipX=false] - Whether to flip the sprite horizontally.
+     * @param {boolean} [flipY=false] - Whether to flip the sprite vertically.
+     *
+     * @descriotion Draws a sprite on the canvas.
+     *
+     * @example Graphics.drawSprite(100, 100, 0); // Draws the first sprite from the first spritesheet at (100, 100).
+     *
+     */
+    void JSBindings::bindDrawSprite(quickjs::value &global) {
+        auto graphics = global.get_property("Graphics");
+
+        graphics.set_property("drawSprite", [this](const quickjs::args &a) {
+            auto argsCount = a.size();
+
+            int32_t x = 0, y = 0, spriteIndex = 0;
+            uint32_t spriteSheetIndex = 0;
+            bool flipX = false, flipY = false;
+
+            if (argsCount >= 1) x = a[0].as_int32();
+            if (argsCount >= 2) y = a[1].as_int32();
+            if (argsCount >= 3) spriteIndex = a[2].as_int32();
+            if (argsCount >= 4) spriteSheetIndex = a[3].as_int32();
+            if (argsCount >= 5) flipX = a[4].as_bool();
+            if (argsCount >= 6) flipY = a[5].as_bool();
+
+            const auto spritesheets = m_runtime.getSpritesheets();
+
+            if (spriteSheetIndex >= spritesheets->size()) {
+                throw std::runtime_error("drawSprite: Invalid sprite sheet index."); // TODO: Throw js error, li
+            }
+
+            const auto spritesheet = spritesheets->at(spriteSheetIndex);
+
+            m_runtime.getCanvas()->drawSprite(x, y, flipX, flipY, spritesheet, spriteIndex);
         });
     }
 
@@ -292,6 +339,63 @@ namespace blipcade::runtime {
             auto isKeyPressed = m_runtime.isKeyPressed(static_cast<Key>(key));
             return {*ctx, isKeyPressed};
 
+        });
+    }
+
+    /**
+     * @function getMousePos
+     *
+     * @description Gets the current mouse position.
+     *
+     * @returns {object} - An object with `x` and `y` properties representing the mouse position.
+     *
+     * @example Input.getMousePos(); // Returns an object with `x` and `y` properties representing the mouse position.
+     */
+    void JSBindings::bindInputGetMousePos(quickjs::value &global) {
+        auto input = global.get_property("Input");
+
+        input.set_property("getMousePos", [this, global](const quickjs::args &a) -> quickjs::value {
+            std::shared_ptr<quickjs::context> ctx = m_runtime.getContext();
+
+            auto mousePos = m_runtime.getMousePos();
+
+            quickjs::value Object = global.get_property("Object");
+            quickjs::value obj = Object.call_member("create", quickjs::value::null(*ctx));
+
+            const quickjs::value mouseX(*ctx, static_cast<double>(mousePos.x));
+            const quickjs::value mouseY(*ctx, static_cast<double>(mousePos.y));
+
+            obj.set_property("x", mouseX);
+            obj.set_property("y", mouseY);
+
+            return obj;
+        });
+    }
+
+    /**
+     * @function isMouseButtonPressed
+     *
+     * @param {number} button - The button code to check. 1 for left, 2 for right, 3 for middle.
+     *
+     * @returns {boolean} - `true` if the button is pressed, `false` otherwise.
+     *
+     * @example Input.isMouseButtonPressed(1); // Returns true if the left mouse button is pressed.
+     */
+    void JSBindings::bindInputIsMouseButtonPressed(quickjs::value &global) {
+        auto input = global.get_property("Input");
+
+        input.set_property("isMouseButtonPressed", [this](const quickjs::args &a) -> quickjs::value {
+            std::shared_ptr<quickjs::context> ctx = m_runtime.getContext();
+
+            auto argsCount = a.size();
+
+            if (argsCount < 1) {
+                throw std::runtime_error("isMouseButtonPressed: Missing argument.");
+            }
+
+            int button = a[0].as_int32();
+            auto isMouseButtonPressed = m_runtime.isButtonPressed(static_cast<MouseButton>(button));
+            return {*ctx, isMouseButtonPressed};
         });
     }
 

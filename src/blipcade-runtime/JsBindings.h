@@ -38,6 +38,12 @@ namespace blipcade {
 
             void bindInputIsKeyPressed(quickjs::value &global);
 
+            void bindInputGetMousePos(quickjs::value &global);
+
+            void bindInputIsMouseButtonPressed(quickjs::value &global);
+
+            void bindDrawSprite(quickjs::value &global);
+
             void createNamespace(quickjs::value &global, const std::string &name);
         };
     }

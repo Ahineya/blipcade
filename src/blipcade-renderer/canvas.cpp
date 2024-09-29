@@ -78,7 +78,6 @@ namespace blipcade::graphics {
     }
 
     void Canvas::updateShaderPalette() {
-        // Prepare palette data
         float paletteData[256 * 4]; // Each color has 4 components (RGBA)
         for (int i = 0; i < 256; ++i) {
             uint8_t colorIndex = virtualPalette[i];
@@ -89,15 +88,6 @@ namespace blipcade::graphics {
             paletteData[i * 4 + 2] = color.b / 255.0f;
             paletteData[i * 4 + 3] = color.a / 255.0f;
         }
-
-        // Print the palette data
-        // for (int i = 0; i < 256; ++i) {
-            // std::cout << std::fixed << std::setprecision(2) << "Color " << i << ": "
-                    // << paletteData[i * 4 + 0] << ", "
-                    // << paletteData[i * 4 + 1] << ", "
-                    // << paletteData[i * 4 + 2] << ", "
-                    // << paletteData[i * 4 + 3] << std::endl;
-        // }
 
         SetShaderValueV(paletteShader, paletteLoc, paletteData, SHADER_UNIFORM_VEC4, 256);
     }
@@ -112,10 +102,6 @@ namespace blipcade::graphics {
     void Canvas::setCamera(const int32_t offsetX, const int32_t offsetY) {
         this->offsetX = offsetX;
         this->offsetY = offsetY;
-    }
-
-    uint8_t Canvas::getTransparentColor() const {
-        return transparentColor;
     }
 
     void Canvas::fillScreen(const uint8_t color) {
@@ -142,10 +128,6 @@ namespace blipcade::graphics {
     }
 
     void Canvas::drawPixel(const int32_t x, const int32_t y, const uint8_t color) {
-        if (!isWithinClippingRect(x, y)) {
-            return;
-        }
-
         const auto realColor = colorLookup[virtualPalette[color]];
         DrawPixel(x, y, realColor);
     }
@@ -192,28 +174,6 @@ namespace blipcade::graphics {
         const auto realColor = colorLookup[virtualPalette[color]];
         DrawRectangle(x, y, width, height, realColor);
     }
-
-    // void Canvas::drawSprite(int32_t x, int32_t y, bool flipX, bool flipY, const Spritesheet &spritesheet,
-    //                         uint32_t index) {
-    //     const auto spriteData = spritesheet.getSpriteData(index);
-    //
-    //     const auto [a, b, width, height, flags] = spritesheet.getSprite(index);
-    //     const auto spriteWidth = width;
-    //     const auto spriteHeight = height;
-    //
-    //     if (flipX) {
-    //         // flip_x(&mut sprite, sprite_width, sprite_height);
-    //     }
-    //
-    //     if (flipY) {
-    //         // flip_y(&mut sprite, sprite_width, sprite_height);
-    //     }
-    //
-    //     const auto x1 = x + offsetX;
-    //     const auto y1 = y + offsetY;
-    //
-    //     drawRectangleData(x1, y1, x1 + spriteWidth, y1 + spriteHeight, true, spriteData);
-    // }
 
     void Canvas::drawSprite(int32_t x, int32_t y, bool flipX, bool flipY,
                             const Spritesheet &spritesheet, uint32_t index) {

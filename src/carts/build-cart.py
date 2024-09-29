@@ -23,6 +23,11 @@ def main():
             with open(cart["code"], 'r') as code_file:
                 cart_json["code"] = code_file.read()
 
+        # copy the rest of the fields
+        for key in cart:
+            if key not in ["name", "code"]:
+                cart_json[key] = cart[key]
+
         with open(args.output, 'w') as output_file:
             json.dump(cart_json, output_file)
 

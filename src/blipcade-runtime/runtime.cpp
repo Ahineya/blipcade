@@ -17,8 +17,8 @@
 #include "keystate.h"
 
 namespace blipcade::runtime {
-    Runtime::Runtime(): cartridge(nullptr), canvas(nullptr), key_flags(std::make_shared<Keystate>()), font(nullptr),
-                        js_bindings(std::make_unique<JSBindings>(*this)), mouse_state(std::make_shared<Mousestate>()) {
+    Runtime::Runtime(): cartridge(nullptr), canvas(nullptr), key_flags(std::make_shared<Keystate>()), mouse_state(std::make_shared<Mousestate>()),
+                        font(nullptr), js_bindings(std::make_unique<JSBindings>(*this)) {
         canvas = std::make_shared<graphics::Canvas>(128, 128); // TODO: make this configurable
         spritesheets = std::make_shared<std::vector<graphics::Spritesheet>>();
 
@@ -85,10 +85,11 @@ namespace blipcade::runtime {
     void Runtime::init() {
         js_runtime = std::make_unique<quickjs::runtime>();
         context = std::make_shared<quickjs::context>(js_runtime->new_context());
+        ecs = std::make_shared<ecs::ECS>(*context);
 
         quickjs::value global = context->get_global_object();
 
-        js_bindings->registerAll(global);
+        js_bindings->registerAll(global, *ecs);
 
         if (cartridge == nullptr) {
             std::cerr << "No cartridge loaded" << std::endl;

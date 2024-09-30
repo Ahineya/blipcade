@@ -17,6 +17,13 @@
    - [Function: isKeyPressed](#function-iskeypressed)
    - [Function: getMousePos](#function-getmousepos)
    - [Function: isMouseButtonPressed](#function-ismousebuttonpressed)
+- [Namespace: ECS](#namespace-ecs)
+   - [Function: createEntity](#function-createentity)
+   - [Function: destroyEntity](#function-destroyentity)
+   - [Function: addComponent](#function-addcomponent)
+   - [Function: removeComponent](#function-removecomponent)
+   - [Function: getComponent](#function-getcomponent)
+   - [Function: forEachEntity](#function-foreachentity)
 
 ---
 
@@ -253,6 +260,117 @@ Input.getMousePos(); // Returns an object with `x` and `y` properties representi
 
 ```javascript
 Input.isMouseButtonPressed(1); // Returns true if the left mouse button is pressed.
+```
+
+---
+Namespace: `ECS`
+---
+### Provides Entity-Component-System functionalities.
+
+
+
+#### Function: `createEntity`
+**Description:** Creates a new entity. 
+
+**Returns:** {number} - The ID of the created entity.
+
+**Example:**
+
+```javascript
+const entity = ECS.createEntity(); // Creates a new entity.
+```
+
+---
+#### Function: `destroyEntity`
+**Description:** Destroys an entity. 
+
+**Parameters (Required):**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `entity` | `number` | The ID of the entity to destroy. |
+
+**Example:**
+
+```javascript
+ECS.destroyEntity(entity); // Destroys the entity with the given ID.
+```
+
+---
+#### Function: `addComponent`
+**Description:** Adds a component to an entity. 
+
+**Parameters (Required):**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `entity` | `number` | The ID of the entity to add the component to. |
+| `typeName` | `string` | The name of the component type. |
+| `component` | `object` | The component to add. |
+
+**Example:**
+
+```javascript
+ECS.addComponent(entity, "Position", { x: 10, y: 20 }); // Adds a Position component to the entity.
+```
+
+---
+#### Function: `removeComponent`
+**Description:** Removes a component from an entity. 
+
+**Parameters (Required):**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `entity` | `number` | The ID of the entity to remove the component from. |
+| `typeName` | `string` | The name of the component type. |
+
+**Example:**
+
+```javascript
+ECS.removeComponent(entity, "Position"); // Removes the Position component from the entity.
+```
+
+---
+#### Function: `getComponent`
+**Description:** Gets a component from an entity. 
+
+**Parameters (Required):**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `entity` | `number` | The ID of the entity to get the component from. |
+| `typeName` | `string` | The name of the component type. |
+
+**Returns:** {object} - The component.
+
+**Example:**
+
+```javascript
+const position = ECS.getComponent(entity, "Position"); // Gets the Position component from the entity.
+```
+
+---
+#### Function: `forEachEntity`
+**Description:** Iterates over entities that have all the specified components.  ECS.forEachEntity(["Position", "Velocity"], (entity) => { const position = ECS.getComponent(entity, "Position"); const velocity = ECS.getComponent(entity, "Velocity"); // Do something with the position and velocity components });
+
+**Parameters (Required):**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `componentTypes` | `Array` | An array of string component types to filter entities by. |
+| `callback` | `function` | The callback function to call for each entity. |
+
+**Parameters (Optional):**
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| `reverse` | `boolean` | `false` | Whether to iterate over entities in reverse order. |
+
+**Example:**
+
+```javascript
+
 ```
 
 ---

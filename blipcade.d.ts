@@ -67,4 +67,42 @@ declare global {
 
     }
 
+    namespace ECS {
+        /**
+         * Creates a new entity.
+         */
+        function createEntity(): number;
+
+        /**
+         * Destroys an entity.
+         */
+        function destroyEntity(entity: number): void;
+
+        /**
+         * Adds a component to an entity.
+         */
+        function addComponent(entity: number, typeName: string, component: object): void;
+
+        /**
+         * Removes a component from an entity.
+         */
+        function removeComponent(entity: number, typeName: string): void;
+
+        /**
+         * Gets a component from an entity.
+         */
+        function getComponent(entity: number, typeName: string): object;
+
+        /**
+         * Iterates over entities that have all the specified components.
+         * ECS.forEachEntity(["Position", "Velocity"], (entity) => {
+         * const position = ECS.getComponent(entity, "Position");
+         * const velocity = ECS.getComponent(entity, "Velocity");
+         * // Do something with the position and velocity components
+         * });
+         */
+        function forEachEntity(componentTypes: any[], callback: Function, reverse?: boolean): void;
+
+    }
+
 }

@@ -12,6 +12,8 @@
 #include "keystate.h"
 #include "mousestate.h"
 
+#include "ECS.h"
+
 namespace blipcade {
     class Cartridge;
 }
@@ -116,6 +118,8 @@ namespace blipcade::runtime {
         std::shared_ptr<Keystate> key_flags;
         std::shared_ptr<Mousestate> mouse_state;
         std::shared_ptr<graphics::Font> font;
+
+        std::shared_ptr<ecs::ECS> ecs;
 
         std::unique_ptr<JSBindings> js_bindings;
         // std::shared_ptr<RuntimeControl> runtime_state;

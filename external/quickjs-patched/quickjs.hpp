@@ -687,6 +687,10 @@ namespace quickjs
 	public:
 		typedef std::function<void(JSValue val)> mark_func;
 
+		JSValue get_jsvalue() const {
+			return val_;
+		}
+
 		value()
 		{
 			QJSCPP_DEBUG("value() @" << (void*)this);
@@ -904,6 +908,17 @@ namespace quickjs
 			return ctx_ != nullptr;
 		}
 
+		bool is_array() const {
+			validate();
+			return JS_IsArray(ctx_, val_);
+		}
+
+		// Get a property by index (array element)
+		value get_property(uint32_t index) const {
+			validate();
+			return value(ctx_, JS_GetPropertyUint32(ctx_, val_, index));
+		}
+
 		void abandon()
 		{
 			if (ctx_)
@@ -968,14 +983,14 @@ namespace quickjs
 			return JS_IsBool(val_);
 		}
 
-		bool as_bool() const
-		{
-			validate();
-			bool ret = false;
-			if (!as_bool(ret))
-				throw_value_exception("not a int32 value");
-			return ret;
-		}
+//		bool as_bool() const
+//		{
+//			validate();
+//			bool ret = false;
+//			if (!as_bool(ret))
+//				throw_value_exception("not a int32 value");
+//			return ret;
+//		}
 
 		bool as_bool(bool& val) const
 		{
@@ -1051,7 +1066,7 @@ namespace quickjs
 			}
 			return true;
 		}
-
+//
 		int64_t as_int64() const
 		{
 			validate();
@@ -1070,15 +1085,15 @@ namespace quickjs
 			}
 			return true;
 		}
-
-		std::string as_string() const
-		{
-			validate();
-			std::string ret;
-			if (!as_string(ret))
-				throw_value_exception("not a string value");
-			return ret;
-		}
+//
+//		std::string as_string() const
+//		{
+//			validate();
+//			std::string ret;
+//			if (!as_string(ret))
+//				throw_value_exception("not a string value");
+//			return ret;
+//		}
 
 		bool as_string(std::string& val) const
 		{

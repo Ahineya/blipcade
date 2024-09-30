@@ -14,7 +14,7 @@ namespace blipcade::runtime {
     JSBindings::JSBindings(Runtime &runtime) : m_runtime(runtime) {
     }
 
-    void JSBindings::registerAll(quickjs::value &global) {
+    void JSBindings::registerAll(quickjs::value &global, ecs::ECS& ecs) {
         bindLogFunction(global);
         bindTextFunction(global);
 
@@ -33,6 +33,9 @@ namespace blipcade::runtime {
         bindInputIsKeyPressed(global);
         bindInputGetMousePos(global);
         bindInputIsMouseButtonPressed(global);
+
+        // ECS
+        bindECSGlobalObject(global, ecs);
     }
 
     /**
@@ -74,7 +77,11 @@ namespace blipcade::runtime {
             std::string text = "";
             int x = 0, y = 0, color = 0xfe;
 
-            if (argsCount >= 1) text = a[0].as_string();
+            if (argsCount >= 1) {
+                auto ab = a[0].as_cstring();
+                text = ab.c_str();
+            }
+
             if (argsCount >= 2) x = a[1].as_int32();
             if (argsCount >= 3) y = a[2].as_int32();
             if (argsCount >= 4) color = a[3].as_int32();
@@ -166,8 +173,8 @@ namespace blipcade::runtime {
             if (argsCount >= 2) y = a[1].as_int32();
             if (argsCount >= 3) spriteIndex = a[2].as_int32();
             if (argsCount >= 4) spriteSheetIndex = a[3].as_int32();
-            if (argsCount >= 5) flipX = a[4].as_bool();
-            if (argsCount >= 6) flipY = a[5].as_bool();
+            if (argsCount >= 5) flipX = a[4].as_int32();
+            if (argsCount >= 6) flipY = a[5].as_int32();
 
             const auto spritesheets = m_runtime.getSpritesheets();
 
@@ -408,6 +415,252 @@ namespace blipcade::runtime {
 
         global.set_property(name, obj);
     }
+
+    /**
+     * @namespace ECS
+     * @description Provides Entity-Component-System functionalities.
+     */
+    void JSBindings::bindECSGlobalObject(quickjs::value &global, ecs::ECS &ecs) {
+        createNamespace(global, "ECS");
+
+        bindCreateEntity(global, ecs);
+        bindDestroyEntity(global, ecs);
+        bindAddComponent(global, ecs);
+        bindRemoveComponent(global, ecs);
+        bindGetComponent(global, ecs);
+        bindForEachEntity(global, ecs);
+    }
+
+    /**
+     * @function createEntity
+     * @description Creates a new entity.
+     * @returns {number} - The ID of the created entity.
+     *
+     * @example const entity = ECS.createEntity(); // Creates a new entity.
+     */
+    void JSBindings::bindCreateEntity(quickjs::value &global, ecs::ECS &ecs) {
+        auto ECS = global.get_property("ECS");
+        const std::shared_ptr<quickjs::context> ctx = m_runtime.getContext();
+
+        ECS.set_property("createEntity", [&ecs, &ctx](const quickjs::args &a) {
+            auto const entity = ecs.createEntity();
+            return entity;
+        });
+    }
+
+    /**
+     * @function destroyEntity
+     * @param {number} entity - The ID of the entity to destroy.
+     * @description Destroys an entity.
+     *
+     * @example ECS.destroyEntity(entity); // Destroys the entity with the given ID.
+     */
+    void JSBindings::bindDestroyEntity(quickjs::value &global, ecs::ECS &ecs) {
+        auto ECS = global.get_property("ECS");
+        const std::shared_ptr<quickjs::context> ctx = m_runtime.getContext();
+
+        ECS.set_property("destroyEntity", [&ecs, &ctx](const quickjs::args &a) {
+            auto argsCount = a.size();
+
+            if (argsCount < 1) {
+                throw std::runtime_error("destroyEntity: Missing argument.");
+            }
+
+            auto entity = a[0].as_uint32();
+            ecs.destroyEntity(entity);
+        });
+    }
+
+    /**
+     * @function addComponent
+     * @param {number} entity - The ID of the entity to add the component to.
+     * @param {string} typeName - The name of the component type.
+     * @param {object} component - The component to add.
+     * @description Adds a component to an entity.
+     *
+     * @example ECS.addComponent(entity, "Position", { x: 10, y: 20 }); // Adds a Position component to the entity.
+     */
+    void JSBindings::bindAddComponent(quickjs::value &global, ecs::ECS &ecs) {
+        auto ECS = global.get_property("ECS");
+        const std::shared_ptr<quickjs::context> ctx = m_runtime.getContext();
+
+        ECS.set_property("addComponent", [&ecs, &ctx](const quickjs::args &a) {
+            auto argsCount = a.size();
+
+            if (argsCount < 3) {
+                throw std::runtime_error("addComponent: Missing arguments.");
+            }
+
+            auto entity = a[0].as_uint32();
+            auto typeName = a[1].as_cstring().c_str();
+            auto component = a[2];
+
+            // std::cout << "Adding component: " << typeName << std::endl;
+
+            ecs.addComponent(entity, typeName, component);
+
+            // std::cout << "Component added: " << typeName << std::endl;
+        });
+    }
+
+    /**
+     * @function removeComponent
+     * @param {number} entity - The ID of the entity to remove the component from.
+     * @param {string} typeName - The name of the component type.
+     * @description Removes a component from an entity.
+     *
+     * @example ECS.removeComponent(entity, "Position"); // Removes the Position component from the entity.
+     */
+    void JSBindings::bindRemoveComponent(quickjs::value &global, ecs::ECS &ecs) {
+        auto ECS = global.get_property("ECS");
+        const std::shared_ptr<quickjs::context> ctx = m_runtime.getContext();
+
+        ECS.set_property("removeComponent", [&ecs, &ctx](const quickjs::args &a) {
+            auto argsCount = a.size();
+
+            if (argsCount < 2) {
+                throw std::runtime_error("removeComponent: Missing arguments.");
+            }
+
+            auto entity = a[0].as_uint32();
+            auto typeName = a[1].as_cstring().c_str();
+
+            ecs.removeComponent(entity, typeName);
+        });
+    }
+
+    /**
+     * @function getComponent
+     * @param {number} entity - The ID of the entity to get the component from.
+     * @param {string} typeName - The name of the component type.
+     * @description Gets a component from an entity.
+     * @returns {object} - The component.
+     *
+     * @example const position = ECS.getComponent(entity, "Position"); // Gets the Position component from the entity.
+     */
+    void JSBindings::bindGetComponent(quickjs::value &global, ecs::ECS &ecs) {
+        auto ECS = global.get_property("ECS");
+        const std::shared_ptr<quickjs::context> ctx = m_runtime.getContext();
+
+        ECS.set_property("getComponent", [&ecs, &ctx](const quickjs::args &a) {
+            auto argsCount = a.size();
+
+            if (argsCount < 2) {
+                throw std::runtime_error("getComponent: Missing arguments.");
+            }
+
+            auto entity = a[0].as_uint32();
+            auto typeName = a[1].as_cstring().c_str();
+
+            auto component = ecs.getComponent(entity, typeName);
+            return component;
+        });
+    }
+
+    /**
+     * @function forEachEntity
+     * @param {Array} componentTypes - An array of string component types to filter entities by.
+     * @param {function} callback - The callback function to call for each entity.
+     * @param {boolean} [reverse=false] - Whether to iterate over entities in reverse order.
+     * @description Iterates over entities that have all the specified components.
+     *
+     * @example
+     * ECS.forEachEntity(["Position", "Velocity"], (entity) => {
+     *     const position = ECS.getComponent(entity, "Position");
+     *     const velocity = ECS.getComponent(entity, "Velocity");
+     *     // Do something with the position and velocity components
+     * });
+     */
+    void JSBindings::bindForEachEntity(quickjs::value &global, ecs::ECS &ecs) {
+        auto ECS = global.get_property("ECS");
+        const std::shared_ptr<quickjs::context> ctx = m_runtime.getContext();
+
+        ECS.set_property("forEachEntity", [&ecs, ctx](const quickjs::args &a) {
+            auto argsCount = a.size();
+
+            if (argsCount < 2) {
+                throw quickjs::throw_exception(
+                    quickjs::value::type_error(a.get_context(), "forEachEntity: Missing arguments.")
+                );
+            }
+
+            quickjs::value componentTypesValue = a[0];
+
+            // Check if the first argument is an array
+            if (!componentTypesValue.is_array()) {
+                throw quickjs::throw_exception(
+                    quickjs::value::type_error(a.get_context(), "First argument must be an array.")
+                );
+            }
+
+            // Get the length of the array
+            quickjs::value lengthValue = componentTypesValue.get_property("length");
+            uint32_t length = lengthValue.as_uint32();
+
+            // Iterate over the array elements
+            std::vector<std::string> types;
+            for (uint32_t i = 0; i < length; ++i) {
+                quickjs::value element = componentTypesValue.get_property(i);
+
+                if (!element.is_string()) {
+                    throw quickjs::throw_exception(
+                        quickjs::value::type_error(a.get_context(), "Array elements must be strings.")
+                    );
+                }
+
+                types.push_back(element.as_cstring().c_str());
+            }
+
+            quickjs::value callback = a[1];
+
+            // If there is a third argument, check if it's a boolean
+            bool reverse = false;
+            if (argsCount >= 3) {
+                quickjs::value reverseValue = a[2];
+                if (!reverseValue.is_bool()) {
+                    throw quickjs::throw_exception(
+                        quickjs::value::type_error(a.get_context(), "Third argument must be a boolean.")
+                    );
+                }
+
+                reverse = reverseValue.as_int32();
+            }
+
+            ecs.forEachEntity(types, callback, reverse);
+        });
+    }
+
+// #include "quickjspp.hpp"
+// #include "ECS.hpp"
+//
+//     void registerECS(qjs::Context& context, ECS& ecs) {
+//         context.global().add("createEntity", [&ecs]() {
+//             return ecs.createEntity();
+//         });
+//
+//         context.global().add("destroyEntity", [&ecs](Entity entity) {
+//             ecs.destroyEntity(entity);
+//         });
+//
+//         context.global().add("addComponent", [&ecs](Entity entity, const std::string& typeName, qjs::Value component) {
+//             ecs.addComponent(entity, typeName, component.v);
+//         });
+//
+//         context.global().add("removeComponent", [&ecs](Entity entity, const std::string& typeName) {
+//             ecs.removeComponent(entity, typeName);
+//         });
+//
+//         context.global().add("getComponent", [&ecs](Entity entity, const std::string& typeName) {
+//             JSValue comp = ecs.getComponent(entity, typeName);
+//             return qjs::Value(context, comp);
+//         });
+//
+//         context.global().add("forEachEntity", [&ecs](std::vector<std::string> componentTypes, qjs::Value callback) {
+//             ecs.forEachEntity(componentTypes, callback.v);
+//         });
+//     }
+
+
 
 } // runtime
 // blipcade

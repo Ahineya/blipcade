@@ -7,6 +7,7 @@ module.exports = config({
         devtool: __dirname + "/src/index.js",
         celeste: __dirname + "/celeste/celeste.js",
         testcart: __dirname + "/testcart/testcart.js",
+        "ecs-test": __dirname + "/ecs-test/ecs-test.js",
     },
     output: {
         path: __dirname + "/lib",

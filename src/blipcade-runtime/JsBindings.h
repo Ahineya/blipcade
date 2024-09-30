@@ -11,7 +11,7 @@ namespace blipcade {
         public:
             explicit JSBindings(Runtime &runtime);
 
-            void registerAll(quickjs::value& global);
+            void registerAll(quickjs::value &global, ecs::ECS &ecs);
 
         private:
             Runtime& m_runtime;
@@ -45,6 +45,20 @@ namespace blipcade {
             void bindDrawSprite(quickjs::value &global);
 
             void createNamespace(quickjs::value &global, const std::string &name);
+
+            void bindECSGlobalObject(quickjs::value &global, ecs::ECS &ecs);
+
+            void bindCreateEntity(quickjs::value &global, ecs::ECS &ecs);
+
+            void bindDestroyEntity(quickjs::value &global, ecs::ECS &ecs);
+
+            void bindAddComponent(quickjs::value &global, ecs::ECS &ecs);
+
+            void bindRemoveComponent(quickjs::value &global, ecs::ECS &ecs);
+
+            void bindGetComponent(quickjs::value &global, ecs::ECS &ecs);
+
+            void bindForEachEntity(quickjs::value &global, ecs::ECS &ecs);
         };
     }
 }

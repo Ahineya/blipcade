@@ -11,6 +11,7 @@ include_directories(${CMAKE_SOURCE_DIR}/src/blipcade-renderer)
 include_directories(${CMAKE_SOURCE_DIR}/src/blipcade-api)
 include_directories(${CMAKE_SOURCE_DIR}/src/blipcade-runtime)
 include_directories(${CMAKE_SOURCE_DIR}/src/blipcade-loader)
+include_directories(${CMAKE_SOURCE_DIR}/src/blipcade-ecs)
 include_directories(${CMAKE_SOURCE_DIR}/external/quickjs-patched)
 
 FetchContent_Declare(
@@ -20,6 +21,14 @@ FetchContent_Declare(
 )
 
 FetchContent_MakeAvailable(json)
+
+FetchContent_Declare(
+        dynamic_bitset
+        GIT_REPOSITORY https://github.com/pinam45/dynamic_bitset.git
+        GIT_TAG v1.3.0
+)
+
+FetchContent_MakeAvailable(dynamic_bitset)
 
 set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE) # don't build the supplied examples
 set(BUILD_GAMES    OFF CACHE BOOL "" FORCE) # don't build the supplied example games
@@ -65,10 +74,12 @@ set(SOURCES
         src/blipcade-loader/cartridge.h
         src/blipcade-runtime/mousestate.cpp
         src/blipcade-runtime/mousestate.h
+        src/blipcade-ecs/ECS.cpp
+        src/blipcade-ecs/ECS.h
 )
 
 # Path to the JSON file
-set(JSON_FILE "${CMAKE_CURRENT_SOURCE_DIR}/src/carts/testcart-build.json")
+set(JSON_FILE "${CMAKE_CURRENT_SOURCE_DIR}/src/carts/ecs-test-build.json")
 
 # Path to the header template
 set(HEADER_TEMPLATE "${CMAKE_CURRENT_SOURCE_DIR}/src/tools/json_cart.hpp.in")
@@ -179,7 +190,7 @@ target_sources(blipcade_cmake PRIVATE
 target_include_directories(blipcade_cmake PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 # Link libraries
-target_link_libraries(blipcade_cmake quickjs raylib ${OPENGL_LIBRARIES} nlohmann_json::nlohmann_json)
+target_link_libraries(blipcade_cmake quickjs raylib ${OPENGL_LIBRARIES} nlohmann_json::nlohmann_json sul::dynamic_bitset)
 
 # Detect if building with Emscripten
 if (DEFINED EMSCRIPTEN)

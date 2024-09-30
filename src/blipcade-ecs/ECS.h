@@ -1,7 +1,10 @@
-// Include the quickjs.hpp header
 #pragma once
 #include "quickjs.hpp"
 #include <sul/dynamic_bitset.hpp>
+#include <vector>
+#include <unordered_map>
+#include <cassert>
+#include <algorithm>
 
 namespace blipcade::ecs {
     using Entity = std::uint32_t;
@@ -23,12 +26,12 @@ namespace blipcade::ecs {
         void removeComponent(Entity entity, const std::string& typeName);
         quickjs::value getComponent(Entity entity, const std::string& typeName);
 
+        void processEntities(const quickjs::value &callback, const ComponentMask& requiredMask,
+                             const std::vector<ComponentTypeID> &typeIDs,
+                             Entity entity);
+
         // Entity Iteration
         void forEachEntity(const std::vector<std::string> &componentTypes, const quickjs::value &callback, bool reverse);
-
-        void processEntity(Entity entity, const ComponentMask &requiredMask,
-                           const std::vector<ComponentTypeID> &typeIDs,
-                           const quickjs::value &callback);
 
         bool isSubsetOf(const ComponentMask &requiredMask, const ComponentMask &entityMask);
 
@@ -49,7 +52,13 @@ namespace blipcade::ecs {
         std::unordered_map<std::string, ComponentTypeID> componentTypeIDs;
         ComponentTypeID nextComponentTypeID = 0;
 
+        // Deferred operations
+        size_t iterationDepth = 0; // Changed from bool to size_t
+        std::vector<Entity> pendingRemovals;
+        std::vector<Entity> pendingAdditions;
+
         // Helper methods
         ComponentTypeID getComponentTypeID(const std::string& typeName);
+        void applyDeferredOperations();
     };
 }

@@ -94,12 +94,7 @@ declare global {
         function getComponent(entity: number, typeName: string): object;
 
         /**
-         * Iterates over entities that have all the specified components.
-         * ECS.forEachEntity(["Position", "Velocity"], (entity) => {
-         * const position = ECS.getComponent(entity, "Position");
-         * const velocity = ECS.getComponent(entity, "Velocity");
-         * // Do something with the position and velocity components
-         * });
+         * Iterates over entities that have all the specified components. Iteration order is guaranteed to be the same as the order in which entities were created.
          */
         function forEachEntity(componentTypes: any[], callback: Function, reverse?: boolean): void;
 

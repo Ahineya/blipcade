@@ -352,14 +352,14 @@ const position = ECS.getComponent(entity, "Position"); // Gets the Position comp
 
 ---
 #### Function: `forEachEntity`
-**Description:** Iterates over entities that have all the specified components.  ECS.forEachEntity(["Position", "Velocity"], (entity) => { const position = ECS.getComponent(entity, "Position"); const velocity = ECS.getComponent(entity, "Velocity"); // Do something with the position and velocity components });
+**Description:** Iterates over entities that have all the specified components. Iteration order is guaranteed to be the same as the order in which entities were created. 
 
 **Parameters (Required):**
 
 | Name | Type | Description |
 |------|------|-------------|
 | `componentTypes` | `Array` | An array of string component types to filter entities by. |
-| `callback` | `function` | The callback function to call for each entity. |
+| `callback` | `function` | The callback function to call for each entity. The first argument is the entity ID. Subsequent arguments are the components in the order specified in the `componentTypes` array. |
 
 **Parameters (Optional):**
 
@@ -370,7 +370,7 @@ const position = ECS.getComponent(entity, "Position"); // Gets the Position comp
 **Example:**
 
 ```javascript
-
+ECS.forEachEntity(["Position", "Velocity"], (entity, position, velocity) => { ... }
 ```
 
 ---

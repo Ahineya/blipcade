@@ -38,8 +38,7 @@ export class ParticlesSystem {
         // });
 
         // No, let's move the emitter with the mouse
-        ECS.forEachEntity(["ParticleEmitter"], (entity) => {
-            const emitter = ECS.getComponent(entity, "ParticleEmitter");
+        ECS.forEachEntity(["ParticleEmitter"], (_, emitter) => {
             const mouse = Input.getMousePos();
             emitter.position.x = mouse.x;
             emitter.position.y = mouse.y;
@@ -63,9 +62,7 @@ export class ParticlesSystem {
     }
 
     updateParticles(deltaTime) {
-        ECS.forEachEntity(["Particle"], (entity) => {
-            const particle = ECS.getComponent(entity, "Particle");
-
+        ECS.forEachEntity(["Particle"], (entity, particle) => {
             particle.position.x += particle.velocity.x * deltaTime;
             particle.position.y += particle.velocity.y * deltaTime;
             particle.lifetime -= deltaTime;
@@ -83,9 +80,7 @@ export class ParticlesSystem {
     }
 
     emitParticles(deltaTime) {
-        ECS.forEachEntity(["ParticleEmitter"], (entity) => {
-            const emitter = ECS.getComponent(entity, "ParticleEmitter");
-
+        ECS.forEachEntity(["ParticleEmitter"], (_, emitter) => {
             const particlesToEmit = emitter.emissionRate * deltaTime;
             const wholeParticles = Math.floor(particlesToEmit);
             const fractionalPart = particlesToEmit - wholeParticles;
@@ -130,8 +125,7 @@ export class ParticlesSystem {
 
     // Let's draw the particles
     draw() {
-        ECS.forEachEntity(["Particle"], (entity) => {
-            const particle = ECS.getComponent(entity, "Particle");
+        ECS.forEachEntity(["Particle"], (_, particle) => {
             const color = particle.color;
             const size = particle.size;
             const x = particle.position.x;

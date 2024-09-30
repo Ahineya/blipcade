@@ -3,7 +3,7 @@
 #include <iostream>
 
 namespace blipcade::ecs {
-    ECS::ECS(JSContext *ctx) : ctx(ctx), entities({}), freeEntities({}), componentTypeIDs({}) {
+    ECS::ECS(JSContext *ctx) : ctx(ctx), entities({}), freeEntities({}), componentTypeIDs({}), activeEntities({}) {
     }
 
     ECS::~ECS() {
@@ -19,25 +19,64 @@ namespace blipcade::ecs {
         if (!freeEntities.empty()) {
             entity = freeEntities.back();
             freeEntities.pop_back();
-            entities[entity].componentMask.clear(); // Reset the dynamic_bitset
+            entities[entity].componentMask.reset();
             entities[entity].components.clear();
         } else {
             entity = static_cast<Entity>(entities.size());
             entities.emplace_back();
         }
+
+        if (iterationDepth > 0) {
+            pendingAdditions.push_back(entity);
+        } else {
+            activeEntities.push_back(entity);
+        }
+
         return entity;
     }
 
     void ECS::destroyEntity(Entity entity) {
         assert(entity < entities.size() && "Entity out of range.");
 
-        // Components will be cleaned up automatically
+        if (iterationDepth > 0) {
+            pendingRemovals.push_back(entity);
+        } else {
+            // Remove the entity from the active list
+            auto it = std::find(activeEntities.begin(), activeEntities.end(), entity);
+            if (it != activeEntities.end()) {
+                activeEntities.erase(it);
+            }
 
-        // something here causes a sigtrap
-        entities[entity].components.clear();
-        entities[entity].componentMask.clear();
+            // Components will be cleaned up automatically
+            entities[entity].components.clear();
+            entities[entity].componentMask.reset();
 
-        freeEntities.push_back(entity);
+            freeEntities.push_back(entity);
+        }
+    }
+
+    void ECS::applyDeferredOperations() {
+        // Process pending removals
+        for (Entity entity: pendingRemovals) {
+            // Remove the entity from the active list
+            auto it = std::find(activeEntities.begin(), activeEntities.end(), entity);
+            if (it != activeEntities.end()) {
+                activeEntities.erase(it);
+            }
+
+            // Components will be cleaned up automatically
+            entities[entity].components.clear();
+            entities[entity].componentMask.reset();
+
+            freeEntities.push_back(entity);
+        }
+        pendingRemovals.clear();
+
+        // Process pending additions
+        for (Entity entity: pendingAdditions) {
+            activeEntities.push_back(entity);
+        }
+        pendingAdditions.clear();
     }
 
     ComponentTypeID ECS::getComponentTypeID(const std::string &typeName) {
@@ -96,7 +135,75 @@ namespace blipcade::ecs {
         return quickjs::value::undefined(ctx);
     }
 
-    void ECS::forEachEntity(const std::vector<std::string> &componentTypes, const quickjs::value &callback, bool reverse = false) {
+    void ECS::processEntities(const quickjs::value &callback, const ComponentMask& requiredMask, const std::vector<ComponentTypeID> &typeIDs, Entity entity) {
+        if (entity >= entities.size()) {
+            std::cerr << "Invalid entity ID detected: " << entity << std::endl;
+            return;
+        }
+
+        const auto &entityData = entities[entity];
+
+        // Ensure the entity's component mask is large enough
+        if (entityData.componentMask.size() < requiredMask.size()) {
+            return;
+        }
+
+        // Check if the entity has all the required components using bitmask
+        if (isSubsetOf(requiredMask, entityData.componentMask)) {
+            // Prepare arguments: entity ID and component values
+            size_t argc = 1 + typeIDs.size();
+            std::vector<quickjs::value> argv;
+            argv.reserve(argc);
+
+            // First argument: entity ID as a number
+            argv.emplace_back(callback.get_context(), entity);
+
+            // Subsequent arguments: component values
+            for (size_t i = 0; i < typeIDs.size(); ++i) {
+                ComponentTypeID typeID = typeIDs[i];
+                argv.push_back(entityData.components.at(typeID));
+            }
+
+            // Call the callback function
+            try {
+                callback.call(quickjs::value::undefined(callback.get_context()), argv.begin(), argv.end());
+            } catch (const quickjs::value_error &e) {
+                std::cerr << "JavaScript error: " << e.what() << std::endl;
+                if (e.stack()) {
+                    std::cerr << "Stack trace: " << e.stack() << std::endl;
+                }
+            } catch (const quickjs::value_exception &e) {
+                auto val = e.val();
+                if (val.valid()) {
+                    std::cerr << "JavaScript exception: " << val.as_cstring().c_str() << std::endl;
+
+                    // Try to get the stack trace
+                    auto stack = val.get_property("stack");
+                    if (stack.valid() && !stack.is_undefined()) {
+                        std::cerr << "Stack trace:\n" << stack.as_cstring().c_str() << std::endl;
+                    } else {
+                        std::cerr << "No stack trace available." << std::endl;
+                    }
+                } else {
+                    std::cerr << "Invalid JavaScript exception value" << std::endl;
+                }
+            } catch (const quickjs::value_error &e) {
+                std::cerr << "JavaScript error: " << e.what() << std::endl;
+                if (e.stack()) {
+                    std::cerr << "Stack trace:\n" << e.stack() << std::endl;
+                }
+            } catch (const quickjs::exception &e) {
+                std::cerr << "QuickJS exception: " << e.what() << std::endl;
+            } catch (const std::exception &e) {
+                std::cerr << "C++ exception: " << e.what() << std::endl;
+            } catch (...) {
+                std::cerr << "Unknown exception" << std::endl;
+            }
+        }
+    }
+
+    void ECS::forEachEntity(const std::vector<std::string> &componentTypes, const quickjs::value &callback,
+                            bool reverse) {
         // Ensure the callback is a function
         if (!callback.is_function()) {
             throw quickjs::throw_exception(
@@ -116,66 +223,25 @@ namespace blipcade::ecs {
             requiredMask.set(typeID);
         }
 
-        for (Entity entity = 0; entity < entities.size(); ++entity) {
-            const auto &entityData = entities[entity];
+        iterationDepth++;
 
-            // Ensure the entity's component mask is large enough
-            if (entityData.componentMask.size() < requiredMask.size()) {
-                continue;
+        if (reverse) {
+            for (auto it = activeEntities.rbegin(); it != activeEntities.rend(); ++it) {
+                processEntities(callback, requiredMask, typeIDs, *it);
             }
-
-            // Check if the entity has all the required components using bitmask
-            if (isSubsetOf(requiredMask, entityData.componentMask)) {
-                // Prepare arguments: entity ID and component values
-                size_t argc = 1 + typeIDs.size();
-                std::vector<quickjs::value> argv;
-                argv.reserve(argc);
-
-                // First argument: entity ID as a number
-                argv.emplace_back(callback.get_context(), entity);
-
-                // Subsequent arguments: component values
-                for (size_t i = 0; i < typeIDs.size(); ++i) {
-                    ComponentTypeID typeID = typeIDs[i];
-                    argv.push_back(entityData.components.at(typeID));
-                }
-
-                // Call the callback function
-                try {
-                    callback.call(quickjs::value::undefined(callback.get_context()), argv.begin(), argv.end());
-                } catch (const quickjs::value_error &e) {
-                    std::cerr << "JavaScript error: " << e.what() << std::endl;
-                    if (e.stack()) {
-                        std::cerr << "Stack trace: " << e.stack() << std::endl;
-                    }
-                } catch (const quickjs::value_exception &e) {
-                    auto val = e.val();
-                    if (val.valid()) {
-                        std::cerr << "JavaScript exception: " << val.as_cstring().c_str() << std::endl;
-
-                        // Try to get the stack trace
-                        auto stack = val.get_property("stack");
-                        if (stack.valid() && !stack.is_undefined()) {
-                            std::cerr << "Stack trace:\n" << stack.as_cstring().c_str() << std::endl;
-                        } else {
-                            std::cerr << "No stack trace available." << std::endl;
-                        }
-                    } else {
-                        std::cerr << "Invalid JavaScript exception value" << std::endl;
-                    }
-                } catch (const quickjs::value_error &e) {
-                    std::cerr << "JavaScript error: " << e.what() << std::endl;
-                    if (e.stack()) {
-                        std::cerr << "Stack trace:\n" << e.stack() << std::endl;
-                    }
-                } catch (const quickjs::exception &e) {
-                    std::cerr << "QuickJS exception: " << e.what() << std::endl;
-                } catch (const std::exception &e) {
-                    std::cerr << "C++ exception: " << e.what() << std::endl;
-                } catch (...) {
-                    std::cerr << "Unknown exception" << std::endl;
-                }
+        } else {
+            for (Entity entity: activeEntities) {
+                processEntities(callback, requiredMask, typeIDs, entity);
             }
+        }
+        // for (Entity entity: activeEntities) {
+            // processEntities(callback, requiredMask, typeIDs, entity);
+        // }
+
+        iterationDepth--;
+        assert(iterationDepth >= 0 && "Iteration depth cannot be negative.");
+        if (iterationDepth == 0) {
+            applyDeferredOperations();
         }
     }
 

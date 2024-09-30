@@ -442,7 +442,7 @@ namespace blipcade::runtime {
         auto ECS = global.get_property("ECS");
         const std::shared_ptr<quickjs::context> ctx = m_runtime.getContext();
 
-        ECS.set_property("createEntity", [&ecs, &ctx](const quickjs::args &a) {
+        ECS.set_property("createEntity", [&ecs](const quickjs::args &a) {
             auto const entity = ecs.createEntity();
             return entity;
         });
@@ -459,7 +459,7 @@ namespace blipcade::runtime {
         auto ECS = global.get_property("ECS");
         const std::shared_ptr<quickjs::context> ctx = m_runtime.getContext();
 
-        ECS.set_property("destroyEntity", [&ecs, &ctx](const quickjs::args &a) {
+        ECS.set_property("destroyEntity", [&ecs](const quickjs::args &a) {
             auto argsCount = a.size();
 
             if (argsCount < 1) {
@@ -515,7 +515,7 @@ namespace blipcade::runtime {
         auto ECS = global.get_property("ECS");
         const std::shared_ptr<quickjs::context> ctx = m_runtime.getContext();
 
-        ECS.set_property("removeComponent", [&ecs, &ctx](const quickjs::args &a) {
+        ECS.set_property("removeComponent", [&ecs](const quickjs::args &a) {
             auto argsCount = a.size();
 
             if (argsCount < 2) {
@@ -542,7 +542,7 @@ namespace blipcade::runtime {
         auto ECS = global.get_property("ECS");
         const std::shared_ptr<quickjs::context> ctx = m_runtime.getContext();
 
-        ECS.set_property("getComponent", [&ecs, &ctx](const quickjs::args &a) {
+        ECS.set_property("getComponent", [&ecs](const quickjs::args &a) {
             auto argsCount = a.size();
 
             if (argsCount < 2) {
@@ -560,22 +560,17 @@ namespace blipcade::runtime {
     /**
      * @function forEachEntity
      * @param {Array} componentTypes - An array of string component types to filter entities by.
-     * @param {function} callback - The callback function to call for each entity.
+     * @param {function} callback - The callback function to call for each entity. The first argument is the entity ID. Subsequent arguments are the components in the order specified in the `componentTypes` array.
      * @param {boolean} [reverse=false] - Whether to iterate over entities in reverse order.
-     * @description Iterates over entities that have all the specified components.
+     * @description Iterates over entities that have all the specified components. Iteration order is guaranteed to be the same as the order in which entities were created.
      *
-     * @example
-     * ECS.forEachEntity(["Position", "Velocity"], (entity) => {
-     *     const position = ECS.getComponent(entity, "Position");
-     *     const velocity = ECS.getComponent(entity, "Velocity");
-     *     // Do something with the position and velocity components
-     * });
+     * @example ECS.forEachEntity(["Position", "Velocity"], (entity, position, velocity) => { ... }
      */
     void JSBindings::bindForEachEntity(quickjs::value &global, ecs::ECS &ecs) {
         auto ECS = global.get_property("ECS");
         const std::shared_ptr<quickjs::context> ctx = m_runtime.getContext();
 
-        ECS.set_property("forEachEntity", [&ecs, ctx](const quickjs::args &a) {
+        ECS.set_property("forEachEntity", [&ecs](const quickjs::args &a) {
             auto argsCount = a.size();
 
             if (argsCount < 2) {

@@ -42,6 +42,69 @@ namespace blipcade::graphics {
         devtool = std::make_unique<devtool::Devtool>(runtime);
     }
 
+    bool Renderer::handleInput(runtime::Runtime * const runtime) {
+        if (IsKeyPressed(KEY_ESCAPE)) {
+#ifndef EMSCRIPTEN
+            if (devtool->isActive()) {
+                devtool->setActive(false);
+            } else {
+                return true;
+            }
+#else
+                CloseWindow();
+#endif
+
+        }
+
+        if (IsKeyDown(KEY_LEFT)) {
+            runtime->keyDown(runtime::Key::Left);
+        } else {
+            runtime->keyUp(runtime::Key::Left);
+        }
+
+        if (IsKeyDown(KEY_RIGHT)) {
+            runtime->keyDown(runtime::Key::Right);
+        } else {
+            runtime->keyUp(runtime::Key::Right);
+        }
+
+        if (IsKeyDown(KEY_UP)) {
+            runtime->keyDown(runtime::Key::Up);
+        } else {
+            runtime->keyUp(runtime::Key::Up);
+        }
+
+        if (IsKeyDown(KEY_DOWN)) {
+            runtime->keyDown(runtime::Key::Down);
+        } else {
+            runtime->keyUp(runtime::Key::Down);
+        }
+
+        if (IsKeyDown(KEY_Z)) {
+            runtime->keyDown(runtime::Key::A);
+        } else {
+            runtime->keyUp(runtime::Key::A);
+        }
+
+        if (IsKeyDown(KEY_C)) {
+            runtime->keyDown(runtime::Key::A);
+        } else {
+            runtime->keyUp(runtime::Key::A);
+        }
+
+        if (IsKeyDown(KEY_X)) {
+            runtime->keyDown(runtime::Key::B);
+        } else {
+            runtime->keyUp(runtime::Key::B);
+        }
+
+        // ctrl/cmd + alt + i to open dev tools
+        if ((IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_LEFT_SUPER)) && IsKeyDown(KEY_LEFT_ALT) && IsKeyPressed(KEY_I)) {
+            devtool->setActive(!devtool->isActive());
+        }
+        return false;
+    }
+
     void Renderer::createWindow() {
 #ifndef EMSCRIPTEN
         SetConfigFlags(FLAG_WINDOW_RESIZABLE);
@@ -77,65 +140,7 @@ namespace blipcade::graphics {
         while (!WindowShouldClose()) // Detect window close button or ESC key
         {
 
-            if (IsKeyPressed(KEY_ESCAPE)) {
-#ifndef EMSCRIPTEN
-                if (devtool->isActive()) {
-                    devtool->setActive(false);
-                } else {
-                    break;
-                }
-#else
-                CloseWindow();
-#endif
-
-            }
-
-            if (IsKeyDown(KEY_LEFT)) {
-                runtime->keyDown(runtime::Key::Left);
-            } else {
-                runtime->keyUp(runtime::Key::Left);
-            }
-
-            if (IsKeyDown(KEY_RIGHT)) {
-                runtime->keyDown(runtime::Key::Right);
-            } else {
-                runtime->keyUp(runtime::Key::Right);
-            }
-
-            if (IsKeyDown(KEY_UP)) {
-                runtime->keyDown(runtime::Key::Up);
-            } else {
-                runtime->keyUp(runtime::Key::Up);
-            }
-
-            if (IsKeyDown(KEY_DOWN)) {
-                runtime->keyDown(runtime::Key::Down);
-            } else {
-                runtime->keyUp(runtime::Key::Down);
-            }
-
-            if (IsKeyDown(KEY_Z)) {
-                runtime->keyDown(runtime::Key::A);
-            } else {
-                runtime->keyUp(runtime::Key::A);
-            }
-
-            if (IsKeyDown(KEY_C)) {
-                runtime->keyDown(runtime::Key::A);
-            } else {
-                runtime->keyUp(runtime::Key::A);
-            }
-
-            if (IsKeyDown(KEY_X)) {
-                runtime->keyDown(runtime::Key::B);
-            } else {
-                runtime->keyUp(runtime::Key::B);
-            }
-
-            // ctrl/cmd + alt + i to open dev tools
-            if ((IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_LEFT_SUPER)) && IsKeyDown(KEY_LEFT_ALT) && IsKeyPressed(KEY_I)) {
-                devtool->setActive(!devtool->isActive());
-            }
+            if (handleInput(runtime)) break;
 
             const auto fps = GetFPS();
             devtool->setFPS(fps);

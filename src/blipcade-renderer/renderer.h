@@ -31,6 +31,8 @@ namespace blipcade::graphics {
         void setCanvas(const Canvas &canvas);
         void setRuntime(runtime::Runtime &runtime);
 
+        bool handleInput(runtime::Runtime *runtime);
+
         void mainLoop();
 
         static void staticMainLoop();

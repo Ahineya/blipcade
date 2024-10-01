@@ -181,6 +181,9 @@ namespace blipcade::graphics {
 
             const float rotation = 0.0f;
 
+            devtool->setCanvasOffset({offsetX, offsetY});
+            devtool->setScale(scaleFactor);
+
             // Mouse input
             const auto mouse_pos = GetMousePosition();
 

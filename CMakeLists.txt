@@ -85,6 +85,8 @@ set(SOURCES
         src/blipcade-runtime/mousestate.cpp
         src/blipcade-ecs/ECS.cpp
         src/blipcade-devtool/devtool.cpp
+        src/blipcade-devtool/polygonEditor.cpp
+        src/blipcade-devtool/polygonEditor.h
 )
 
 # Path to the JSON file

@@ -6,9 +6,15 @@
 
 #include <imgui.h>
 #include <runtime.h>
+#include <algorithm> // For std::transform
 
 namespace blipcade::devtool {
-    Devtool::Devtool(runtime::Runtime &runtime): active(false), runtime(runtime) {
+    Devtool::Devtool(runtime::Runtime &runtime)
+        : active(false), runtime(runtime), tagFilter(""), polygonEditor(*this) {
+        // Initialize the buffer with the empty string
+        std::strncpy(tagFilterBuffer, tagFilter.c_str(), sizeof(tagFilterBuffer));
+        // Ensure null-termination
+        tagFilterBuffer[sizeof(tagFilterBuffer) - 1] = '\0';
     }
 
     Devtool::~Devtool() {
@@ -26,6 +32,22 @@ namespace blipcade::devtool {
         this->FPS = FPS;
     }
 
+    void Devtool::setScale(float scale) {
+        this->scale = scale;
+    }
+
+    void Devtool::setCanvasOffset(const Vector2 &offset) {
+        this->canvasOffset = offset;
+    }
+
+    float Devtool::getScale() const {
+        return scale;
+    }
+
+    Vector2 Devtool::getCanvasOffset() const {
+        return canvasOffset;
+    }
+
     static bool show_demo_window = false;
 
     void Devtool::draw() {
@@ -36,15 +58,31 @@ namespace blipcade::devtool {
         ImGui::Begin("Blipcade Devtool", &active, ImGuiWindowFlags_MenuBar);
         if (ImGui::BeginMenuBar()) {
             if (ImGui::MenuItem("Show demo UI", "")) { show_demo_window = true; }
+            if (ImGui::MenuItem("Polygon Editor", "")) { polygonEditor.SetActive(true); }
+            if (ImGui::MenuItem("Close", "Ctrl+W")) { active = false; }
+            ImGui::EndMenuBar();
         }
-        if (ImGui::MenuItem("Close", "Ctrl+W")) { active = false; }
-        ImGui::EndMenuBar();
+
 
         ImGui::Text("FPS: %f", FPS);
 
+        // Add a separator and the filter input
+        ImGui::Separator();
+        ImGui::Text("Filter Entities by Tag:");
+
+        // Display the InputText widget with the buffer
+        if (ImGui::InputText("##TagFilter", tagFilterBuffer, sizeof(tagFilterBuffer))) {
+            // Update the std::string when the buffer changes
+            tagFilter = std::string(tagFilterBuffer);
+        }
+        ImGui::Separator();
+
         // Draw the ECS inspector
-        auto ecs = runtime.getECS();
         RenderECSInspector();
+
+        if (polygonEditor.IsActive()) {
+            polygonEditor.Draw();
+        }
 
         ImGui::End();
 
@@ -83,72 +121,104 @@ namespace blipcade::devtool {
         return properties;
     }
 
-    // Recursive function to draw the properties of the component
-    void Devtool::RenderECSInspector() const {
-        auto const ecs = runtime.getECS();
-        auto const ctx = runtime.getContext();
-        auto entities = ecs->getActiveEntities();
-        ImGui::Text("Entities: %d", static_cast<int>(entities.size()));
-        ImGui::Separator();
+void Devtool::RenderECSInspector() const {
+    auto const ecs = runtime.getECS();
+    auto const ctx = runtime.getContext();
+    auto entities = ecs->getActiveEntities();
 
-        for (auto entity: entities) {
-            ImGui::PushID(entity); // Assuming 'entity' is unique
+    ImGui::Text("Entities: %d", static_cast<int>(entities.size()));
+    ImGui::Separator();
 
-            auto const tag = ecs->getComponent(entity, "Tag");
+    for (auto entity: entities) {
+        // Retrieve the Tag component
+        auto const tag = ecs->getComponent(entity, "Tag");
 
-            if (!tag.is_undefined()) {
-                ImGui::Text("Entity: %s", tag.as_cstring().c_str());
-            } else {
-                ImGui::Text("Entity: %d", entity);
+        // Check if the entity has a Tag component
+        if (!tag.is_undefined()) {
+            std::string entityTag = tag.as_cstring().c_str();
+
+            // If a filter is set, check if the entity's tag contains the filter string
+            if (!tagFilter.empty()) {
+                // Case-insensitive search
+                std::string lowerEntityTag = entityTag;
+                std::string lowerFilter = tagFilter;
+                std::transform(lowerEntityTag.begin(), lowerEntityTag.end(), lowerEntityTag.begin(), ::tolower);
+                std::transform(lowerFilter.begin(), lowerFilter.end(), lowerFilter.begin(), ::tolower);
+
+                if (lowerEntityTag.find(lowerFilter) == std::string::npos) {
+                    continue; // Skip entities that don't match the filter
+                }
             }
 
-            ImGui::Indent();
+            ImGui::PushID(entity); // Assuming 'entity' is unique
+            ImGui::Text("Entity: %s", entityTag.c_str());
+        } else {
+            // If no Tag component, handle based on whether a filter is active
+            if (!tagFilter.empty()) {
+                continue; // Skip entities without a Tag if a filter is applied
+            }
 
-            if (ImGui::TreeNode("Components")) {
-                std::unordered_map<ecs::ComponentTypeID, quickjs::value> components = ecs->getComponents(entity);
-                for (auto [typeID, component]: components) {
-                    // Push a unique ID for each component within the entity scope
-                    ImGui::PushID(typeID); // Assuming 'typeID' is unique within the entity
+            ImGui::PushID(entity); // Assuming 'entity' is unique
+            ImGui::Text("Entity: %d", entity);
+        }
 
-                    auto const componentName = ecs->getComponentName(typeID);
-                    ImGui::Text("Component: %s", componentName.c_str());
+        ImGui::Indent();
 
-                    ImGui::Indent();
+        if (ImGui::TreeNode("Components")) {
+            std::unordered_map<ecs::ComponentTypeID, quickjs::value> components = ecs->getComponents(entity);
+            for (auto [typeID, component]: components) {
+                // Push a unique ID for each component within the entity scope
+                ImGui::PushID(typeID); // Assuming 'typeID' is unique within the entity
 
-                    // Retrieve properties using Object.keys
-                    std::vector<PropertyPair> properties = getObjectProperties(*ctx, component);
+                auto const componentName = ecs->getComponentName(typeID);
+                ImGui::Text("Component: %s", componentName.c_str());
 
-                    if (!component.is_object()) {
-                        ImGui::Text("%s", component.as_cstring().c_str());
-                        ImGui::Unindent();
-                        ImGui::PopID(); // Pop component ID
-                        continue;
-                    }
+                ImGui::Indent();
 
-                    for (const auto &[name, value]: properties) {
-                        if (value.is_object()) {
-                            if (ImGui::TreeNode(name.c_str())) {
-                                // No need to push ID here if 'name' is unique within component
-                                drawObjectRecursive(*ctx, name, value);
-                                ImGui::TreePop();
-                            }
-                        } else {
-                            ImGui::Text("%s: %s", name.c_str(), value.as_cstring().c_str());
-                        }
-                    }
+                // Retrieve properties using Object.keys
+                std::vector<PropertyPair> properties = getObjectProperties(*ctx, component);
 
+                if (!component.is_object()) {
+                    ImGui::Text("%s", component.as_cstring().c_str());
                     ImGui::Unindent();
                     ImGui::PopID(); // Pop component ID
+                    continue;
                 }
 
-                ImGui::TreePop();
+                for (const auto &[name, value]: properties) {
+                    if (value.is_object()) {
+                        if (ImGui::TreeNode(name.c_str())) {
+                            drawObjectRecursive(*ctx, name, value);
+                            ImGui::TreePop();
+                        }
+                    } else if (value.is_number()) {
+                        auto v = static_cast<float>(value.as_double());
+
+                        // We want DragFloat to have max width of 100
+                        ImGui::PushID((name + std::to_string(entity)).c_str());
+                        ImGui::Text("%s:", name.c_str());
+                        ImGui::SameLine();
+                        ImGui::PushItemWidth(100);
+                        ImGui::DragFloat("##xx", &v);
+                        ImGui::PopItemWidth();
+                        ImGui::PopID();
+                    } else {
+                        ImGui::Text("%s: %s", name.c_str(), value.as_cstring().c_str());
+                    }
+                }
+
+                ImGui::Unindent();
+                ImGui::PopID(); // Pop component ID
             }
 
-            ImGui::Unindent();
-            ImGui::Separator();
-            ImGui::PopID(); // Pop entity ID
+            ImGui::TreePop();
         }
+
+        ImGui::Unindent();
+        ImGui::Separator();
+        ImGui::PopID(); // Pop entity ID
     }
+}
 
     void Devtool::drawObjectRecursive(quickjs::context& ctx, const std::string& prefix, const quickjs::value& object) const {
         // Push a unique ID based on the prefix
@@ -162,7 +232,6 @@ namespace blipcade::devtool {
             if (value.is_object()) {
                 if (!value.is_null() && !value.is_undefined()) {
                     if (ImGui::TreeNode(name.c_str())) {
-                        // Recursively push IDs based on the current property name
                         drawObjectRecursive(ctx, displayName, value);
                         ImGui::TreePop();
                     }

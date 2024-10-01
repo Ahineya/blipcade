@@ -6,6 +6,8 @@
 #define DEVTOOL_H
 #include <ECS.h>
 
+#include "polygonEditor.h"
+
 
 namespace blipcade::runtime {
     class Runtime;
@@ -27,12 +29,26 @@ namespace blipcade::devtool {
 
         void drawObjectRecursive(quickjs::context &ctx, const std::string &prefix, const quickjs::value &object) const;
 
+        void setScale(float scale);
+        void setCanvasOffset(const Vector2 &offset);
+
+        [[nodiscard]] float getScale() const;
+        [[nodiscard]] Vector2 getCanvasOffset() const;
+
     private:
         bool active = false;
 
         runtime::Runtime &runtime;
 
         double FPS = 0;
+
+        Vector2 canvasOffset = {0, 0};
+        float scale = 1.0f;
+
+        std::string tagFilter;
+        char tagFilterBuffer[256];
+
+        PolygonEditor polygonEditor;
     };
 }
 

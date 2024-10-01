@@ -5,6 +5,7 @@ import re
 import sys
 import argparse
 import os
+from collections import defaultdict
 
 def extract_jsdoc_comments(file_content):
     """
@@ -137,7 +138,7 @@ def parse_param(line):
     param_regex = re.compile(
         r'@param\s+'
         r'(?:\{([\w\[\]]+)\}\s+)?'                  # Optional {type}, supports array types like number[]
-        r'(?:\[(\w+)(?:=([^\]]+))?\]|\b(\w+))'      # [name=default] or name
+        r'(?:\[(?:([\w.\-]+))(?:=([^\]]+))?\]|\b([\w.\-]+))'  # [name=default] or name, allowing dots and hyphens
         r'(?:\s*-\s*)?'                             # Optional - separator
         r'(.*)'                                      # Description
     )
@@ -198,7 +199,7 @@ def parse_property(line):
         dict: Property details including name, type, and description.
     """
     property_regex = re.compile(
-        r'@property\s+\{([\w\[\]]+)\}\s+(\w+)\s*-\s*(.*)'
+        r'@property\s+\{([\w\[\]]+)\}\s+([\w.\-]+)\s*-\s*(.*)'
     )
     match = property_regex.match(line)
     if match:
@@ -257,13 +258,20 @@ def generate_dts(parsed_data):
     dts_lines.append('export {};\n\n')
     dts_lines.append('declare global {\n')
 
+    # Collect interface definitions to avoid duplicates
+    interface_definitions = defaultdict(dict)  # {Namespace: {InterfaceName: [properties]}}
+
     # Handle global functions and properties
     if 'global' in parsed_data:
         for func in parsed_data['global']['functions']:
             if func['function']:
-                dts_lines.append(generate_function_declaration(func, indent=4))
+                func_declarations, interfaces = generate_function_declaration(func, indent=4)
+                dts_lines.extend(func_declarations)
+                for interface_name, props in interfaces.items():
+                    interface_definitions['global'][interface_name] = props
         for prop in parsed_data['global']['properties']:
-            dts_lines.append(generate_property_declaration(prop, indent=4))
+            prop_declaration = generate_property_declaration(prop, indent=4)
+            dts_lines.append(prop_declaration)
 
     # Handle nested namespaces
     for namespace, content in parsed_data.items():
@@ -272,10 +280,25 @@ def generate_dts(parsed_data):
         dts_lines.append(f'    namespace {namespace} {{\n')
         for func in content['functions']:
             if func['function']:
-                dts_lines.append(generate_function_declaration(func, indent=8))
+                func_declarations, interfaces = generate_function_declaration(func, indent=8)
+                dts_lines.extend(func_declarations)
+                for interface_name, props in interfaces.items():
+                    interface_definitions[namespace][interface_name] = props
         for prop in content['properties']:
-            dts_lines.append(generate_property_declaration(prop, indent=8))
+            prop_declaration = generate_property_declaration(prop, indent=8)
+            dts_lines.append(prop_declaration)
         dts_lines.append('    }\n\n')
+
+    # Add interface definitions
+    for namespace, interfaces in interface_definitions.items():
+        for interface_name, properties in interfaces.items():
+            dts_lines.append(f'    interface {interface_name} {{\n')
+            for prop in properties:
+                optional = '?' if prop['optional'] else ''
+                # Optionally include default values as comments
+                default_comment = f' // Default: {prop["default"]}' if prop.get("default") else ''
+                dts_lines.append(f'        {prop["name"]}{optional}: {prop["type"]};{default_comment}\n')
+            dts_lines.append('    }\n\n')
 
     dts_lines.append('}\n')
     return ''.join(dts_lines)
@@ -289,7 +312,7 @@ def generate_function_declaration(func, indent=4):
         indent (int): Number of spaces for indentation.
 
     Returns:
-        str: Function declaration in TypeScript.
+        tuple: (List of declaration strings, Dict of interface definitions)
     """
     indent_space = ' ' * indent
     func_name = func['function']
@@ -297,10 +320,48 @@ def generate_function_declaration(func, indent=4):
     return_type = func['returns']['type'] if func['returns'] else 'void'
 
     param_strings = []
+    interfaces = {}
+    nested_params = defaultdict(list)  # {object_name: [param_dict, ...]}
+
+    # First, collect all parameters and detect nested ones
     for param in params:
+        if '.' in param['name']:
+            obj_name, prop_name = param['name'].split('.', 1)
+            nested_params[obj_name].append({
+                'name': prop_name,
+                'type': param['type'],
+                'optional': param['optional'],
+                'default': param.get('default')
+            })
+        else:
+            param_strings.append({
+                'name': param['name'],
+                'type': param['type'],
+                'optional': param['optional']
+            })
+
+    # Handle nested parameters by creating interfaces
+    for obj_name, props in nested_params.items():
+        interface_name = f"{camel_case(func_name)}{camel_case(obj_name)}Params"
+        interfaces[interface_name] = props
+        # Check if obj_name already exists in param_strings
+        existing_param = next((p for p in param_strings if p['name'] == obj_name), None)
+        if existing_param:
+            existing_param['type'] = interface_name
+        else:
+            param_strings.append({
+                'name': obj_name,
+                'type': interface_name,
+                'optional': False  # Assuming the object itself is required; adjust if needed
+            })
+
+    # Generate parameter strings
+    final_param_strings = []
+    for param in param_strings:
         optional = '?' if param['optional'] else ''
-        param_strings.append(f'{param["name"]}{optional}: {param["type"]}')
-    params_str = ', '.join(param_strings)
+        final_param_strings.append(f'{param["name"]}{optional}: {param["type"]}')
+
+    params_str = ', '.join(final_param_strings)
 
     # JSDoc for the function
     jsdoc = []
@@ -311,7 +372,10 @@ def generate_function_declaration(func, indent=4):
         jsdoc.append(f'{indent_space} */\n')
 
     declaration = f'{indent_space}function {func_name}({params_str}): {return_type};\n\n'
-    return ''.join(jsdoc) + declaration
+
+    # Collect declarations and interfaces
+    declarations = jsdoc + [declaration]
+    return declarations, interfaces
 
 def generate_property_declaration(prop, indent=4):
     """
@@ -333,6 +397,19 @@ def generate_property_declaration(prop, indent=4):
         jsdoc.append(f'{indent_space}/**\n{indent_space} * {description}\n{indent_space} */\n')
     declaration = f'{indent_space}const {prop_name}: {prop_type};\n\n'
     return ''.join(jsdoc) + declaration
+
+def camel_case(s):
+    """
+    Converts a string to CamelCase.
+
+    Args:
+        s (str): Input string.
+
+    Returns:
+        str: CamelCase string.
+    """
+    parts = re.split(r'[\.\-_]', s)
+    return ''.join(word.capitalize() for word in parts)
 
 def get_js_files(path):
     """

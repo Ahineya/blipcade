@@ -983,14 +983,14 @@ namespace quickjs
 			return JS_IsBool(val_);
 		}
 
-//		bool as_bool() const
-//		{
-//			validate();
-//			bool ret = false;
-//			if (!as_bool(ret))
-//				throw_value_exception("not a int32 value");
-//			return ret;
-//		}
+		bool as_bool() const
+		{
+			validate();
+			bool ret = false;
+			if (!as_bool(ret))
+				throw_value_exception("not a int32 value");
+			return ret;
+		}
 
 		bool as_bool(bool& val) const
 		{

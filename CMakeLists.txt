@@ -12,6 +12,7 @@ include_directories(${CMAKE_SOURCE_DIR}/src/blipcade-api)
 include_directories(${CMAKE_SOURCE_DIR}/src/blipcade-runtime)
 include_directories(${CMAKE_SOURCE_DIR}/src/blipcade-loader)
 include_directories(${CMAKE_SOURCE_DIR}/src/blipcade-ecs)
+include_directories(${CMAKE_SOURCE_DIR}/src/blipcade-devtool)
 include_directories(${CMAKE_SOURCE_DIR}/external/quickjs-patched)
 
 FetchContent_Declare(
@@ -47,15 +48,25 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(raylib)
 
+# Add Dear ImGui
+FetchContent_Declare(
+        imgui
+        GIT_REPOSITORY "https://github.com/ocornut/imgui.git"
+        GIT_TAG "v1.91.2"
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/imgui
+)
 
-#if (NOT DEFINED EMSCRIPTEN) # For Emscripten, we don't need to fetch GLFW, it's already included.
-#FetchContent_Declare(
-#        glfw
-#        GIT_REPOSITORY https://github.com/glfw/glfw.git
-#        GIT_TAG 3.4
-#)
-#FetchContent_MakeAvailable(glfw)
-#endif()
+FetchContent_Populate(imgui)
+
+# Add rlImGui
+FetchContent_Declare(
+        rlImGui
+        GIT_REPOSITORY "https://github.com/raylib-extras/rlImGui.git"
+        GIT_TAG "main"
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/rlImGui
+)
+
+FetchContent_Populate(rlImGui)
 
 # Add your source files
 set(SOURCES
@@ -73,6 +84,7 @@ set(SOURCES
         src/blipcade-loader/cartridge.cpp
         src/blipcade-runtime/mousestate.cpp
         src/blipcade-ecs/ECS.cpp
+        src/blipcade-devtool/devtool.cpp
 )
 
 # Path to the JSON file
@@ -206,8 +218,37 @@ target_sources(blipcade_cmake PRIVATE
 # Make sure the binary dir is in the include path
 target_include_directories(blipcade_cmake PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
+add_library(imgui_rl STATIC
+        external/imgui/imgui.cpp
+        external/imgui/imgui_draw.cpp
+        external/imgui/imgui_demo.cpp
+        external/imgui/imgui_tables.cpp
+        external/imgui/imgui_widgets.cpp
+)
+
+add_library(rlImGui STATIC
+        external/rlImGui/rlImGui.cpp
+)
+
+
+target_include_directories(imgui_rl
+        PUBLIC
+        ${CMAKE_CURRENT_LIST_DIR}/external/imgui
+        ${CMAKE_CURRENT_LIST_DIR}/external/imgui/backends
+)
+
+target_include_directories(rlImGui
+        PUBLIC
+        ${CMAKE_CURRENT_LIST_DIR}/external/rlImGui
+        ${CMAKE_CURRENT_LIST_DIR}/external/imgui
+        ${CMAKE_CURRENT_LIST_DIR}/external/imgui/backends
+
+        # Include directories for raylib
+        ${raylib_SOURCE_DIR}/src
+)
+
 # Link libraries
-target_link_libraries(blipcade_cmake quickjs raylib ${OPENGL_LIBRARIES} nlohmann_json::nlohmann_json sul::dynamic_bitset)
+target_link_libraries(blipcade_cmake quickjs raylib imgui_rl rlImGui ${OPENGL_LIBRARIES} nlohmann_json::nlohmann_json sul::dynamic_bitset)
 
 # Detect if building with Emscripten
 if (DEFINED EMSCRIPTEN)

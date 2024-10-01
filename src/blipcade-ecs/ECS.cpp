@@ -1,9 +1,14 @@
 #include "ECS.h"
 #include <cassert>
 #include <iostream>
+#include <quickjs.hpp>
+using namespace quickjs;
 
 namespace blipcade::ecs {
-    ECS::ECS(JSContext *ctx) : ctx(ctx), entities({}), freeEntities({}), componentTypeIDs({}), activeEntities({}) {
+
+
+
+    ECS::ECS(quickjs::context &ctx) : ctx(ctx), entities({}), freeEntities({}), componentTypeIDs({}), activeEntities({}) {
     }
 
     ECS::~ECS() {
@@ -12,6 +17,36 @@ namespace blipcade::ecs {
             entityData.components.clear();
             entityData.componentMask.clear(); // Clear the bitset
         }
+    }
+
+    std::vector<ComponentProperty> ECS::getComponentProperties(value& component) {
+        std::vector<ComponentProperty> properties;
+
+        if (!component.is_object()) {
+            return properties;
+        }
+
+        // Get the Object global
+        value Object = ctx.get_global_object().get_property("Object");
+        // Get the keys of the object
+        value keys = Object.call_member("keys", component);
+
+        if (!keys.is_array()) {
+            return properties;
+        }
+
+        uint32_t length = keys.get_property("length").as_uint32();
+
+        for (uint32_t i = 0; i < length; ++i) {
+            quickjs::value key = keys.get_property(i);
+            if (key.is_string()) {
+                std::string keyStr = key.as_cstring().c_str();
+                quickjs::value value = component.get_property(keyStr.c_str());
+                properties.emplace_back(keyStr, value);
+            }
+        }
+
+        return properties;
     }
 
     Entity ECS::createEntity() {
@@ -88,6 +123,15 @@ namespace blipcade::ecs {
             return id;
         }
         return it->second;
+    }
+
+    const std::string ECS::getComponentTypeName(ComponentTypeID typeID) {
+        for (const auto &pair: componentTypeIDs) {
+            if (pair.second == typeID) {
+                return pair.first;
+            }
+        }
+        return "";
     }
 
     void ECS::addComponent(Entity entity, const std::string &typeName, quickjs::value component) {
@@ -243,6 +287,28 @@ namespace blipcade::ecs {
         if (iterationDepth == 0) {
             applyDeferredOperations();
         }
+    }
+
+    const std::vector<Entity>& ECS::getActiveEntities() const {
+        return activeEntities;
+    }
+
+    const std::unordered_map<std::string, ComponentTypeID>& ECS::getComponentTypeIDs() const {
+        return componentTypeIDs;
+    }
+
+    std::unordered_map<ComponentTypeID, quickjs::value>& ECS::getComponents(Entity entity) {
+        assert(entity < entities.size() && "Entity out of range.");
+        return entities[entity].components;
+    }
+
+    std::string ECS::getComponentName(ComponentTypeID typeID) {
+        for (const auto &pair: componentTypeIDs) {
+            if (pair.second == typeID) {
+                return pair.first;
+            }
+        }
+        return "";
     }
 
     bool ECS::isSubsetOf(const ComponentMask &requiredMask, const ComponentMask &entityMask) {

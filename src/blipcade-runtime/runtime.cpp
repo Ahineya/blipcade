@@ -82,6 +82,10 @@ namespace blipcade::runtime {
         return spritesheets;
     }
 
+    std::shared_ptr<ecs::ECS> Runtime::getECS() const {
+        return ecs;
+    }
+
     void Runtime::setCartridge(std::shared_ptr<Cartridge> cart) {
         cartridge = std::move(cart);
     }

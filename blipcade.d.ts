@@ -53,7 +53,7 @@ declare global {
         /**
          * Draws a circle on the canvas.
          */
-        function drawCircle(center_x: number, center_y: number, radius: number, color: number): void;
+        function drawCircle(center_x: number, center_y: number, radius: number, color: number, params: object): void;
 
     }
 
@@ -66,7 +66,7 @@ declare global {
          * maskImagePath: "assets/masks/trapezoid.png"
          * });
          */
-        function addLightEffect(name: string, params: object, params: number, params: number, params: string): void;
+        function addLightEffect(name: string, params: AddlighteffectParamsParams): void;
 
         /**
          * Removes an existing light effect.
@@ -81,7 +81,7 @@ declare global {
          * opacity: 0.7
          * });
          */
-        function updateLightEffect(name: string, params: object): void;
+        function updateLightEffect(name: string, params: UpdatelighteffectParamsParams): void;
 
         /**
          * Updates the opacity of an existing light effect.
@@ -141,6 +141,18 @@ declare global {
          */
         function forEachEntity(componentTypes: any[], callback: Function, reverse?: boolean): void;
 
+    }
+
+    interface AddlighteffectParamsParams {
+        tintColor: number;
+        opacity: number;
+        maskImagePath: string;
+    }
+
+    interface UpdatelighteffectParamsParams {
+        tintColor?: number;
+        opacity?: number;
+        maskImagePath?: string;
     }
 
 }

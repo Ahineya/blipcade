@@ -108,6 +108,8 @@ namespace blipcade::runtime {
 
         [[nodiscard]] std::shared_ptr<std::vector<graphics::Spritesheet>> getSpritesheets() const;
 
+        [[nodiscard]] std::shared_ptr<ecs::ECS> getECS() const;
+
 
         void setCartridge(std::shared_ptr<Cartridge>);
 

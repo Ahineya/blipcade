@@ -1,15 +1,18 @@
 #include "renderer.h"
+
+#include <imgui.h>
+
 #include "palette685.h"
 #include <iostream>
-#include <json_cart_data.hpp>
 
 #include <raylib.h>
 #include <thread>
 
 #include "canvas.h"
-#include "cartridge.h"
 #include "mousestate.h"
 #include "runtime.h"
+#include "rlImGui.h"
+#include "devtool.h"
 
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
@@ -36,54 +39,7 @@ namespace blipcade::graphics {
 
     void Renderer::setRuntime(runtime::Runtime &runtime) {
         this->runtime = &runtime;
-    }
-
-    void Renderer::staticKeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
-        if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-            glfwSetWindowShouldClose(window, GLFW_TRUE);
-        }
-
-        if (key == GLFW_KEY_LEFT && action == GLFW_PRESS) {
-            instance->runtime->keyDown(runtime::Key::Left);
-        } else if (key == GLFW_KEY_LEFT && action == GLFW_RELEASE) {
-            instance->runtime->keyUp(runtime::Key::Left);
-        }
-
-        if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS) {
-            instance->runtime->keyDown(runtime::Key::Right);
-        } else if (key == GLFW_KEY_RIGHT && action == GLFW_RELEASE) {
-            instance->runtime->keyUp(runtime::Key::Right);
-        }
-
-        if (key == GLFW_KEY_UP && action == GLFW_PRESS) {
-            instance->runtime->keyDown(runtime::Key::Up);
-        } else if (key == GLFW_KEY_UP && action == GLFW_RELEASE) {
-            instance->runtime->keyUp(runtime::Key::Up);
-        }
-
-        if (key == GLFW_KEY_DOWN && action == GLFW_PRESS) {
-            instance->runtime->keyDown(runtime::Key::Down);
-        } else if (key == GLFW_KEY_DOWN && action == GLFW_RELEASE) {
-            instance->runtime->keyUp(runtime::Key::Down);
-        }
-
-        if (key == GLFW_KEY_Z && action == GLFW_PRESS) {
-            instance->runtime->keyDown(runtime::Key::A);
-        } else if (key == GLFW_KEY_Z && action == GLFW_RELEASE) {
-            instance->runtime->keyUp(runtime::Key::A);
-        }
-
-        if (key == GLFW_KEY_C && action == GLFW_PRESS) {
-            instance->runtime->keyDown(runtime::Key::A);
-        } else if (key == GLFW_KEY_C && action == GLFW_RELEASE) {
-            instance->runtime->keyUp(runtime::Key::A);
-        }
-
-        if (key == GLFW_KEY_X && action == GLFW_PRESS) {
-            instance->runtime->keyDown(runtime::Key::B);
-        } else if (key == GLFW_KEY_X && action == GLFW_RELEASE) {
-            instance->runtime->keyUp(runtime::Key::B);
-        }
+        devtool = std::make_unique<devtool::Devtool>(runtime);
     }
 
     void Renderer::createWindow() {
@@ -96,6 +52,7 @@ namespace blipcade::graphics {
         auto sound = LoadSound("resources/blipcade.wav");
 
         SetTargetFPS(30);
+        SetExitKey(KEY_NULL);
 
         const auto runtime = new runtime::Runtime(canvasWidth, canvasHeight);
         setRuntime(*runtime);
@@ -112,8 +69,19 @@ namespace blipcade::graphics {
         HideCursor(); // For some unholy reason this cancels getting mouse position in emscripten
 #endif
 
+        rlImGuiSetup(true);
+
         while (!WindowShouldClose()) // Detect window close button or ESC key
         {
+
+            if (IsKeyPressed(KEY_ESCAPE)) {
+                if (devtool->isActive()) {
+                    devtool->setActive(false);
+                } else {
+                    break;
+                }
+            }
+
             if (IsKeyDown(KEY_LEFT)) {
                 runtime->keyDown(runtime::Key::Left);
             } else {
@@ -155,6 +123,14 @@ namespace blipcade::graphics {
             } else {
                 runtime->keyUp(runtime::Key::B);
             }
+
+            // ctrl/cmd + alt + i to open dev tools
+            if ((IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_LEFT_SUPER)) && IsKeyDown(KEY_LEFT_ALT) && IsKeyPressed(KEY_I)) {
+                devtool->setActive(!devtool->isActive());
+            }
+
+            const auto fps = GetFPS();
+            devtool->setFPS(fps);
 
             runtime->update();
             int windowWidth = GetScreenWidth();
@@ -224,6 +200,14 @@ namespace blipcade::graphics {
             }
 
             BeginDrawing();
+            rlImGuiBegin();
+
+            if (devtool->isActive()) {
+                devtool->draw();
+            }
+
+            // clear
+            ClearBackground(BLACK);
 
             // We want to render this BS to another texture so we can apply post processing
             BeginTextureMode(postProcessTexture);
@@ -246,11 +230,11 @@ namespace blipcade::graphics {
                 {255, 255, 255, 255}
             );
 
-            // runtime->getCanvas()->applyLighting(renderTexture);
-
+            rlImGuiEnd();
             EndDrawing();
         }
 
+        rlImGuiShutdown();
         CloseWindow();
     }
 

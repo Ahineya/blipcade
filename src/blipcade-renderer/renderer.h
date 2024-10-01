@@ -1,7 +1,12 @@
 #pragma once
 #include <cstdint>
+#include <memory>
 
 #include "GLFW/glfw3.h"
+
+namespace blipcade::devtool {
+    class Devtool;
+}
 
 namespace blipcade::runtime {
     class Runtime;
@@ -53,5 +58,7 @@ namespace blipcade::graphics {
         runtime::Runtime *runtime;
 
         static Renderer *instance;
+
+        std::unique_ptr<devtool::Devtool> devtool;
     };
 } // namespace blipcade::graphics

@@ -354,6 +354,7 @@ namespace blipcade::runtime {
     * @param {number} center_y - The y-coordinate of the center of the circle.
     * @param {number} radius - The radius of the circle.
     * @param {number} color - The color of the circle.
+    * @param {object} params - Additional parameters for the circle.
     *
     * @description Draws a circle on the canvas.
     *

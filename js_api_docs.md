@@ -237,6 +237,7 @@ Graphics.drawFilledCircle(100, 100, 50, 0x50); // Draws a filled circle with a r
 | `center_y` | `number` | The y-coordinate of the center of the circle. |
 | `radius` | `number` | The radius of the circle. |
 | `color` | `number` | The color of the circle. |
+| `params` | `object` | Additional parameters for the circle. |
 
 **Example:**
 
@@ -260,9 +261,9 @@ Namespace: `Lighting`
 |------|------|-------------|
 | `name` | `string` | Unique name for the light effect. |
 | `params` | `object` | Parameters for the light effect. |
-| `params` | `number` | .tintColor - The tint color in hexadecimal (e.g., 0xff0000 for red). |
-| `params` | `number` | .opacity - Opacity of the tint (0.0 to 1.0). |
-| `params` | `string` | .maskImagePath - Path to the mask image. |
+| `params.tintColor` | `number` | The tint color in hexadecimal (e.g., 0xff0000 for red). |
+| `params.opacity` | `number` | Opacity of the tint (0.0 to 1.0). |
+| `params.maskImagePath` | `string` | Path to the mask image. |
 
 **Example:**
 
@@ -296,6 +297,14 @@ Namespace: `Lighting`
 |------|------|-------------|
 | `name` | `string` | The name of the light effect to update. |
 | `params` | `object` | Updated parameters for the light effect. |
+
+**Parameters (Optional):**
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| `params.tintColor` | `number` | `N/A` | The new tint color in hexadecimal. |
+| `params.opacity` | `number` | `N/A` | New opacity of the tint. |
+| `params.maskImagePath` | `string` | `N/A` | New path to the mask image. |
 
 **Example:**
 

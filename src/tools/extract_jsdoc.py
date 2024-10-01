@@ -91,7 +91,7 @@ def parse_jsdoc(comment):
             param_regex = re.compile(
                 r'@param\s+'
                 r'(?:\{(\w+)\}\s+)?'                  # Optional {type}
-                r'(?:\[(\w+)(?:=([^\]]+))?\]|\b(\w+))'  # [name=default] or name
+                r'(?:\[(?:([\w.]+))(?:=([^\]]+))?\]|\b([\w.]+))'  # [name=default] or name, allowing dots
                 r'(?:\s*-\s*)?'                       # Optional - separator
                 r'(.*)'                                # Description
             )

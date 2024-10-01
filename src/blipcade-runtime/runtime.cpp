@@ -10,11 +10,11 @@
 #include <json_cart_data.hpp>
 #include <nlohmann/json.hpp>
 #include <quickjs.hpp>
-#include <utility>
 
 #include "cartridge.h"
 #include "JsBindings.h"
 #include "keystate.h"
+#include "collider.h"
 
 auto const WIDTH = 320;
 auto const HEIGHT = 240;
@@ -26,6 +26,7 @@ namespace blipcade::runtime {
                                                        font(nullptr), js_bindings(std::make_unique<JSBindings>(*this)) {
         canvas = std::make_shared<graphics::Canvas>(canvasWidth, canvasHeight); // TODO: make this configurable
         spritesheets = std::make_shared<std::vector<graphics::Spritesheet> >();
+        colliders = std::make_shared<std::vector<collision::Collider> >();
 
         std::string fontHeader = "40 24 04 06";
         std::string fontData =
@@ -62,9 +63,14 @@ namespace blipcade::runtime {
             this->spritesheets->push_back(spritesheet);
         }
 
-        std::cout << "Loaded " << spritesheets.size() << " spritesheets" << std::endl;
-    }
+        const auto colliders = cart->getColliders();
+        for (const auto &collider: colliders) {
+            this->colliders->push_back(collider);
+        }
 
+        std::cout << "Loaded " << spritesheets.size() << " spritesheets" << std::endl;
+        std::cout << "Loaded " << colliders.size() << " colliders" << std::endl;
+    }
 
     std::shared_ptr<graphics::Canvas> Runtime::getCanvas() const {
         return canvas;
@@ -80,6 +86,10 @@ namespace blipcade::runtime {
 
     std::shared_ptr<std::vector<graphics::Spritesheet> > Runtime::getSpritesheets() const {
         return spritesheets;
+    }
+
+    std::shared_ptr<std::vector<collision::Collider> > Runtime::getColliders() const {
+        return colliders;
     }
 
     std::shared_ptr<ecs::ECS> Runtime::getECS() const {
@@ -123,9 +133,9 @@ namespace blipcade::runtime {
         evalWithStacktrace("draw()");
     }
 
-    void Runtime::postProcess(const RenderTexture2D &postProcessTexture, const RenderTexture2D &renderTexture, const Rectangle &srcRect, const Rectangle &destRect,
+    void Runtime::postProcess(const RenderTexture2D &postProcessTexture, const RenderTexture2D &renderTexture,
+                              const Rectangle &srcRect, const Rectangle &destRect,
                               const Vector2 &origin, float rotation, const Color &tint) const {
-
         // I don't like that this is happening here. Need to rethink the pipeline.
         getCanvas()->applyLighting(postProcessTexture, renderTexture);
     }

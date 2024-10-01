@@ -4,6 +4,7 @@
 
 #ifndef RUNTIME_H
 #define RUNTIME_H
+#include <collision.h>
 #include <memory>
 #include <optional>
 #include <raylib.h>
@@ -15,6 +16,10 @@
 #include "ECS.h"
 
 namespace blipcade {
+    namespace collision {
+        class Collider;
+    }
+
     class Cartridge;
 }
 
@@ -37,42 +42,9 @@ namespace blipcade::runtime {
     class JSBindings;
     class Keystate;
 
-    /*
- * So Runtime should be a singleton class that will be responsible for the main loop of the engine.
- *
- * It should know about:
- * - canvas
- * - quickjs runtime
- * - input
- * - audio
- */
-
-    // class JsRuntime;
-    // class Context;
-    // class Maps;
-    // class KeyState;
-    // class MouseState;
-    // class RuntimeControl;
-    // class AudioEngine;
-    // class RuntimeCartList;
-
     class Runtime {
     public:
         Runtime(
-            // std::shared_ptr<graphics::Canvas> canvas,
-            // std::shared_ptr<graphics::Spritesheet> spritesheet,
-            // std::shared_ptr<Maps> maps,
-            // std::shared_ptr<KeyState> key_state,
-            // std::shared_ptr<MouseState> mouse_state,
-            // std::shared_ptr<RuntimeControl> runtime_state,
-            // std::shared_ptr<graphics::Font> font
-            // #if !defined(__EMSCRIPTEN__)
-            // std::shared_ptr<AudioEngine> audio_engine,
-            // #else
-            // std::shared_ptr<AudioEngine> audio_engine,
-            // #endif
-            // RuntimeCartList runtime_cart_list
-
             uint32_t width,
             uint32_t height
         );
@@ -108,6 +80,8 @@ namespace blipcade::runtime {
 
         [[nodiscard]] std::shared_ptr<std::vector<graphics::Spritesheet>> getSpritesheets() const;
 
+        std::shared_ptr<std::vector<collision::Collider>> getColliders() const;
+
         [[nodiscard]] std::shared_ptr<ecs::ECS> getECS() const;
 
 
@@ -121,7 +95,7 @@ namespace blipcade::runtime {
 
         std::shared_ptr<graphics::Canvas> canvas;
         std::shared_ptr<std::vector<graphics::Spritesheet>> spritesheets;
-        // std::shared_ptr<Maps> maps;
+        std::shared_ptr<std::vector<collision::Collider>> colliders;
         std::shared_ptr<std::string> code;
         std::shared_ptr<Keystate> key_flags;
         std::shared_ptr<Mousestate> mouse_state;
@@ -130,15 +104,6 @@ namespace blipcade::runtime {
         std::shared_ptr<ecs::ECS> ecs;
 
         std::unique_ptr<JSBindings> js_bindings;
-        // std::shared_ptr<RuntimeControl> runtime_state;
-
-// #if !defined(__EMSCRIPTEN__)
-        // std::shared_ptr<AudioEngine> audio_engine;
-// #else
-        // std::shared_ptr<AudioEngine> audio_engine;
-// #endif
-
-        // RuntimeCartList runtime_cart_list;
 
         std::string cart_to_load;
 

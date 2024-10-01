@@ -32,7 +32,6 @@ namespace blipcade::graphics {
             const uint32_t sprHeight = spriteData[i * 5 + 3];
             const uint32_t flags = spriteData[i * 5 + 4];
 
-            std::cout << "Adding sprite: x: " << x << ", y: " << y << ", width: " << sprWidth << ", height: " << sprHeight << ", flags: " << std::bitset<8>(flags) << "\n";
             spritesheet.sprites.push_back(Sprite{x, y, sprWidth, sprHeight, flags});
         }
 
@@ -58,7 +57,6 @@ namespace blipcade::graphics {
     }
 
     void Spritesheet::addSprite(uint32_t x, uint32_t y, uint32_t width, uint32_t height, uint8_t flags) {
-        std::cout << "Adding sprite: x: " << x << ", y: " << y << ", width: " << width << ", height: " << height << ", flags: " << std::bitset<8>(flags) << "\n";
         sprites.push_back(Sprite{x, y, width, height, flags});
     }
 

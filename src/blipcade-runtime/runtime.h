@@ -72,6 +72,9 @@ namespace blipcade::runtime {
             // std::shared_ptr<AudioEngine> audio_engine,
             // #endif
             // RuntimeCartList runtime_cart_list
+
+            uint32_t width,
+            uint32_t height
         );
 
         void evalWithStacktrace(const char *code) const;
@@ -92,7 +95,10 @@ namespace blipcade::runtime {
 
         void init();
         void update() const;
-        void draw() const;
+        void draw(const RenderTexture2D &renderTexture) const;
+
+        void postProcess(const RenderTexture2D &postProcessTexture, const RenderTexture2D &renderTexture, const Rectangle &srcRect,
+                         const Rectangle &destRect, const Vector2 &origin, float rotation, const Color &tint) const;
 
         [[nodiscard]] std::shared_ptr<quickjs::context> getContext() const;
 
@@ -137,6 +143,9 @@ namespace blipcade::runtime {
         std::shared_ptr<std::optional<std::pair<uint32_t, uint32_t>>> resize_request;
 
         void register_global_functions();
+
+        uint32_t canvasWidth;
+        uint32_t canvasHeight;
     };
 
 } // runtime

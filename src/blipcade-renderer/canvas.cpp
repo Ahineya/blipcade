@@ -4,20 +4,30 @@
 
 #include "canvas.h"
 
-#include <iomanip>
 #include <iostream>
 #include <raylib.h>
+#include <raymath.h>
 
 #include "font.h"
 
 #include "palette_shader.h"
+#include "lighting_shader.h"
+#include "lighting_shader_vert.h"
 
 namespace blipcade::graphics {
     Canvas::Canvas(const uint32_t width, const uint32_t height): width(width), height(height),
-                                                                 palette(std::make_unique<Palette685>()) {
+    palette(std::make_unique<Palette685>()), lightingRender(LoadRenderTexture(width, height)),
+lightEffects()  {
         // paletteShader = LoadShader(nullptr, "palette_shader.frag");
         paletteShader = LoadShaderFromMemory(nullptr, palette_shader_fragmentSource);
         paletteLoc = GetShaderLocation(paletteShader, "palette");
+
+        // Load lighting shader
+        lightingShader = LoadShaderFromMemory(nullptr, lighting_shader_fragmentSource);
+
+        // Set baseTexture uniform to the paletteTexture
+        // int baseTextureLoc = GetShaderLocation(lightingShader, "baseTexture");
+        // SetShaderValueTexture(lightingShader, baseTextureLoc, paletteTexture);
 
         for (int i = 0; i < 256; ++i) {
             virtualPalette[i] = static_cast<uint8_t>(i);
@@ -25,6 +35,21 @@ namespace blipcade::graphics {
         }
 
         updateShaderPalette();
+        lightingRender = LoadRenderTexture(width, height);
+
+        // Set the MVP matrix
+        Matrix mvp = MatrixIdentity(); // Replace with your actual MVP matrix
+        int mvpLoc = GetShaderLocation(lightingShader, "mvp");
+        SetShaderValueMatrix(lightingShader, mvpLoc, mvp);
+
+        // In Canvas constructor after loading lightingShader
+        tintColorLoc = GetShaderLocation(lightingShader, "tintColor");
+        opacityLoc = GetShaderLocation(lightingShader, "opacity");
+        baseTextureLoc = GetShaderLocation(lightingShader, "baseTexture");
+        maskTextureLoc = GetShaderLocation(lightingShader, "maskTexture");
+
+        // std::cout << "Canvas created with width: " << width << ", height: " << height << std::endl;
+        ClearBackground(BLANK);
     }
 
     void Canvas::setTransparentColor(uint8_t color) {
@@ -66,6 +91,8 @@ namespace blipcade::graphics {
 
     Canvas::~Canvas() {
         UnloadShader(paletteShader);
+        UnloadShader(lightingShader);
+        UnloadTexture(lightingRender.texture);
     }
 
     Texture2D paletteTexture;
@@ -223,84 +250,6 @@ namespace blipcade::graphics {
         EndShaderMode();
     }
 
-    // TODO: Replace with Raylib
-    void Canvas::drawRectangleData(const int32_t x0, const int32_t y0, const int32_t x1, const int32_t y1,
-                                   const bool transparent, const std::vector<uint8_t> &data) {
-        auto srcWidth = x1 - x0;
-        auto srcHeight = y1 - y0;
-
-        if (data.size() != static_cast<size_t>(srcWidth * srcHeight)) {
-            std::cerr << "Data length does not match rectangle size" << std::endl;
-            return;
-        }
-
-        auto zoom = 1;
-
-        auto zoomValue = std::max(static_cast<size_t>(zoom), static_cast<size_t>(1));
-        auto dstWidth = static_cast<size_t>(srcWidth) * zoomValue;
-        auto dstHeight = static_cast<size_t>(srcHeight) * zoomValue;
-
-        auto xStart = std::clamp(x0, 0, static_cast<int32_t>(width));
-        auto xEnd = std::clamp(x0 + static_cast<int32_t>(dstWidth), 0, static_cast<int32_t>(width));
-        auto yStart = std::clamp(y0, 0, static_cast<int32_t>(height));
-        auto yEnd = std::clamp(y0 + static_cast<int32_t>(dstHeight), 0, static_cast<int32_t>(height));
-
-        if (clipRect.x != 0 || clipRect.y != 0 || clipRect.width != 0 || clipRect.height != 0) {
-            const auto &[clipX, clipY, clipWidth, clipHeight] = clipRect;
-            xStart = std::max(xStart, static_cast<int32_t>(clipX));
-            xEnd = std::min(xEnd, static_cast<int32_t>(clipX + clipWidth));
-            yStart = std::max(yStart, static_cast<int32_t>(clipY));
-            yEnd = std::min(yEnd, static_cast<int32_t>(clipY + clipHeight));
-        }
-
-        if (xStart >= xEnd || yStart >= yEnd) {
-            return;
-        }
-
-        // Handle zoom == 1 case separately
-        if (zoomValue == 1) {
-            for (auto dstY = yStart; dstY < yEnd; ++dstY) {
-                auto srcY = dstY - y0;
-                const auto *srcRow = &data[srcY * srcWidth];
-
-                for (auto dstX = xStart; dstX < xEnd; ++dstX) {
-                    auto srcX = dstX - x0;
-                    auto srcColor = srcRow[srcX];
-
-                    if (transparent && srcColor == transparentColor) {
-                        continue;
-                    }
-
-                    auto dstColor = virtualPalette[srcColor];
-
-                    auto realColor = colorLookup[dstColor];
-                    DrawPixel(dstX, dstY, realColor);
-                }
-            }
-            return;
-        }
-
-        float zoomInv = 1.0f / static_cast<float>(zoomValue);
-
-        for (auto dstY = yStart; dstY < yEnd; ++dstY) {
-            auto srcY = static_cast<size_t>((static_cast<float>(dstY - y0) * zoomInv));
-            const auto *srcRow = &data[srcY * srcWidth];
-
-            for (auto dstX = xStart; dstX < xEnd; ++dstX) {
-                auto srcX = static_cast<size_t>((static_cast<float>(dstX - x0) * zoomInv));
-                auto srcColor = srcRow[srcX];
-
-                if (transparent && srcColor == transparentColor) {
-                    continue;
-                }
-
-                auto dstColor = virtualPalette[srcColor];
-                auto realColor = colorLookup[dstColor];
-                DrawPixel(dstX, dstY, realColor);
-            }
-        }
-    }
-
     void Canvas::drawText(const Font &font, const std::wstring &text, int32_t x, int32_t y,
                           std::optional<uint8_t> color) {
         const auto colorValue = color.value_or(0xef);
@@ -322,5 +271,60 @@ namespace blipcade::graphics {
         virtualPalette[0xef] = oldColor;
         transparentColor = oldTransparentColor;
         setPalette(virtualPalette, colorLookup);
+    }
+
+    void Canvas::addLightEffect(const std::string &name, const LightEffect &effect) {
+        lightEffects[name] = effect;
+    }
+
+    void Canvas::removeLightEffect(const std::string &name) {
+        lightEffects.erase(name);
+    }
+
+    void Canvas::updateLightEffect(const std::string &name, const LightEffect &effect) {
+        if (lightEffects.contains(name)) {
+            lightEffects[name] = effect;
+        }
+    }
+
+    LightEffect Canvas::getLightEffect(const std::string &name) {
+        if (lightEffects.contains(name)) {
+            return lightEffects[name];
+        }
+
+        throw std::runtime_error("Light effect not found");
+    }
+
+    void Canvas::setLightTintColor(const std::string &name, const Color &color) {
+        auto it = lightEffects.find(name);
+        if (it != lightEffects.end()) {
+            it->second.tintColor = color;
+        }
+    }
+
+    void Canvas::setLightOpacity(const std::string &name, float opacity) {
+        auto it = lightEffects.find(name);
+        if (it != lightEffects.end()) {
+            it->second.opacity = opacity;
+        }
+    }
+
+    void Canvas::applyLighting(const RenderTexture2D &baseTexture, const RenderTexture2D &renderTexture) {
+        BeginTextureMode(renderTexture);
+        BeginShaderMode(lightingShader);
+        for (const auto &[name, effect] : lightEffects) {
+            auto color = effect.tintColor;
+            auto glColor = (Vector4){color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f};
+
+            SetShaderValue(lightingShader, tintColorLoc, &glColor, SHADER_UNIFORM_VEC4);
+            SetShaderValue(lightingShader, opacityLoc, &effect.opacity, SHADER_UNIFORM_FLOAT);
+
+            SetShaderValueTexture(lightingShader, baseTextureLoc, baseTexture.texture);
+            SetShaderValueTexture(lightingShader, maskTextureLoc, effect.maskTexture);
+
+            DrawTextureEx(renderTexture.texture, (Vector2){0, 0}, 0.0f, 1.0f, WHITE);
+        }
+        EndShaderMode();
+        EndTextureMode();
     }
 }

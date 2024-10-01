@@ -34,6 +34,18 @@ namespace blipcade {
 
             void bindDrawCircle(quickjs::value &global);
 
+            void bindLightingGlobalObject(quickjs::value &global);
+
+            void bindAddLightEffect(quickjs::value &global);
+
+            void bindRemoveLightEffect(quickjs::value &global);
+
+            void bindUpdateLightEffect(quickjs::value &global);
+
+            void bindChangeLightOpacity(quickjs::value &global);
+
+            void bindChangeLightTintColor(quickjs::value &global);
+
             void bindInputGlobalObject(quickjs::value &global);
 
             void bindInputIsKeyPressed(quickjs::value &global);

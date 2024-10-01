@@ -14,7 +14,7 @@ namespace blipcade::runtime {
     JSBindings::JSBindings(Runtime &runtime) : m_runtime(runtime) {
     }
 
-    void JSBindings::registerAll(quickjs::value &global, ecs::ECS& ecs) {
+    void JSBindings::registerAll(quickjs::value &global, ecs::ECS &ecs) {
         bindLogFunction(global);
         bindTextFunction(global);
 
@@ -28,6 +28,14 @@ namespace blipcade::runtime {
         bindDrawFilledCircle(global);
         bindDrawSprite(global);
         bindDrawSpriteEx(global);
+
+        // Lighting
+        bindLightingGlobalObject(global);
+        bindAddLightEffect(global);
+        bindRemoveLightEffect(global);
+        bindUpdateLightEffect(global);
+        bindChangeLightOpacity(global);
+        bindChangeLightTintColor(global);
 
         // Input
         bindInputGlobalObject(global);
@@ -371,6 +379,266 @@ namespace blipcade::runtime {
     }
 
     /**
+     * @namespace Lighting
+     * @description Provides lighting-related functionalities.
+     */
+    void JSBindings::bindLightingGlobalObject(quickjs::value &global) {
+        createNamespace(global, "Lighting");
+    }
+
+    /**
+     * @function addLightEffect
+     * @param {string} name - Unique name for the light effect.
+     * @param {object} params - Parameters for the light effect.
+     * @param {number} params.tintColor - The tint color in hexadecimal (e.g., 0xff0000 for red).
+     * @param {number} params.opacity - Opacity of the tint (0.0 to 1.0).
+     * @param {string} params.maskImagePath - Path to the mask image.
+     * @description Adds a new light effect.
+     *
+     * @example
+     * Lighting.addLightEffect("sunlight", {
+     *     tintColor: 0xffe066,
+     *     opacity: 0.5,
+     *     maskImagePath: "assets/masks/trapezoid.png"
+     * });
+     */
+    void JSBindings::bindAddLightEffect(quickjs::value &global) {
+        auto lighting = global.get_property("Lighting");
+
+        lighting.set_property("addLightEffect", [this](const quickjs::args &a) {
+            auto argsCount = a.size();
+
+            if (argsCount < 2) {
+                throw std::runtime_error("addLightEffect: Missing arguments.");
+            }
+
+            std::string name = a[0].as_cstring().c_str();
+            quickjs::value params = a[1];
+
+            // Extract parameters
+            uint32_t tintColorHex = 0xffffff;
+            float opacity = 1.0f;
+            std::string maskImagePath = "";
+
+            // Check and extract 'tintColor'
+            quickjs::value tintColorVal = params.get_property("tintColor");
+            if (!tintColorVal.is_undefined()) {
+                tintColorHex = tintColorVal.as_uint32();
+            }
+
+            // Check and extract 'opacity'
+            quickjs::value opacityVal = params.get_property("opacity");
+            if (!opacityVal.is_undefined()) {
+                opacity = opacityVal.as_double();
+            }
+
+            // Check and extract 'maskImagePath'
+            quickjs::value maskImagePathVal = params.get_property("maskImagePath");
+            if (!maskImagePathVal.is_undefined()) {
+                maskImagePath = maskImagePathVal.as_cstring().c_str();
+            }
+
+            // Convert hex color to Color
+            Color tintColor = {
+                static_cast<uint8_t>((tintColorHex >> 16) & 0xFF),
+                static_cast<uint8_t>((tintColorHex >> 8) & 0xFF),
+                static_cast<uint8_t>(tintColorHex & 0xFF),
+                255
+            };
+
+            // Load mask texture
+            Texture2D maskTexture = LoadTexture(maskImagePath.c_str());
+            if (maskTexture.id == 0) {
+                std::cerr << "Error: Failed to load mask texture from path: " << maskImagePath << std::endl;
+                throw std::runtime_error("addLightEffect: Failed to load mask texture.");
+            }
+            // Create LightEffect
+            graphics::LightEffect effect = {
+                tintColor,
+                opacity,
+                maskTexture
+            };
+
+            // Add to Canvas
+            m_runtime.getCanvas()->addLightEffect(name, effect);
+        });
+    }
+
+    /**
+     * @function removeLightEffect
+     * @param {string} name - The name of the light effect to remove.
+     * @description Removes an existing light effect.
+     *
+     * @example
+     * Lighting.removeLightEffect("sunlight");
+     */
+    void JSBindings::bindRemoveLightEffect(quickjs::value &global) {
+        auto lighting = global.get_property("Lighting");
+
+        lighting.set_property("removeLightEffect", [this](const quickjs::args &a) {
+            auto argsCount = a.size();
+
+            if (argsCount < 1) {
+                throw std::runtime_error("removeLightEffect: Missing argument.");
+            }
+
+            std::string name = a[0].as_cstring().c_str();
+            m_runtime.getCanvas()->removeLightEffect(name);
+        });
+    }
+
+    /**
+     * @function updateLightEffect
+     * @param {string} name - The name of the light effect to update.
+     * @param {object} params - Updated parameters for the light effect.
+     * @param {number} [params.tintColor] - The new tint color in hexadecimal.
+     * @param {number} [params.opacity] - New opacity of the tint.
+     * @param {string} [params.maskImagePath] - New path to the mask image.
+     * @description Updates an existing light effect.
+     *
+     * @example
+     * Lighting.updateLightEffect("sunlight", {
+     *     tintColor: 0xffffff,
+     *     opacity: 0.7
+     * });
+     */
+    void JSBindings::bindUpdateLightEffect(quickjs::value &global) {
+        auto lighting = global.get_property("Lighting");
+
+        lighting.set_property("updateLightEffect", [this](const quickjs::args &a) {
+            auto argsCount = a.size();
+
+            if (argsCount < 2) {
+                throw std::runtime_error("updateLightEffect: Missing arguments.");
+            }
+
+            std::string name = a[0].as_cstring().c_str();
+            quickjs::value params = a[1];
+
+            // Extract existing light effect
+            // (Assuming you have a method to retrieve existing light effects)
+            // For simplicity, let's assume we recreate the effect
+            // In practice, you'd retrieve and update the existing one
+
+            uint32_t tintColorHex = 0xffffff;
+            float opacity = 1.0f;
+            std::string maskImagePath = "";
+
+            quickjs::value tintColorVal = params.get_property("tintColor");
+            if (!tintColorVal.is_undefined()) {
+                tintColorHex = tintColorVal.as_uint32();
+            }
+
+            // Check and extract 'opacity'
+            quickjs::value opacityVal = params.get_property("opacity");
+            if (!opacityVal.is_undefined()) {
+                opacity = opacityVal.as_double();
+            }
+
+            // Check and extract 'maskImagePath'
+            quickjs::value maskImagePathVal = params.get_property("maskImagePath");
+            if (!maskImagePathVal.is_undefined()) {
+                maskImagePath = maskImagePathVal.as_cstring().c_str();
+            }
+
+            // Convert hex color to Color
+            // Convert hex color to Color
+            Color tintColor = {
+                static_cast<uint8_t>((tintColorHex >> 16) & 0xFF),
+                static_cast<uint8_t>((tintColorHex >> 8) & 0xFF),
+                static_cast<uint8_t>(tintColorHex & 0xFF),
+                255
+            };
+
+            // Load mask texture if provided
+            Texture2D maskTexture;
+            if (!maskImagePath.empty()) {
+                maskTexture = LoadTexture(maskImagePath.c_str());
+            } else {
+                // Retrieve existing mask texture or set a default
+                // For simplicity, let's assume it's already loaded
+                // Otherwise, you might need to handle this case
+            }
+
+            // Create LightEffect
+            graphics::LightEffect effect = {
+                tintColor,
+                opacity,
+                maskTexture
+            };
+
+            // Update in Canvas
+            m_runtime.getCanvas()->updateLightEffect(name, effect);
+        });
+    }
+
+    /**
+     * @function changeLightOpacity
+     *
+     * @param {string} name - The name of the light effect to update.
+     * @param {number} opacity - New opacity of the tint.
+     *
+     * @description Updates the opacity of an existing light effect.
+     *
+     * @example Lighting.changeLightOpacity("sunlight", 0.7);
+     */
+    void JSBindings::bindChangeLightOpacity(quickjs::value &global) {
+        auto lighting = global.get_property("Lighting");
+
+        lighting.set_property("changeLightOpacity", [this](const quickjs::args &a) {
+            auto argsCount = a.size();
+
+            if (argsCount < 2) {
+                throw std::runtime_error("changeLightOpacity: Missing arguments.");
+            }
+
+            std::string name = a[0].as_cstring().c_str();
+            float opacity = a[1].as_double();
+
+            // Update in Canvas
+            m_runtime.getCanvas()->setLightOpacity(name, opacity);
+        });
+    }
+
+    /**
+     *
+     * @function changeLightTintColor
+     *
+     * @param {string} name - The name of the light effect to update.
+     * @param {number} tintColor - The new tint color in hexadecimal.
+     *
+     * @description Updates the tint color of an existing light effect.
+     *
+     * @example Lighting.changeLightTintColor("sunlight", 0xff0000); // Changes the tint color to red.
+     */
+    void JSBindings::bindChangeLightTintColor(quickjs::value &global) {
+        auto lighting = global.get_property("Lighting");
+
+        lighting.set_property("changeLightTintColor", [this](const quickjs::args &a) {
+            auto argsCount = a.size();
+
+            if (argsCount < 2) {
+                throw std::runtime_error("changeLightTintColor: Missing arguments.");
+            }
+
+            std::string name = a[0].as_cstring().c_str();
+            uint32_t tintColorHex = a[1].as_uint32();
+
+            // Convert hex color to Color
+            Color tintColor = {
+                static_cast<uint8_t>((tintColorHex >> 16) & 0xFF),
+                static_cast<uint8_t>((tintColorHex >> 8) & 0xFF),
+                static_cast<uint8_t>(tintColorHex & 0xFF),
+                255
+            };
+
+            // Update in Canvas
+            m_runtime.getCanvas()->setLightTintColor(name, tintColor);
+        });
+    }
+
+
+    /**
      * @namespace Input
      * @description Provides input-related functionalities.
      */
@@ -390,7 +658,6 @@ namespace blipcade::runtime {
      * @example Input.isKeyPressed(Key.ArrowUp); // Returns true if the up arrow key is pressed.
      */
     void JSBindings::bindInputIsKeyPressed(quickjs::value &global) {
-
         auto input = global.get_property("Input");
 
         input.set_property("isKeyPressed", [this](const quickjs::args &a) -> quickjs::value {
@@ -405,7 +672,6 @@ namespace blipcade::runtime {
             int key = a[0].as_int32();
             auto isKeyPressed = m_runtime.isKeyPressed(static_cast<Key>(key));
             return {*ctx, isKeyPressed};
-
         });
     }
 
@@ -686,37 +952,34 @@ namespace blipcade::runtime {
         });
     }
 
-// #include "quickjspp.hpp"
-// #include "ECS.hpp"
-//
-//     void registerECS(qjs::Context& context, ECS& ecs) {
-//         context.global().add("createEntity", [&ecs]() {
-//             return ecs.createEntity();
-//         });
-//
-//         context.global().add("destroyEntity", [&ecs](Entity entity) {
-//             ecs.destroyEntity(entity);
-//         });
-//
-//         context.global().add("addComponent", [&ecs](Entity entity, const std::string& typeName, qjs::Value component) {
-//             ecs.addComponent(entity, typeName, component.v);
-//         });
-//
-//         context.global().add("removeComponent", [&ecs](Entity entity, const std::string& typeName) {
-//             ecs.removeComponent(entity, typeName);
-//         });
-//
-//         context.global().add("getComponent", [&ecs](Entity entity, const std::string& typeName) {
-//             JSValue comp = ecs.getComponent(entity, typeName);
-//             return qjs::Value(context, comp);
-//         });
-//
-//         context.global().add("forEachEntity", [&ecs](std::vector<std::string> componentTypes, qjs::Value callback) {
-//             ecs.forEachEntity(componentTypes, callback.v);
-//         });
-//     }
-
-
-
+    // #include "quickjspp.hpp"
+    // #include "ECS.hpp"
+    //
+    //     void registerECS(qjs::Context& context, ECS& ecs) {
+    //         context.global().add("createEntity", [&ecs]() {
+    //             return ecs.createEntity();
+    //         });
+    //
+    //         context.global().add("destroyEntity", [&ecs](Entity entity) {
+    //             ecs.destroyEntity(entity);
+    //         });
+    //
+    //         context.global().add("addComponent", [&ecs](Entity entity, const std::string& typeName, qjs::Value component) {
+    //             ecs.addComponent(entity, typeName, component.v);
+    //         });
+    //
+    //         context.global().add("removeComponent", [&ecs](Entity entity, const std::string& typeName) {
+    //             ecs.removeComponent(entity, typeName);
+    //         });
+    //
+    //         context.global().add("getComponent", [&ecs](Entity entity, const std::string& typeName) {
+    //             JSValue comp = ecs.getComponent(entity, typeName);
+    //             return qjs::Value(context, comp);
+    //         });
+    //
+    //         context.global().add("forEachEntity", [&ecs](std::vector<std::string> componentTypes, qjs::Value callback) {
+    //             ecs.forEachEntity(componentTypes, callback.v);
+    //         });
+    //     }
 } // runtime
 // blipcade

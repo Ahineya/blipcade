@@ -11,6 +11,12 @@
 namespace blipcade::graphics {
     struct Font;
 
+    struct LightEffect {
+        Color tintColor;        // The color tint to apply
+        float opacity;          // Opacity of the tint (0.0 to 1.0)
+        Texture2D maskTexture;  // Mask texture defining the shape/pattern
+    };
+
     class Canvas {
     public:
         Canvas(uint32_t width, uint32_t height);
@@ -50,15 +56,23 @@ namespace blipcade::graphics {
         void drawSpriteEx(int32_t x, int32_t y, bool flipX, bool flipY, float scale,
                           float originX, float originY, const Spritesheet &spritesheet, uint32_t index);
 
-        // May be needed, we'll see
-        void drawRectangleData(int32_t x0, int32_t y0, int32_t x1, int32_t y1, bool transparent,
-                               const std::vector<uint8_t> &data);
-
         void drawText(const Font &font, const std::wstring &text, int32_t x, int32_t y, std::optional<uint8_t> color);
 
         void clear();
 
         void setCamera(int32_t offsetX, int32_t offsetY);
+
+        void addLightEffect(const std::string &name, const LightEffect &effect);
+        void removeLightEffect(const std::string &name);
+        void updateLightEffect(const std::string &name, const LightEffect &effect);
+
+        LightEffect getLightEffect(const std::string &name);
+
+        void setLightTintColor(const std::string &name, const Color &color);
+
+        void setLightOpacity(const std::string &name, float opacity);
+
+        void applyLighting(const RenderTexture2D &baseTexture, const RenderTexture2D &renderTexture);
 
     private:
         uint32_t width = 0;
@@ -81,6 +95,16 @@ namespace blipcade::graphics {
 
         Texture2D paletteTexture;
 
+        // Lighting overlay
+        RenderTexture2D lightingRender;
+        Shader lightingShader;
+
+        int tintColorLoc;
+        int opacityLoc;
+        int baseTextureLoc;
+        int maskTextureLoc;
+
+        std::unordered_map<std::string, LightEffect> lightEffects;
 
         void updateShaderPalette();
 

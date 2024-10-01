@@ -57,6 +57,44 @@ declare global {
 
     }
 
+    namespace Lighting {
+        /**
+         * Adds a new light effect.
+         * Lighting.addLightEffect("sunlight", {
+         * tintColor: 0xffe066,
+         * opacity: 0.5,
+         * maskImagePath: "assets/masks/trapezoid.png"
+         * });
+         */
+        function addLightEffect(name: string, params: object, params: number, params: number, params: string): void;
+
+        /**
+         * Removes an existing light effect.
+         * Lighting.removeLightEffect("sunlight");
+         */
+        function removeLightEffect(name: string): void;
+
+        /**
+         * Updates an existing light effect.
+         * Lighting.updateLightEffect("sunlight", {
+         * tintColor: 0xffffff,
+         * opacity: 0.7
+         * });
+         */
+        function updateLightEffect(name: string, params: object): void;
+
+        /**
+         * Updates the opacity of an existing light effect.
+         */
+        function changeLightOpacity(name: string, opacity: number): void;
+
+        /**
+         * Updates the tint color of an existing light effect.
+         */
+        function changeLightTintColor(name: string, tintColor: number): void;
+
+    }
+
     namespace Input {
         /**
          * Checks if a key is currently pressed. A key codes are defined in the `Key` enum.

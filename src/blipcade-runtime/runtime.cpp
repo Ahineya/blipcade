@@ -16,11 +16,16 @@
 #include "JsBindings.h"
 #include "keystate.h"
 
+auto const WIDTH = 320;
+auto const HEIGHT = 240;
+
 namespace blipcade::runtime {
-    Runtime::Runtime(): cartridge(nullptr), canvas(nullptr), key_flags(std::make_shared<Keystate>()), mouse_state(std::make_shared<Mousestate>()),
-                        font(nullptr), js_bindings(std::make_unique<JSBindings>(*this)) {
-        canvas = std::make_shared<graphics::Canvas>(256, 256); // TODO: make this configurable
-        spritesheets = std::make_shared<std::vector<graphics::Spritesheet>>();
+    Runtime::Runtime(uint32_t width, uint32_t height): canvasWidth(width), canvasHeight(height), cartridge(nullptr),
+                                                       canvas(nullptr), key_flags(std::make_shared<Keystate>()),
+                                                       mouse_state(std::make_shared<Mousestate>()),
+                                                       font(nullptr), js_bindings(std::make_unique<JSBindings>(*this)) {
+        canvas = std::make_shared<graphics::Canvas>(canvasWidth, canvasHeight); // TODO: make this configurable
+        spritesheets = std::make_shared<std::vector<graphics::Spritesheet> >();
 
         std::string fontHeader = "40 24 04 06";
         std::string fontData =
@@ -53,13 +58,12 @@ namespace blipcade::runtime {
         cartridge = cart;
 
         const auto spritesheets = cart->getSpritesheets();
-        for (const auto &spritesheet : spritesheets) {
+        for (const auto &spritesheet: spritesheets) {
             this->spritesheets->push_back(spritesheet);
         }
 
         std::cout << "Loaded " << spritesheets.size() << " spritesheets" << std::endl;
     }
-
 
 
     std::shared_ptr<graphics::Canvas> Runtime::getCanvas() const {
@@ -74,7 +78,7 @@ namespace blipcade::runtime {
         return context;
     }
 
-    std::shared_ptr<std::vector<graphics::Spritesheet>> Runtime::getSpritesheets() const {
+    std::shared_ptr<std::vector<graphics::Spritesheet> > Runtime::getSpritesheets() const {
         return spritesheets;
     }
 
@@ -111,8 +115,15 @@ namespace blipcade::runtime {
         evalWithStacktrace("update()");
     }
 
-    void Runtime::draw() const {
+    void Runtime::draw(const RenderTexture2D &renderTexture) const {
         evalWithStacktrace("draw()");
+    }
+
+    void Runtime::postProcess(const RenderTexture2D &postProcessTexture, const RenderTexture2D &renderTexture, const Rectangle &srcRect, const Rectangle &destRect,
+                              const Vector2 &origin, float rotation, const Color &tint) const {
+
+        // I don't like that this is happening here. Need to rethink the pipeline.
+        getCanvas()->applyLighting(postProcessTexture, renderTexture);
     }
 
     // TODO: I am not sure this works correctly in all the cases. Perhaps it would be better to handle it with C api directly.
@@ -189,6 +200,5 @@ namespace blipcade::runtime {
     bool Runtime::isButtonPressed(MouseButton button) const {
         return mouse_state->isButtonPressed(button);
     }
-
 } // runtime
 // blipcade

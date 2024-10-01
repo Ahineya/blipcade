@@ -135,6 +135,19 @@ export class Entities {
             frameTime: 0,
             frameDuration: 700,
         });
+
+        const light = ECS.createEntity();
+        ECS.addComponent(light, "Light", {
+            color: 0xF5F5B2,
+            intensity: 1,
+        });
+
+        Lighting.addLightEffect("sunlight", {
+            tintColor: 0xF5F5B2, // Warm yellow
+            opacity: 0.5,
+            maskImagePath: "resources/trapezoid.png"
+        });
+
     }
 
     update(deltaTime) {
@@ -153,6 +166,16 @@ export class Entities {
             sprite.spriteIndex = animation.animations[animation.currentAnimation][animation.currentFrame];
             sprite.spriteSheet = animation.spritesheets[animation.currentAnimation];
         });
+
+        ECS.forEachEntity(["Light"], (_, light) => {
+            light.intensity = (0.5 + 0.5 * Math.sin(Date.now() / 1000)) * 0.5;
+            Lighting.changeLightOpacity("sunlight", light.intensity);
+        });
+
+        // We want light to slowly fade in and out, intensity should change between 0 and 0.5
+        // const light = ECS.getComponent(this.lightEntity, "Light");
+        // light.intensity = 1;// 0.5 - 0.5 * Math.sin(Date.now() / 1000);
+        // Lighting.changeLightOpacity("sunlight", light.intensity);
     }
 
     draw() {

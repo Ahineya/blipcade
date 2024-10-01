@@ -97,10 +97,12 @@ namespace blipcade::graphics {
 
         SetTargetFPS(30);
 
-        const auto runtime = new runtime::Runtime();
+        const auto runtime = new runtime::Runtime(canvasWidth, canvasHeight);
         setRuntime(*runtime);
 
         const RenderTexture2D renderTexture = LoadRenderTexture(canvasWidth, canvasHeight);
+        const RenderTexture2D postProcessTexture = LoadRenderTexture(canvasWidth, canvasHeight);
+        const RenderTexture2D lightingTexture = LoadRenderTexture(canvasWidth, canvasHeight);
 
         BeginTextureMode(renderTexture);
         runtime->init();
@@ -160,7 +162,7 @@ namespace blipcade::graphics {
 
             BeginTextureMode(renderTexture);
 
-            runtime->draw();
+            runtime->draw(renderTexture);
 
             EndTextureMode();
 
@@ -223,14 +225,28 @@ namespace blipcade::graphics {
 
             BeginDrawing();
 
+            // We want to render this BS to another texture so we can apply post processing
+            BeginTextureMode(postProcessTexture);
+                DrawTexture(
+                    renderTexture.texture,
+                    0,
+                    0,
+                    WHITE
+                );
+            EndTextureMode();
+
+            runtime->postProcess(postProcessTexture, lightingTexture, srcRect, destRect, origin, rotation, {255, 255, 255, 255});
+
             DrawTexturePro(
-                renderTexture.texture,
+                lightingTexture.texture,
                 srcRect,
                 destRect,
                 origin,
                 rotation,
                 {255, 255, 255, 255}
             );
+
+            // runtime->getCanvas()->applyLighting(renderTexture);
 
             EndDrawing();
         }

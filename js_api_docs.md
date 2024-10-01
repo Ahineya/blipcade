@@ -14,6 +14,12 @@
    - [Function: drawLine](#function-drawline)
    - [Function: drawFilledCircle](#function-drawfilledcircle)
    - [Function: drawCircle](#function-drawcircle)
+- [Namespace: Lighting](#namespace-lighting)
+   - [Function: addLightEffect](#function-addlighteffect)
+   - [Function: removeLightEffect](#function-removelighteffect)
+   - [Function: updateLightEffect](#function-updatelighteffect)
+   - [Function: changeLightOpacity](#function-changelightopacity)
+   - [Function: changeLightTintColor](#function-changelighttintcolor)
 - [Namespace: Input](#namespace-input)
    - [Function: isKeyPressed](#function-iskeypressed)
    - [Function: getMousePos](#function-getmousepos)
@@ -236,6 +242,99 @@ Graphics.drawFilledCircle(100, 100, 50, 0x50); // Draws a filled circle with a r
 
 ```javascript
 Graphics.drawCircle(100, 100, 50, 0x50); // Draws a filled circle with a radius of 50 at (100, 100).
+```
+
+---
+Namespace: `Lighting`
+---
+### Provides lighting-related functionalities.
+
+
+
+#### Function: `addLightEffect`
+**Description:** Adds a new light effect.  Lighting.addLightEffect("sunlight", { tintColor: 0xffe066, opacity: 0.5, maskImagePath: "assets/masks/trapezoid.png" });
+
+**Parameters (Required):**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `name` | `string` | Unique name for the light effect. |
+| `params` | `object` | Parameters for the light effect. |
+| `params` | `number` | .tintColor - The tint color in hexadecimal (e.g., 0xff0000 for red). |
+| `params` | `number` | .opacity - Opacity of the tint (0.0 to 1.0). |
+| `params` | `string` | .maskImagePath - Path to the mask image. |
+
+**Example:**
+
+```javascript
+
+```
+
+---
+#### Function: `removeLightEffect`
+**Description:** Removes an existing light effect.  Lighting.removeLightEffect("sunlight");
+
+**Parameters (Required):**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `name` | `string` | The name of the light effect to remove. |
+
+**Example:**
+
+```javascript
+
+```
+
+---
+#### Function: `updateLightEffect`
+**Description:** Updates an existing light effect.  Lighting.updateLightEffect("sunlight", { tintColor: 0xffffff, opacity: 0.7 });
+
+**Parameters (Required):**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `name` | `string` | The name of the light effect to update. |
+| `params` | `object` | Updated parameters for the light effect. |
+
+**Example:**
+
+```javascript
+
+```
+
+---
+#### Function: `changeLightOpacity`
+**Description:**   Updates the opacity of an existing light effect. 
+
+**Parameters (Required):**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `name` | `string` | The name of the light effect to update. |
+| `opacity` | `number` | New opacity of the tint. |
+
+**Example:**
+
+```javascript
+Lighting.changeLightOpacity("sunlight", 0.7);
+```
+
+---
+#### Function: `changeLightTintColor`
+**Description:**   Updates the tint color of an existing light effect. 
+
+**Parameters (Required):**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `name` | `string` | The name of the light effect to update. |
+| `tintColor` | `number` | The new tint color in hexadecimal. |
+
+**Example:**
+
+```javascript
+Lighting.changeLightTintColor("sunlight", 0xff0000); // Changes the tint color to red.
 ```
 
 ---

@@ -69,17 +69,25 @@ namespace blipcade::graphics {
         HideCursor(); // For some unholy reason this cancels getting mouse position in emscripten
 #endif
 
+#ifndef EMSCRIPTEN
         rlImGuiSetup(true);
+#endif
+
 
         while (!WindowShouldClose()) // Detect window close button or ESC key
         {
 
             if (IsKeyPressed(KEY_ESCAPE)) {
+#ifndef EMSCRIPTEN
                 if (devtool->isActive()) {
                     devtool->setActive(false);
                 } else {
                     break;
                 }
+#else
+                CloseWindow();
+#endif
+
             }
 
             if (IsKeyDown(KEY_LEFT)) {
@@ -203,11 +211,15 @@ namespace blipcade::graphics {
             }
 
             BeginDrawing();
+#ifndef EMSCRIPTEN
             rlImGuiBegin();
+#endif
 
+#ifndef EMSCRIPTEN
             if (devtool->isActive()) {
                 devtool->draw();
             }
+#endif
 
             // clear
             ClearBackground(BLACK);
@@ -233,11 +245,17 @@ namespace blipcade::graphics {
                 {255, 255, 255, 255}
             );
 
+#ifndef EMSCRIPTEN
             rlImGuiEnd();
+#endif
+
             EndDrawing();
         }
 
+#ifndef EMSCRIPTEN
         rlImGuiShutdown();
+#endif
+
         CloseWindow();
     }
 

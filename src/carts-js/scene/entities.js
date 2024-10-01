@@ -106,7 +106,12 @@ export class Entities {
             origin: {x: 0, y: 0},
         });
 
+        ECS.addComponent(background, "Tag", "Background");
+
         const player = ECS.createEntity();
+
+        ECS.addComponent(player, "Tag", "Player");
+
         ECS.addComponent(player, "Player", {
             position: {x: 112, y: 167},
             velocity: {x: 0, y: 0},

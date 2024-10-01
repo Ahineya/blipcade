@@ -25,6 +25,7 @@ namespace blipcade::devtool {
 
         void RenderECSInspector() const;
 
+        void drawObjectRecursive(quickjs::context &ctx, const std::string &prefix, const quickjs::value &object) const;
 
     private:
         bool active = false;

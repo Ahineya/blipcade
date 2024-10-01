@@ -12,7 +12,7 @@ export class PlayerSpawn {
         this.y = y;
         this.spr = 3;
         this.target = { x: this.x, y: this.y };
-        this.y = 128;
+        this.y = 256;
         this.spd = { x: 0, y: -4 };
         this.state = 0;
         this.delay = 0;

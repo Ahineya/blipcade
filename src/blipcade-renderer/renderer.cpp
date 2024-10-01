@@ -149,7 +149,6 @@ namespace blipcade::graphics {
             }
 
             if (IsKeyDown(KEY_X)) {
-                PlaySound(sound);
                 runtime->keyDown(runtime::Key::B);
             } else {
                 runtime->keyUp(runtime::Key::B);

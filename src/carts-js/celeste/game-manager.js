@@ -18,8 +18,8 @@ export class GameManager {
 
         for (let i = 0; i < 16; i++) {
             state.clouds.push({
-                x: Math.random() * 128,
-                y: Math.random() * 128,
+                x: Math.random() * 256,
+                y: Math.random() * 256,
                 spd: 1 + Math.random() * 4,
                 w: 32 + Math.random() * 32
             });
@@ -27,8 +27,8 @@ export class GameManager {
 
         for (let i = 0; i < 25; i++) {
             state.particles.push({
-                x: Math.random() * 128,
-                y: Math.random() * 128,
+                x: Math.random() * 256,
+                y: Math.random() * 256,
                 s: 0 + Math.floor(Math.random() * 5) / 4,
                 spd: 0.25 + Math.random() * 5,
                 off: Math.random(),

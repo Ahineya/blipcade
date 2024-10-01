@@ -3,7 +3,7 @@ import {PICO8_COLORS} from "./colors";
 import {state} from "./state";
 
 global.init = () => {
-    setClippingRect(0, 0, 128, 128);
+    setClippingRect(0, 0, 256, 256);
 
     global.FPS = 30;
     global.FRAME_TIME = 1000 / global.FPS;

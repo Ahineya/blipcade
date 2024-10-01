@@ -14,8 +14,8 @@ export class Platform {
 
     update() {
         this.x += this.spd.x;
-        if (this.x < -16) this.x = 128;
-        if (this.x > 128) this.x = -16;
+        if (this.x < -16) this.x = 256;
+        if (this.x > 256) this.x = -16;
 
         let hit = this.check(Player, 0, 0);
         if (hit && hit.is_solid(0, 1)) {

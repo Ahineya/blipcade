@@ -79,7 +79,7 @@ set(SOURCES
 )
 
 # Path to the JSON file
-set(JSON_FILE "${CMAKE_CURRENT_SOURCE_DIR}/src/carts/ecs-test-build.json")
+set(JSON_FILE "${CMAKE_CURRENT_SOURCE_DIR}/src/carts/scene-test-build.json")
 
 # Path to the header template
 set(HEADER_TEMPLATE "${CMAKE_CURRENT_SOURCE_DIR}/src/tools/json_cart.hpp.in")

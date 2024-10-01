@@ -15,8 +15,8 @@ JSContext *ctx;
 
 bool running = false;
 
-static constexpr uint32_t WIDTH = 128;
-static constexpr uint32_t HEIGHT = 128;
+static constexpr uint32_t WIDTH = 320;
+static constexpr uint32_t HEIGHT = 240;
 
 static constexpr uint32_t SCALE = 3;
 

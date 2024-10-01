@@ -6,7 +6,7 @@ import {state} from "../state/state";
 import {lerp} from "../../graphics-lib/lerp";
 import {approach2D, approachExp} from "../../graphics-lib/movement";
 
-const screenToSpeed = x => lerp(x, 128, 250, 7, 10);
+const screenToSpeed = x => lerp(x, 256, 250, 7, 10);
 
 export class UpRotatingParticle extends Particle {
     constructor(x, y, color, size, speed, angle, stage, towards, SCREEN_FACTOR) {

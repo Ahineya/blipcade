@@ -9,6 +9,7 @@
    - [Function: setTransparentColor](#function-settransparentcolor)
    - [Function: fillScreen](#function-fillscreen)
    - [Function: drawSprite](#function-drawsprite)
+   - [Function: drawSpriteEx](#function-drawspriteex)
    - [Function: putPixel](#function-putpixel)
    - [Function: drawLine](#function-drawline)
    - [Function: drawFilledCircle](#function-drawfilledcircle)
@@ -130,6 +131,35 @@ Graphics.fillScreen(0xff); // Fills the screen with white color.
 
 ```javascript
 Graphics.drawSprite(100, 100, 0); // Draws the first sprite from the first spritesheet at (100, 100).
+```
+
+---
+#### Function: `drawSpriteEx`
+**Description:**      @descriotion Draws a sprite on the canvas. 
+
+**Parameters (Required):**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `x` | `number` | The x-coordinate of the sprite. |
+| `y` | `number` | The y-coordinate of the sprite. |
+| `spriteIndex` | `number` | The index of the sprite to draw. |
+
+**Parameters (Optional):**
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| `spriteSheetIndex` | `number` | `0` | The index of the sprite sheet to use. |
+| `flipX` | `boolean` | `false` | Whether to flip the sprite horizontally. |
+| `flipY` | `boolean` | `false` | Whether to flip the sprite vertically. |
+| `scale` | `number` | `1.0` | The scale of the sprite. |
+| `originX` | `number` | `0.5` | The x origin of the sprite, from 0 to 1, where 0 is the left and 1 is the right. |
+| `originY` | `number` | `0.5` | The y origin of the sprite, from 0 to 1, where 0 is the top and 1 is the bottom. |
+
+**Example:**
+
+```javascript
+Graphics.drawSpriteEx(100, 100, 0, 0, false, false, 1.0, 1.0); // Draws the first sprite from the first spritesheet at (100, 100).
 ```
 
 ---

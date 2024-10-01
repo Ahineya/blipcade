@@ -44,6 +44,8 @@ namespace blipcade {
 
             void bindDrawSprite(quickjs::value &global);
 
+            void bindDrawSpriteEx(quickjs::value &global);
+
             void createNamespace(quickjs::value &global, const std::string &name);
 
             void bindECSGlobalObject(quickjs::value &global, ecs::ECS &ecs);

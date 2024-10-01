@@ -195,7 +195,31 @@ namespace blipcade::graphics {
         };
 
         BeginShaderMode(paletteShader);
-        DrawTextureRec(spritesheet.texture, sourceRec, position, WHITE);
+        DrawTexturePro(spritesheet.texture, sourceRec, {position.x, position.y, sourceRec.width, sourceRec.height}, {0, 0}, 0, WHITE);
+        EndShaderMode();
+    }
+
+    void Canvas::drawSpriteEx(int32_t x, int32_t y, bool flipX, bool flipY, float scale, float originX, float originY,
+                            const Spritesheet &spritesheet, uint32_t index) {
+        const auto &sprite = spritesheet.getSprite(index);
+
+        Rectangle sourceRec = {
+            static_cast<float>(sprite.x),
+            static_cast<float>(sprite.y),
+            static_cast<float>(sprite.width),
+            static_cast<float>(sprite.height)
+        };
+
+        if (flipX) sourceRec.width *= -1;
+        if (flipY) sourceRec.height *= -1;
+
+        Vector2 position = {
+            static_cast<float>(x + offsetX),
+            static_cast<float>(y + offsetY)
+        };
+
+        BeginShaderMode(paletteShader);
+        DrawTexturePro(spritesheet.texture, sourceRec, {position.x, position.y, sourceRec.width * scale, sourceRec.height * scale}, {0, 0}, 0, WHITE);
         EndShaderMode();
     }
 

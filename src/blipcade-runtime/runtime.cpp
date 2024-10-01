@@ -19,7 +19,7 @@
 namespace blipcade::runtime {
     Runtime::Runtime(): cartridge(nullptr), canvas(nullptr), key_flags(std::make_shared<Keystate>()), mouse_state(std::make_shared<Mousestate>()),
                         font(nullptr), js_bindings(std::make_unique<JSBindings>(*this)) {
-        canvas = std::make_shared<graphics::Canvas>(128, 128); // TODO: make this configurable
+        canvas = std::make_shared<graphics::Canvas>(256, 256); // TODO: make this configurable
         spritesheets = std::make_shared<std::vector<graphics::Spritesheet>>();
 
         std::string fontHeader = "40 24 04 06";

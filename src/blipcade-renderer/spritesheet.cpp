@@ -20,7 +20,7 @@ namespace blipcade::graphics {
         sprites.clear();
     }
 
-    Spritesheet Spritesheet::fromData(const std::vector<uint8_t>& pixelBuffer, const std::vector<uint8_t>& spriteData,
+    Spritesheet Spritesheet::fromData(const std::vector<uint8_t>& pixelBuffer, const std::vector<uint32_t>& spriteData,
                                       uint32_t width, uint32_t height) {
         auto spritesheet = Spritesheet(width, height);
         spritesheet.pixelBuffer = pixelBuffer;
@@ -30,8 +30,9 @@ namespace blipcade::graphics {
             const uint32_t y = spriteData[i * 5 + 1];
             const uint32_t sprWidth = spriteData[i * 5 + 2];
             const uint32_t sprHeight = spriteData[i * 5 + 3];
-            const uint8_t flags = spriteData[i * 5 + 4];
+            const uint32_t flags = spriteData[i * 5 + 4];
 
+            std::cout << "Adding sprite: x: " << x << ", y: " << y << ", width: " << sprWidth << ", height: " << sprHeight << ", flags: " << std::bitset<8>(flags) << "\n";
             spritesheet.sprites.push_back(Sprite{x, y, sprWidth, sprHeight, flags});
         }
 
@@ -50,11 +51,14 @@ namespace blipcade::graphics {
 
         texture = LoadTextureFromImage(image);
 
+        std::cout << "Texture created: width:" << texture.width << ", height: " << texture.height << "\n";
+
         // Set texture filtering to point sampling to avoid color bleeding
         SetTextureFilter(texture, TEXTURE_FILTER_POINT);
     }
 
     void Spritesheet::addSprite(uint32_t x, uint32_t y, uint32_t width, uint32_t height, uint8_t flags) {
+        std::cout << "Adding sprite: x: " << x << ", y: " << y << ", width: " << width << ", height: " << height << ", flags: " << std::bitset<8>(flags) << "\n";
         sprites.push_back(Sprite{x, y, width, height, flags});
     }
 

@@ -57,16 +57,18 @@ namespace blipcade {
             const auto height = textureJson["height"].get<uint32_t>();
             const auto data = textureJson["data"].get<std::string>();
 
-            const auto parsedData = blipcade::api::split(data, ' ');
+            const auto parsedData = api::split(data, ' ');
             const auto parsedBytes = api::convertToBytes(parsedData);
 
-            std::vector<uint8_t> spriteData;
+            std::vector<uint32_t> spriteData;
             for (const auto &spriteJson : spritesheetJson["sprites"]) {
-                spriteData.push_back(spriteJson["x"].get<uint8_t>());
-                spriteData.push_back(spriteJson["y"].get<uint8_t>());
-                spriteData.push_back(spriteJson["width"].get<uint8_t>());
-                spriteData.push_back(spriteJson["height"].get<uint8_t>());
-                spriteData.push_back(spriteJson["flags"].get<uint8_t>());
+                spriteData.push_back(spriteJson["x"].get<uint32_t>());
+                spriteData.push_back(spriteJson["y"].get<uint32_t>());
+                spriteData.push_back(spriteJson["width"].get<uint32_t>());
+                spriteData.push_back(spriteJson["height"].get<uint32_t>());
+                spriteData.push_back(spriteJson["flags"].get<uint32_t>());
+
+                std::cout << "Adding sprite: x: " << spriteJson["x"].get<uint32_t>() << ", y: " << spriteJson["y"].get<uint32_t>() << ", width: " << spriteJson["width"].get<uint32_t>() << ", height: " << spriteJson["height"].get<uint32_t>() << ", flags: " << std::bitset<8>(spriteJson["flags"].get<uint8_t>()) << "\n";
             }
 
             spritesheets.push_back(graphics::Spritesheet::fromData(parsedBytes, spriteData, width, height));

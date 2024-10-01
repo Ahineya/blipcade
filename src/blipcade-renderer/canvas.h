@@ -47,6 +47,9 @@ namespace blipcade::graphics {
                         const Spritesheet &spritesheet,
                         uint32_t index);
 
+        void drawSpriteEx(int32_t x, int32_t y, bool flipX, bool flipY, float scale,
+                          float originX, float originY, const Spritesheet &spritesheet, uint32_t index);
+
         // May be needed, we'll see
         void drawRectangleData(int32_t x0, int32_t y0, int32_t x1, int32_t y1, bool transparent,
                                const std::vector<uint8_t> &data);

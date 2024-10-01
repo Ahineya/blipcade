@@ -77,7 +77,7 @@ export class Player {
         }
 
         // bottom death
-        if (this.y > 128) {
+        if (this.y > 256) {
             this.kill();
         }
 

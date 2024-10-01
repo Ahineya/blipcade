@@ -8,6 +8,7 @@ module.exports = config({
         celeste: __dirname + "/celeste/celeste.js",
         testcart: __dirname + "/testcart/testcart.js",
         "ecs-test": __dirname + "/ecs-test/ecs-test.js",
+        scene: __dirname + "/scene/scene.js",
     },
     output: {
         path: __dirname + "/lib",

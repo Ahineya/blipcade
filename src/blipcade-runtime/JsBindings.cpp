@@ -27,6 +27,7 @@ namespace blipcade::runtime {
         bindDrawCircle(global);
         bindDrawFilledCircle(global);
         bindDrawSprite(global);
+        bindDrawSpriteEx(global);
 
         // Input
         bindInputGlobalObject(global);
@@ -185,6 +186,65 @@ namespace blipcade::runtime {
             const auto spritesheet = spritesheets->at(spriteSheetIndex);
 
             m_runtime.getCanvas()->drawSprite(x, y, flipX, flipY, spritesheet, spriteIndex);
+        });
+    }
+
+    //
+    //void Canvas::drawSpriteEx(int32_t x, int32_t y, bool flipX, bool flipY, float wChange, float hChange,
+    //const Spritesheet &spritesheet, uint32_t index
+    //)
+
+    /**
+     * @function drawSpriteEx
+     *
+     * @param {number} x - The x-coordinate of the sprite.
+     * @param {number} y - The y-coordinate of the sprite.
+     * @param {number} spriteIndex - The index of the sprite to draw.
+     *
+     * @param {number} [spriteSheetIndex=0] - The index of the sprite sheet to use.
+     * @param {boolean} [flipX=false] - Whether to flip the sprite horizontally.
+     * @param {boolean} [flipY=false] - Whether to flip the sprite vertically.
+     *
+     * @param {number} [scale=1.0] - The scale of the sprite.
+     *
+     * @param {number} [originX=0.5] - The x origin of the sprite, from 0 to 1, where 0 is the left and 1 is the right.
+     * @param {number} [originY=0.5] - The y origin of the sprite, from 0 to 1, where 0 is the top and 1 is the bottom.
+     *
+     * @descriotion Draws a sprite on the canvas.
+     *
+     * @example Graphics.drawSpriteEx(100, 100, 0, 0, false, false, 1.0, 1.0); // Draws the first sprite from the first spritesheet at (100, 100).
+     *
+     */
+    void JSBindings::bindDrawSpriteEx(quickjs::value &global) {
+        auto graphics = global.get_property("Graphics");
+
+        graphics.set_property("drawSpriteEx", [this](const quickjs::args &a) {
+            auto argsCount = a.size();
+
+            int32_t x = 0, y = 0, spriteIndex = 0;
+            uint32_t spriteSheetIndex = 0;
+            bool flipX = false, flipY = false;
+            float scale = 1.0, originX = 0.5, originY = 0.5;
+
+            if (argsCount >= 1) x = a[0].as_int32();
+            if (argsCount >= 2) y = a[1].as_int32();
+            if (argsCount >= 3) spriteIndex = a[2].as_int32();
+            if (argsCount >= 4) spriteSheetIndex = a[3].as_int32();
+            if (argsCount >= 5) flipX = a[4].as_int32();
+            if (argsCount >= 6) flipY = a[5].as_int32();
+            if (argsCount >= 7) scale = a[6].as_double();
+            if (argsCount >= 8) originX = a[7].as_double();
+            if (argsCount >= 9) originY = a[8].as_double();
+
+            const auto spritesheets = m_runtime.getSpritesheets();
+
+            if (spriteSheetIndex >= spritesheets->size()) {
+                throw std::runtime_error("drawSprite: Invalid sprite sheet index."); // TODO: Throw js error, li
+            }
+
+            const auto spritesheet = spritesheets->at(spriteSheetIndex);
+
+            m_runtime.getCanvas()->drawSpriteEx(x, y, flipX, flipY, scale, originX, originY, spritesheet, spriteIndex);
         });
     }
 
@@ -402,6 +462,7 @@ namespace blipcade::runtime {
 
             int button = a[0].as_int32();
             auto isMouseButtonPressed = m_runtime.isButtonPressed(static_cast<MouseButton>(button));
+
             return {*ctx, isMouseButtonPressed};
         });
     }

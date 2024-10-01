@@ -67,9 +67,9 @@ export function drawMain() {
         state.clouds.forEach(function(c) {
             c.x += c.spd;
             drawFilledRectangle(c.x, c.y, c.x + c.w, c.y + 4 + (1 - c.w / 64) * 12, state.new_bg !== undefined ? PICO8_COLORS[14] : PICO8_COLORS[1]);
-            if (c.x > 128) {
+            if (c.x > 256) {
                 c.x = -c.w;
-                c.y = Math.random() * (128 - 8);
+                c.y = Math.random() * (256 - 8);
             }
         });
     }
@@ -107,9 +107,9 @@ export function drawMain() {
         p.y += Math.sin(p.off);
         p.off += Math.min(0.05, p.spd / 32);
         drawFilledRectangle(p.x, p.y, p.x + p.s, p.y + p.s, p.c);
-        if (p.x > 128 + 4) {
+        if (p.x > 256 + 4) {
             p.x = -4;
-            p.y = Math.random() * 128;
+            p.y = Math.random() * 256;
         }
     });
     //
@@ -126,15 +126,15 @@ export function drawMain() {
 
     drawFilledRectangle(-5, -5, -1, 133, 0);
     drawFilledRectangle(-5, -5, 133, -1, 0);
-    drawFilledRectangle(-5, 128, 133, 133, 0);
-    drawFilledRectangle(128, -5, 133, 133, 0);
+    drawFilledRectangle(-5, 256, 133, 133, 0);
+    drawFilledRectangle(256, -5, 133, 133, 0);
 
     if (level_index() === 30) {
         let p = state.objects.find(obj => obj instanceof Player);
         if (p !== undefined) {
             let diff = Math.min(24, 40 - Math.abs(p.x + 4 - 64));
-            drawFilledRectangle(0, 0, diff, 128, 0);
-            drawFilledRectangle(128 - diff, 0, 128, 128, 0);
+            drawFilledRectangle(0, 0, diff, 256, 0);
+            drawFilledRectangle(256 - diff, 0, 256, 256, 0);
         }
     }
 }

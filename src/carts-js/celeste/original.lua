@@ -73,8 +73,8 @@ end
 clouds = {}
 for i=0,16 do
     add(clouds,{
-        x=rnd(128),
-        y=rnd(128),
+        x=rnd(256),
+        y=rnd(256),
         spd=1+rnd(4),
         w=32+rnd(32)
     })
@@ -83,8 +83,8 @@ end
 particles = {}
 for i=0,24 do
     add(particles,{
-        x=rnd(128),
-        y=rnd(128),
+        x=rnd(256),
+        y=rnd(256),
         s=0+flr(rnd(5)/4),
         spd=0.25+rnd(5),
         off=rnd(1),
@@ -124,7 +124,7 @@ player =
          kill_player(this) end
 
         -- bottom death
-        if this.y>128 then
+        if this.y>256 then
             kill_player(this) end
 
         local on_ground=this.is_solid(0,1)
@@ -363,7 +363,7 @@ player_spawn = {
      sfx(4)
         this.spr=3
         this.target= {x=this.x,y=this.y}
-        this.y=128
+        this.y=256
         this.spd.y=-4
         this.state=0
         this.delay=0
@@ -765,8 +765,8 @@ platform={
     end,
     update=function(this)
         this.spd.x=this.dir*0.65
-        if this.x<-16 then this.x=128
-        elseif this.x>128 then this.x=-16 end
+        if this.x<-16 then this.x=256
+        elseif this.x>256 then this.x=-16 end
         if not this.check(player,0,0) then
             local hit=this.collide(player,0,-1)
             if hit~=nil then
@@ -1257,16 +1257,16 @@ function _draw()
     elseif new_bg~=nil then
         bg_col=2
     end
-    rectfill(0,0,128,128,bg_col)
+    rectfill(0,0,256,256,bg_col)
 
     -- clouds
     if not is_title() then
         foreach(clouds, function(c)
             c.x += c.spd
             rectfill(c.x,c.y,c.x+c.w,c.y+4+(1-c.w/64)*12,new_bg~=nil and 14 or 1)
-            if c.x > 128 then
+            if c.x > 256 then
                 c.x = -c.w
-                c.y=rnd(128-8)
+                c.y=rnd(256-8)
             end
         end)
     end
@@ -1301,9 +1301,9 @@ function _draw()
         p.y += sin(p.off)
         p.off+= min(0.05,p.spd/32)
         rectfill(p.x,p.y,p.x+p.s,p.y+p.s,p.c)
-        if p.x>128+4 then
+        if p.x>256+4 then
             p.x=-4
-            p.y=rnd(128)
+            p.y=rnd(256)
         end
     end)
 
@@ -1319,8 +1319,8 @@ function _draw()
     -- draw outside of the screen for screenshake
     rectfill(-5,-5,-1,133,0)
     rectfill(-5,-5,133,-1,0)
-    rectfill(-5,128,133,133,0)
-    rectfill(128,-5,133,133,0)
+    rectfill(-5,256,133,133,0)
+    rectfill(256,-5,133,133,0)
 
     -- credits
     if is_title() then
@@ -1339,8 +1339,8 @@ function _draw()
         end
         if p~=nil then
             local diff=min(24,40-abs(p.x+4-64))
-            rectfill(0,0,diff,128,0)
-            rectfill(128-diff,0,128,128,0)
+            rectfill(0,0,diff,256,0)
+            rectfill(256-diff,0,256,256,0)
         end
     end
 

@@ -26,12 +26,12 @@ export class Background {
                 hfg: PICO8_COLORS[15],
                 pbg: PICO8_COLORS[1],
                 load: () => {
-                    this.rand = Array.from({length: 128*128}, () => Math.random() * 16);
+                    this.rand = Array.from({length: 256*256}, () => Math.random() * 16);
                 },
                 draw: () => {
                     this.rand.forEach((p, i) => {
-                        const x = i % 128;
-                        const y = Math.floor(i / 128);
+                        const x = i % 256;
+                        const y = Math.floor(i / 256);
                         Graphics.putPixel(x, y, PICO8_COLORS[Math.floor(Math.random() * 17)]);
                     });
                 }
@@ -46,8 +46,8 @@ export class Background {
                     this.rand = [];
                     this.rand2 = [];
                     for (let n = 0; n < 256; n++) {
-                        this.rand.push(Math.random() * 128);
-                        this.rand2.push(Math.random() * 128);
+                        this.rand.push(Math.random() * 256);
+                        this.rand2.push(Math.random() * 256);
                     }
                 },
                 draw: () => {
@@ -267,8 +267,8 @@ export class Background {
                             let distance = Math.sqrt(Math.pow(star.x - center_x, 2) + Math.pow(star.y - center_y, 2));
 
                             while (distance < 32) {
-                                star.x = Math.random() * 128;
-                                star.y = Math.random() * 128;
+                                star.x = Math.random() * 256;
+                                star.y = Math.random() * 256;
                                 distance = Math.sqrt(Math.pow(star.x - center_x, 2) + Math.pow(star.y - center_y, 2));
                             }
 
@@ -297,7 +297,7 @@ export class Background {
                             }
                         }
 
-                        return !(s.x < -32 || s.x > 128 || s.y < -16 || s.y > 128);
+                        return !(s.x < -32 || s.x > 256 || s.y < -16 || s.y > 256);
                     });
 
                     // Update spots

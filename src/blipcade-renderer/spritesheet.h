@@ -14,7 +14,7 @@ namespace blipcade::graphics {
         uint32_t y;
         uint32_t width;
         uint32_t height;
-        uint8_t flags;
+        uint32_t flags;
     };
 
     class Spritesheet {
@@ -22,7 +22,7 @@ namespace blipcade::graphics {
         Spritesheet(uint32_t width, uint32_t height);
         ~Spritesheet();
 
-        static Spritesheet fromData(const std::vector<uint8_t> &pixelBuffer, const std::vector<uint8_t> &spriteData, uint32_t width, uint32_t height);
+        static Spritesheet fromData(const std::vector<uint8_t> &pixelBuffer, const std::vector<uint32_t> &spriteData, uint32_t width, uint32_t height);
 
         void addSprite(uint32_t x, uint32_t y, uint32_t width, uint32_t height, uint8_t flags);
 

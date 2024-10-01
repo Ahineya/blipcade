@@ -53,7 +53,7 @@ function init() {
     // Let's create 100 entities with Position and Sprite components for testing
     for (let i = 0; i < 100; i++) {
         let entity = ECS.createEntity();
-        ECS.addComponent(entity, "Position", { x: Math.random() * 128, y: Math.random() * 128 });
+        ECS.addComponent(entity, "Position", { x: Math.random() * 256, y: Math.random() * 256 });
         ECS.addComponent(entity, "Sprite", { spriteID: 0, flipX: false, flipY: false });
     }
 
@@ -61,7 +61,7 @@ function init() {
     // let fiveThousandEntity = null;
     // for (let i = 0; i < 10000; i++) {
     //     let entity = ECS.createEntity();
-    //     ECS.addComponent(entity, "Position", { x: Math.random() * 128, y: Math.random() * 128 });
+    //     ECS.addComponent(entity, "Position", { x: Math.random() * 256, y: Math.random() * 256 });
     //
     //     if (i === 5000) {
     //         fiveThousandEntity = entity;

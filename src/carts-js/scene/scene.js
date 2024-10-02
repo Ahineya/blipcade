@@ -1,6 +1,11 @@
 import {state} from "./state/state";
 import {PICO8_COLORS} from "../celeste/colors";
-import {Entities, MoveSystem, ParticlesSystem} from "./entities";
+import {Entities} from "./entities";
+import {movementSystem} from "./systems/movement.system";
+import {debugSystem} from "./systems/debug.system";
+import {spriteDrawSystem} from "./systems/sprite-draw.system";
+import {animationSystem} from "./systems/animation.system";
+import {lightingSystem} from "./systems/lighting.system";
 
 function init() {
     Graphics.setTransparentColor(255);
@@ -19,7 +24,18 @@ function init() {
     // state.particlesSystem = new ParticlesSystem();
 
     state.entities = new Entities();
-    state.moveSystem = new MoveSystem();
+
+    state.systems = [
+        spriteDrawSystem,
+        movementSystem,
+        animationSystem,
+        lightingSystem,
+        debugSystem
+    ];
+
+    state.systems.forEach(s => {
+        s.init && s.init();
+    })
 }
 
 function update() {
@@ -34,6 +50,8 @@ function update() {
             state.lastFPSUpdate = currentTime;
         }
     }
+
+    // TODO: THis bullshit should be handled by the engine
 
     Object.keys(state.keyStates).forEach(key => {
         if (state.keyStates[key] === 'pressed') {
@@ -121,13 +139,9 @@ function update() {
         log(`Mouse clicked at ${coords.x}, ${coords.y}`);
     }
 
-    state.moveSystem.update(state.FRAME_TIME); // ms
-    state.entities.update(state.FRAME_TIME);
-
-    // update code
-    // state.particlesSystem.update(elapsed);
-    // instead of elapsed, we will use fixed delta time:
-    // state.particlesSystem.update(state.FRAME_TIME);
+    state.systems.forEach(s => {
+        s.update && s.update(state.FRAME_TIME);
+    })
 }
 
 function draw() {
@@ -140,24 +154,15 @@ function draw() {
         state.color = (state.color + 1) % 255;
     }
 
-    state.entities.draw();
+    state.systems.forEach(s => {
+        s.draw && s.draw(state.FRAME_TIME);
+    })
 
     const mousePos = Input.getMousePos();
 
     Graphics.drawSprite(mousePos.x, mousePos.y, state.SPRITES.CURSOR, false, false);
-
-    drawFPSCounter();
 }
 
 globalThis.draw = draw;
 globalThis.update = update;
 globalThis.init = init;
-
-function drawFPSCounter() {
-    const fpsText = `fps: ${state.currentFPS}`;
-    text(fpsText,1, 2,  PICO8_COLORS[0]);
-    text(fpsText, 3, 2,  PICO8_COLORS[0]);
-    text(fpsText,2, 3,  PICO8_COLORS[0]);
-    text(fpsText,2, 1,  PICO8_COLORS[0]);
-    text(fpsText,2, 2,  PICO8_COLORS[7]);
-}

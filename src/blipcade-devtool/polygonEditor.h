@@ -5,9 +5,8 @@
 #include "runtime.h"
 // #include "utils/Clipboard.h"
 #include <vector>
-#include <string>
 #include <raylib.h>
-#include <imgui.h>
+#include <nlohmann/json_fwd.hpp>
 
 namespace blipcade::devtool {
     class Devtool;
@@ -23,6 +22,10 @@ namespace blipcade::devtool {
         void RenderPolygons(); // Render polygons over the game
         void HandleInput(); // Handle mouse and keyboard input for polygon creation
         void CopyPolygonData(const Polygon& polygon); // Copy polygon data to clipboard and console
+        void CopyAllPolygonData();
+
+        [[nodiscard]] nlohmann::json PolygonsToJson() const; // Convert polygons to JSON
+        nlohmann::json PolygonToJson(const Polygon &polygon) const;
 
         // Toggle visibility
         void SetActive(bool active);
@@ -37,8 +40,8 @@ namespace blipcade::devtool {
         int selectedPolygon; // -1 indicates no selection
 
         // Helper Methods
-        Vector2 GameToScreen(const Vector2& gamePos) const;
-        Vector2 ScreenToGame(const Vector2& screenPos) const;
+        [[nodiscard]] Vector2 GameToScreen(const Vector2& gamePos) const;
+        [[nodiscard]] Vector2 ScreenToGame(const Vector2& screenPos) const;
 
         // UI State
         bool show_demo_window;

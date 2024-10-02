@@ -31,6 +31,8 @@
    - [Function: removeComponent](#function-removecomponent)
    - [Function: getComponent](#function-getcomponent)
    - [Function: forEachEntity](#function-foreachentity)
+- [Namespace: Collision](#namespace-collision)
+   - [Function: getCollider](#function-getcollider)
 
 ---
 
@@ -509,6 +511,30 @@ const position = ECS.getComponent(entity, "Position"); // Gets the Position comp
 
 ```javascript
 ECS.forEachEntity(["Position", "Velocity"], (entity, position, velocity) => { ... }
+```
+
+---
+Namespace: `Collision`
+---
+### Provides collision-related functionalities.
+
+
+
+#### Function: `getCollider`
+**Description:**   Gets the collider object at the specified index. It has ['type', 'vertices', 'triangles'] properties.  
+
+**Parameters (Required):**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `index` | `number` | The index of the collider to get. |
+
+**Returns:** {object} - The collider object. It has ['type', 'vertices', 'triangles'] properties.
+
+**Example:**
+
+```javascript
+const collider = Collision.getCollider(0); // Gets the collider object at index 0.
 ```
 
 ---

@@ -20,10 +20,11 @@ auto const WIDTH = 320;
 auto const HEIGHT = 240;
 
 namespace blipcade::runtime {
-    Runtime::Runtime(uint32_t width, uint32_t height): canvasWidth(width), canvasHeight(height), cartridge(nullptr),
-                                                       canvas(nullptr), key_flags(std::make_shared<Keystate>()),
-                                                       mouse_state(std::make_shared<Mousestate>()),
-                                                       font(nullptr), js_bindings(std::make_unique<JSBindings>(*this)) {
+    Runtime::Runtime(uint32_t width, uint32_t height): cartridge(nullptr), canvas(nullptr),
+                                                       key_flags(std::make_shared<Keystate>()),
+                                                       mouse_state(std::make_shared<Mousestate>()), font(nullptr),
+                                                       js_bindings(std::make_unique<JSBindings>(*this)),
+                                                       canvasWidth(width), canvasHeight(height) {
         canvas = std::make_shared<graphics::Canvas>(canvasWidth, canvasHeight); // TODO: make this configurable
         spritesheets = std::make_shared<std::vector<graphics::Spritesheet> >();
         colliders = std::make_shared<std::vector<collision::Collider> >();
@@ -63,10 +64,12 @@ namespace blipcade::runtime {
             this->spritesheets->push_back(spritesheet);
         }
 
+
         const auto colliders = cart->getColliders();
         for (const auto &collider: colliders) {
             this->colliders->push_back(collider);
         }
+
 
         std::cout << "Loaded " << spritesheets.size() << " spritesheets" << std::endl;
         std::cout << "Loaded " << colliders.size() << " colliders" << std::endl;

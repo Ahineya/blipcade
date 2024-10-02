@@ -60,7 +60,7 @@ namespace blipcade {
 
             void createNamespace(quickjs::value &global, const std::string &name);
 
-            void bindECSGlobalObject(quickjs::value &global, ecs::ECS &ecs);
+            void bindECSMethods(quickjs::value &global, ecs::ECS &ecs);
 
             void bindCreateEntity(quickjs::value &global, ecs::ECS &ecs);
 
@@ -73,6 +73,10 @@ namespace blipcade {
             void bindGetComponent(quickjs::value &global, ecs::ECS &ecs);
 
             void bindForEachEntity(quickjs::value &global, ecs::ECS &ecs);
+
+            void bindCollisionDetectionMethods(quickjs::value &global);
+
+            void bindGetCollider(quickjs::value &global);
         };
     }
 }

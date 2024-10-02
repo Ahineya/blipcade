@@ -4,26 +4,27 @@
 
 #ifndef COLLIDER_H
 #define COLLIDER_H
+#include <collision.h>
 #include <raylib.h>
 #include <nlohmann/json.hpp>
-
 
 namespace blipcade::collision {
     enum class ColliderType;
 
     class Collider {
-public:
-    Collider(ColliderType type, std::vector<Vector2> vertices);
-    ~Collider() = default;
+    public:
+        Collider(ColliderType type, std::vector<Vector2> vertices);
 
-    static Collider fromJson(const nlohmann::json &colliderJson);
+        ~Collider() = default;
 
-    const ColliderType type;
+        static Collider fromJson(const nlohmann::json &colliderJson);
+
+        const ColliderType type;
+        std::vector<Vector2> vertices;
+        std::vector<Triangle> triangles{};
 
     private:
-        std::vector<Vector2> vertices;
-};
-
+    };
 } // collision
 // blipcade
 

@@ -6,6 +6,7 @@
 
 #include <canvas.h>
 #include <codecvt>
+#include <collider.h>
 #include <iostream>
 
 #include "runtime.h"
@@ -44,7 +45,10 @@ namespace blipcade::runtime {
         bindInputIsMouseButtonPressed(global);
 
         // ECS
-        bindECSGlobalObject(global, ecs);
+        bindECSMethods(global, ecs);
+
+        // Collision Detection
+        bindCollisionDetectionMethods(global);
     }
 
     /**
@@ -748,7 +752,7 @@ namespace blipcade::runtime {
      * @namespace ECS
      * @description Provides Entity-Component-System functionalities.
      */
-    void JSBindings::bindECSGlobalObject(quickjs::value &global, ecs::ECS &ecs) {
+    void JSBindings::bindECSMethods(quickjs::value &global, ecs::ECS &ecs) {
         createNamespace(global, "ECS");
 
         bindCreateEntity(global, ecs);
@@ -953,34 +957,82 @@ namespace blipcade::runtime {
         });
     }
 
-    // #include "quickjspp.hpp"
-    // #include "ECS.hpp"
-    //
-    //     void registerECS(qjs::Context& context, ECS& ecs) {
-    //         context.global().add("createEntity", [&ecs]() {
-    //             return ecs.createEntity();
-    //         });
-    //
-    //         context.global().add("destroyEntity", [&ecs](Entity entity) {
-    //             ecs.destroyEntity(entity);
-    //         });
-    //
-    //         context.global().add("addComponent", [&ecs](Entity entity, const std::string& typeName, qjs::Value component) {
-    //             ecs.addComponent(entity, typeName, component.v);
-    //         });
-    //
-    //         context.global().add("removeComponent", [&ecs](Entity entity, const std::string& typeName) {
-    //             ecs.removeComponent(entity, typeName);
-    //         });
-    //
-    //         context.global().add("getComponent", [&ecs](Entity entity, const std::string& typeName) {
-    //             JSValue comp = ecs.getComponent(entity, typeName);
-    //             return qjs::Value(context, comp);
-    //         });
-    //
-    //         context.global().add("forEachEntity", [&ecs](std::vector<std::string> componentTypes, qjs::Value callback) {
-    //             ecs.forEachEntity(componentTypes, callback.v);
-    //         });
-    //     }
+    /**
+     * @namespace Collision
+     * @description Provides collision-related functionalities.
+     */
+    void JSBindings::bindCollisionDetectionMethods(quickjs::value &global) {
+        createNamespace(global, "Collision");
+
+        bindGetCollider(global);
+        // bindCheckCollision(global);
+        // bindCheckCollisionPoint(global);
+        // bindCheckCollisionCircle(global);
+        // bindCheckCollisionCircleRec(global);
+        // bindCheckCollisionRecs(global);
+    }
+
+    /**
+     * @function getCollider
+     *
+     * @param {number} index - The index of the collider to get.
+     *
+     * @description Gets the collider object at the specified index. It has ['type', 'vertices', 'triangles'] properties.
+     *
+     * @returns {object} - The collider object. It has ['type', 'vertices', 'triangles'] properties.
+     *
+     * @example const collider = Collision.getCollider(0); // Gets the collider object at index 0.
+     */
+    void JSBindings::bindGetCollider(quickjs::value &global) {
+        auto collision = global.get_property("Collision");
+
+        collision.set_property("getCollider", [this, global](const quickjs::args &a) -> quickjs::value {
+            std::shared_ptr<quickjs::context> ctx = m_runtime.getContext();
+
+            auto mousePos = m_runtime.getMousePos();
+
+            quickjs::value Object = global.get_property("Object");
+            quickjs::value obj = Object.call_member("create", quickjs::value::null(*ctx));
+
+            const auto colliders = m_runtime.getColliders();
+
+            auto colliderIndex = 0;
+
+            if (a.size() >= 1) {
+                colliderIndex = a[0].as_int32();
+            }
+
+            auto collider = colliders->at(colliderIndex);
+
+            const quickjs::value type(*ctx, static_cast<double>(collider.type));
+            // const quickjs::value vertices(*ctx, collider.vertices);
+
+            quickjs::value Array = ctx->get_global_object().get_property("Array");
+            quickjs::value arrayLength = Object.call_member("create", quickjs::value::null(*ctx));
+            arrayLength.set_property("length", static_cast<double>(collider.vertices.size()));
+            // quickjs::value vertices = Array.call_member("from", arrayLength, );
+
+            quickjs::value vertices = Array.call_member("from", 0);
+
+            for (size_t i = 0; i < collider.vertices.size(); i++) {
+            quickjs::value vertice = Object.call_member("create", quickjs::value::null(*ctx));
+
+            vertice.set_property("x", static_cast<double>(collider.vertices[i].x));
+            vertice.set_property("y", static_cast<double>(collider.vertices[i].y));
+
+            vertices.call_member("push", vertice);
+            }
+
+            // const quickjs::value triangles(*ctx, collider.triangles);
+
+            obj.set_property("type", type);
+            obj.set_property("vertices", vertices);
+            // obj.set_property("triangles", triangles);
+
+            return obj;
+        });
+    }
+
+
 } // runtime
 // blipcade

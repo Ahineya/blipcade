@@ -143,6 +143,14 @@ declare global {
 
     }
 
+    namespace Collision {
+        /**
+         * Gets the collider object at the specified index. It has ['type', 'vertices', 'triangles'] properties.
+         */
+        function getCollider(index: number): object;
+
+    }
+
     interface AddlighteffectParamsParams {
         tintColor: number;
         opacity: number;

@@ -49,9 +49,11 @@ namespace blipcade {
 
         std::vector<collision::Collider> colliders;
 
+        std::cout << "BEFORE COLLIDERS" << std::endl;
         for (const auto& colliderJson : json["colliders"]) {
             colliders.push_back(collision::Collider::fromJson(colliderJson));
         }
+        std::cout << "AFTER COLLIDERS" << std::endl;
 
         return Cartridge(json["code"].get<std::string>(), spritesheets, colliders);
     }

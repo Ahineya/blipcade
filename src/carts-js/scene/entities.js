@@ -22,6 +22,19 @@ export class Entities {
             acceleration: {x: 0, y: 0},
         });
 
+        const walkSoundHandle = Sound.loadSound('resources/footsteps-reverb.mp3');
+
+        ECS.addComponent(player, 'Sound', {
+            sounds: {
+                walk: {
+                    soundId: walkSoundHandle,
+                    volume: 1.0,
+                    isPlaying: false,
+                    isStopping: false,
+                }
+            }
+        });
+
         ECS.addComponent(player, "Sprite", {
             position: {x: 112, y: 167},
             spriteIndex: 0,

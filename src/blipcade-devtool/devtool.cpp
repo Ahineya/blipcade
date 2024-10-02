@@ -8,6 +8,8 @@
 #include <runtime.h>
 #include <algorithm> // For std::transform
 
+#include "imgui-style.h"
+
 namespace blipcade::devtool {
     Devtool::Devtool(runtime::Runtime &runtime)
         : active(false), runtime(runtime), tagFilter(""), polygonEditor(*this) {
@@ -50,12 +52,20 @@ namespace blipcade::devtool {
 
     static bool show_demo_window = false;
 
+    void Devtool::init() {
+        // embraceTheDarkness();
+        ImGui::SetupImGuiStyle(true, 0.9);
+
+    }
+
     void Devtool::draw() {
         // We want the window to be in the top left corner
         // Also we want it to fit the content.
         ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
 
         ImGui::Begin("Blipcade Devtool", &active, ImGuiWindowFlags_MenuBar);
+        ImGui::PushFont(ImGui::font1);
+
         if (ImGui::BeginMenuBar()) {
             if (ImGui::MenuItem("Show demo UI", "")) { show_demo_window = true; }
             if (ImGui::MenuItem("Polygon Editor", "")) { polygonEditor.SetActive(true); }
@@ -84,6 +94,7 @@ namespace blipcade::devtool {
             polygonEditor.Draw();
         }
 
+        ImGui::PopFont();
         ImGui::End();
 
         if (show_demo_window) {

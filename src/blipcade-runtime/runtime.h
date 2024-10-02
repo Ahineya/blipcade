@@ -16,6 +16,10 @@
 #include "ECS.h"
 
 namespace blipcade {
+    namespace audio {
+        class Audio;
+    }
+
     namespace collision {
         class Collider;
     }
@@ -80,10 +84,11 @@ namespace blipcade::runtime {
 
         [[nodiscard]] std::shared_ptr<std::vector<graphics::Spritesheet>> getSpritesheets() const;
 
-        std::shared_ptr<std::vector<collision::Collider>> getColliders() const;
+        [[nodiscard]] std::shared_ptr<audio::Audio> getAudio() const;
+
+        [[nodiscard]] std::shared_ptr<std::vector<collision::Collider>> getColliders() const;
 
         [[nodiscard]] std::shared_ptr<ecs::ECS> getECS() const;
-
 
         void setCartridge(std::shared_ptr<Cartridge>);
 
@@ -100,6 +105,7 @@ namespace blipcade::runtime {
         std::shared_ptr<Keystate> key_flags;
         std::shared_ptr<Mousestate> mouse_state;
         std::shared_ptr<graphics::Font> font;
+        std::shared_ptr<audio::Audio> audio;
 
         std::shared_ptr<ecs::ECS> ecs;
 

@@ -14,6 +14,7 @@ include_directories(${CMAKE_SOURCE_DIR}/src/blipcade-loader)
 include_directories(${CMAKE_SOURCE_DIR}/src/blipcade-ecs)
 include_directories(${CMAKE_SOURCE_DIR}/src/blipcade-devtool)
 include_directories(${CMAKE_SOURCE_DIR}/src/blipcade-collision)
+include_directories(${CMAKE_SOURCE_DIR}/src/blipcade-audio)
 include_directories(${CMAKE_SOURCE_DIR}/external/quickjs-patched)
 include_directories(${CMAKE_SOURCE_DIR}/external/earcut)
 
@@ -90,6 +91,7 @@ set(SOURCES
         src/blipcade-devtool/polygonEditor.cpp
         src/blipcade-collision/collision.cpp
         src/blipcade-collision/collider.cpp
+        src/blipcade-audio/audio.cpp
 )
 
 # Path to the JSON file

@@ -33,6 +33,11 @@
    - [Function: forEachEntity](#function-foreachentity)
 - [Namespace: Collision](#namespace-collision)
    - [Function: getCollider](#function-getcollider)
+- [Namespace: Sound](#namespace-sound)
+   - [Function: loadSound](#function-loadsound)
+   - [Function: playSound](#function-playsound)
+   - [Function: stopSound](#function-stopsound)
+   - [Function: setSoundVolume](#function-setsoundvolume)
 
 ---
 
@@ -117,7 +122,7 @@ Graphics.fillScreen(0xff); // Fills the screen with white color.
 
 ---
 #### Function: `drawSprite`
-**Description:**    @descriotion Draws a sprite on the canvas. 
+**Description:**    Draws a sprite on the canvas. 
 
 **Parameters (Required):**
 
@@ -143,7 +148,7 @@ Graphics.drawSprite(100, 100, 0); // Draws the first sprite from the first sprit
 
 ---
 #### Function: `drawSpriteEx`
-**Description:**      @descriotion Draws a sprite on the canvas. 
+**Description:**      Draws a sprite on the canvas. 
 
 **Parameters (Required):**
 
@@ -535,6 +540,79 @@ Namespace: `Collision`
 
 ```javascript
 const collider = Collision.getCollider(0); // Gets the collider object at index 0.
+```
+
+---
+Namespace: `Sound`
+---
+### 
+
+Provides sound-related functionalities.
+
+#### Function: `loadSound`
+**Description:**   Loads a sound file.  
+
+**Parameters (Required):**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `path` | `string` | The path to the sound file. |
+
+**Returns:** {number} - The ID of the loaded sound.
+
+**Example:**
+
+```javascript
+const sound = Sound.loadSound("assets/sounds/jump.wav"); // Loads the sound file.
+```
+
+---
+#### Function: `playSound`
+**Description:**   Plays a sound. 
+
+**Parameters (Required):**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `soundId` | `number` | The ID of the sound to play. |
+
+**Example:**
+
+```javascript
+Sound.playSound(soundId); // Plays the sound with the given ID.
+```
+
+---
+#### Function: `stopSound`
+**Description:**   Stops a sound. 
+
+**Parameters (Required):**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `soundId` | `number` | The ID of the sound to stop. |
+
+**Example:**
+
+```javascript
+Sound.stopSound(soundId); // Stops the sound with the given ID.
+```
+
+---
+#### Function: `setSoundVolume`
+**Description:**   Sets the volume of a sound. 
+
+**Parameters (Required):**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `soundId` | `number` | The ID of the sound to set the volume for. |
+| `volume` | `number` | The volume to set (0.0 to 1.0). |
+
+**Example:**
+
+```javascript
+Sound.setSoundVolume(soundId, 0.5); // Sets the volume of the sound with the given ID to 0.5.
 ```
 
 ---

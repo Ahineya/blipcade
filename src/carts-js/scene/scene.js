@@ -6,6 +6,7 @@ import {debugSystem} from "./systems/debug.system";
 import {spriteDrawSystem} from "./systems/sprite-draw.system";
 import {animationSystem} from "./systems/animation.system";
 import {lightingSystem} from "./systems/lighting.system";
+import {soundSystem} from "./systems/sound.system";
 
 function init() {
     Graphics.setTransparentColor(255);
@@ -30,6 +31,7 @@ function init() {
         movementSystem,
         animationSystem,
         lightingSystem,
+        soundSystem,
         debugSystem
     ];
 

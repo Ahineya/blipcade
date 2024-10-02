@@ -84,7 +84,7 @@ class MoveSystem {
             }
         })();
 
-        ECS.forEachEntity(["Player", "Sprite", "Animation", "Collider"], (playerEntity, player, sprite, animation, playerCollider) => {
+        ECS.forEachEntity(["Player", "Sprite", "Animation", "Collider", "Sound"], (playerEntity, player, sprite, animation, playerCollider, sound) => {
             const {position: {y}} = player;
 
             const scale = getScale(y);
@@ -180,9 +180,12 @@ class MoveSystem {
             if (player.velocity.x !== 0 || player.velocity.y !== 0) {
                 animation.currentAnimation = "walk";
                 animation.frameDuration = 300 * scale;
+                sound.sounds.walk.isPlaying = true; // This will actually continuously play the sound
             } else {
                 animation.currentAnimation = "idle";
                 animation.frameDuration = 700;
+                sound.sounds.walk.isPlaying = false;
+                sound.sounds.walk.isStopping = true; // This will actually continuously stop the sound
             }
         });
     }

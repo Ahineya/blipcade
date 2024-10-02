@@ -15,6 +15,7 @@
 #include "JsBindings.h"
 #include "keystate.h"
 #include "collider.h"
+#include "audio.h"
 
 auto const WIDTH = 320;
 auto const HEIGHT = 240;
@@ -24,10 +25,11 @@ namespace blipcade::runtime {
                                                        key_flags(std::make_shared<Keystate>()),
                                                        mouse_state(std::make_shared<Mousestate>()), font(nullptr),
                                                        js_bindings(std::make_unique<JSBindings>(*this)),
-                                                       canvasWidth(width), canvasHeight(height) {
+                                                       canvasWidth(width), canvasHeight(height), audio(nullptr) {
         canvas = std::make_shared<graphics::Canvas>(canvasWidth, canvasHeight); // TODO: make this configurable
         spritesheets = std::make_shared<std::vector<graphics::Spritesheet> >();
         colliders = std::make_shared<std::vector<collision::Collider> >();
+        audio = std::make_shared<audio::Audio>();
 
         std::string fontHeader = "40 24 04 06";
         std::string fontData =
@@ -97,6 +99,10 @@ namespace blipcade::runtime {
 
     std::shared_ptr<ecs::ECS> Runtime::getECS() const {
         return ecs;
+    }
+
+    std::shared_ptr<audio::Audio> Runtime::getAudio() const {
+        return audio;
     }
 
     void Runtime::setCartridge(std::shared_ptr<Cartridge> cart) {

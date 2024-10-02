@@ -3,3 +3,5 @@ build-desktop
 build-emscripten
 cmake-build-debug
 cmake-build-emscripten
+sound
+.DS_Store

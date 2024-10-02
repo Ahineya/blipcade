@@ -4,6 +4,7 @@
 
 #include "JsBindings.h"
 
+#include <audio.h>
 #include <canvas.h>
 #include <codecvt>
 #include <collider.h>
@@ -49,6 +50,9 @@ namespace blipcade::runtime {
 
         // Collision Detection
         bindCollisionDetectionMethods(global);
+
+        // Sound
+        bindSoundMethods(global);
     }
 
     /**
@@ -167,7 +171,7 @@ namespace blipcade::runtime {
      * @param {boolean} [flipX=false] - Whether to flip the sprite horizontally.
      * @param {boolean} [flipY=false] - Whether to flip the sprite vertically.
      *
-     * @descriotion Draws a sprite on the canvas.
+     * @description Draws a sprite on the canvas.
      *
      * @example Graphics.drawSprite(100, 100, 0); // Draws the first sprite from the first spritesheet at (100, 100).
      *
@@ -222,7 +226,7 @@ namespace blipcade::runtime {
      * @param {number} [originX=0.5] - The x origin of the sprite, from 0 to 1, where 0 is the left and 1 is the right.
      * @param {number} [originY=0.5] - The y origin of the sprite, from 0 to 1, where 0 is the top and 1 is the bottom.
      *
-     * @descriotion Draws a sprite on the canvas.
+     * @description Draws a sprite on the canvas.
      *
      * @example Graphics.drawSpriteEx(100, 100, 0, 0, false, false, 1.0, 1.0); // Draws the first sprite from the first spritesheet at (100, 100).
      *
@@ -1033,6 +1037,124 @@ namespace blipcade::runtime {
         });
     }
 
+    /**
+     * @namespace Sound
+     *
+     * @description Provides sound-related functionalities.
+     */
+    void JSBindings::bindSoundMethods(quickjs::value &global) {
+        createNamespace(global, "Sound");
+
+        bindLoadSound(global);
+        bindPlaySound(global);
+        bindStopSound(global);
+
+        bindSetSoundVolume(global);
+    }
+
+    /**
+     * @function loadSound
+     *
+     * @param {string} path - The path to the sound file.
+     *
+     * @description Loads a sound file.
+     *
+     * @returns {number} - The ID of the loaded sound.
+     *
+     * @example const sound = Sound.loadSound("assets/sounds/jump.wav"); // Loads the sound file.
+     */
+    void JSBindings::bindLoadSound(quickjs::value &global) {
+        auto sound = global.get_property("Sound");
+
+        sound.set_property("loadSound", [this](const quickjs::args &a) -> quickjs::value {
+            std::shared_ptr<quickjs::context> ctx = m_runtime.getContext();
+
+            auto argsCount = a.size();
+
+            if (argsCount < 1) {
+                throw std::runtime_error("loadSound: Missing argument.");
+            }
+
+            std::string path = a[0].as_cstring().c_str();
+            auto soundId = m_runtime.getAudio()->LoadSound(path);
+
+            return {*ctx, static_cast<double>(soundId)};
+        });
+    }
+
+    /**
+     * @function playSound
+     *
+     * @param {number} soundId - The ID of the sound to play.
+     *
+     * @description Plays a sound.
+     *
+     * @example Sound.playSound(soundId); // Plays the sound with the given ID.
+     */
+    void JSBindings::bindPlaySound(quickjs::value &global) {
+        auto sound = global.get_property("Sound");
+
+        sound.set_property("playSound", [this](const quickjs::args &a) {
+            auto argsCount = a.size();
+
+            if (argsCount < 1) {
+                throw std::runtime_error("playSound: Missing argument.");
+            }
+
+            auto soundId = a[0].as_uint32();
+            m_runtime.getAudio()->PlaySound(soundId);
+        });
+    }
+
+    /**
+     * @function stopSound
+     *
+     * @param {number} soundId - The ID of the sound to stop.
+     *
+     * @description Stops a sound.
+     *
+     * @example Sound.stopSound(soundId); // Stops the sound with the given ID.
+     */
+    void JSBindings::bindStopSound(quickjs::value &global) {
+        auto sound = global.get_property("Sound");
+
+        sound.set_property("stopSound", [this](const quickjs::args &a) {
+            auto argsCount = a.size();
+
+            if (argsCount < 1) {
+                throw std::runtime_error("stopSound: Missing argument.");
+            }
+
+            auto soundId = a[0].as_uint32();
+            m_runtime.getAudio()->StopSound(soundId);
+        });
+    }
+
+    /**
+     * @function setSoundVolume
+     *
+     * @param {number} soundId - The ID of the sound to set the volume for.
+     * @param {number} volume - The volume to set (0.0 to 1.0).
+     *
+     * @description Sets the volume of a sound.
+     *
+     * @example Sound.setSoundVolume(soundId, 0.5); // Sets the volume of the sound with the given ID to 0.5.
+     */
+    void JSBindings::bindSetSoundVolume(quickjs::value &global) {
+        auto sound = global.get_property("Sound");
+
+        sound.set_property("setSoundVolume", [this](const quickjs::args &a) {
+            auto argsCount = a.size();
+
+            if (argsCount < 2) {
+                throw std::runtime_error("setSoundVolume: Missing arguments.");
+            }
+
+            auto soundId = a[0].as_uint32();
+            auto volume = a[1].as_double();
+            m_runtime.getAudio()->SetSoundVolume(soundId, volume);
+        });
+    }
 
 } // runtime
 // blipcade

@@ -77,6 +77,16 @@ namespace blipcade {
             void bindCollisionDetectionMethods(quickjs::value &global);
 
             void bindGetCollider(quickjs::value &global);
+
+            void bindSoundMethods(quickjs::value &global);
+
+            void bindLoadSound(quickjs::value &global);
+
+            void bindPlaySound(quickjs::value &global);
+
+            void bindStopSound(quickjs::value &global);
+
+            void bindSetSoundVolume(quickjs::value &global);
         };
     }
 }

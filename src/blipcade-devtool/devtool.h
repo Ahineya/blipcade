@@ -19,6 +19,8 @@ namespace blipcade::devtool {
         Devtool(runtime::Runtime &runtime);
         ~Devtool();
 
+        void init();
+
         void draw();
         bool isActive();
         bool setActive(bool active);

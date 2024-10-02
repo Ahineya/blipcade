@@ -112,8 +112,6 @@ namespace blipcade::graphics {
         InitWindow(windowWidth, windowHeight, "Blipcade");
         InitAudioDevice();
 
-        auto sound = LoadSound("resources/blipcade.wav");
-
         SetTargetFPS(30);
         SetExitKey(KEY_NULL);
 
@@ -136,7 +134,9 @@ namespace blipcade::graphics {
         rlImGuiSetup(true);
 #endif
 
-
+#ifndef EMSCRIPTEN
+        devtool->init();
+#endif
         while (!WindowShouldClose()) // Detect window close button or ESC key
         {
 

@@ -26,12 +26,12 @@ declare global {
         function fillScreen(color?: number): void;
 
         /**
-         * @descriotion Draws a sprite on the canvas.
+         * Draws a sprite on the canvas.
          */
         function drawSprite(x: number, y: number, spriteIndex: number, spriteSheetIndex?: number, flipX?: boolean, flipY?: boolean): void;
 
         /**
-         * @descriotion Draws a sprite on the canvas.
+         * Draws a sprite on the canvas.
          */
         function drawSpriteEx(x: number, y: number, spriteIndex: number, spriteSheetIndex?: number, flipX?: boolean, flipY?: boolean, scale?: number, originX?: number, originY?: number): void;
 
@@ -148,6 +148,29 @@ declare global {
          * Gets the collider object at the specified index. It has ['type', 'vertices', 'triangles'] properties.
          */
         function getCollider(index: number): object;
+
+    }
+
+    namespace Sound {
+        /**
+         * Loads a sound file.
+         */
+        function loadSound(path: string): number;
+
+        /**
+         * Plays a sound.
+         */
+        function playSound(soundId: number): void;
+
+        /**
+         * Stops a sound.
+         */
+        function stopSound(soundId: number): void;
+
+        /**
+         * Sets the volume of a sound.
+         */
+        function setSoundVolume(soundId: number, volume: number): void;
 
     }
 

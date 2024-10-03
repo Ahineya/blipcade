@@ -22,7 +22,7 @@ export class Entities {
             acceleration: {x: 0, y: 0},
         });
 
-        const walkSoundHandle = Sound.loadSound('resources/footsteps-reverb.mp3');
+        const walkSoundHandle = Sound.loadSound('resources/footsteps.mp3');
 
         ECS.addComponent(player, 'Sound', {
             sounds: {

@@ -1,5 +1,6 @@
 #include "renderer.h"
 
+#include <audio.h>
 #include <imgui.h>
 
 #include "palette685.h"
@@ -139,8 +140,9 @@ namespace blipcade::graphics {
 #endif
         while (!WindowShouldClose()) // Detect window close button or ESC key
         {
-
             if (handleInput(runtime)) break;
+
+            // UpdateAudioStream(runtime->getAudio()->musicStream);
 
             const auto fps = GetFPS();
             devtool->setFPS(fps);

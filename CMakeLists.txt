@@ -92,6 +92,9 @@ set(SOURCES
         src/blipcade-collision/collision.cpp
         src/blipcade-collision/collider.cpp
         src/blipcade-audio/audio.cpp
+        src/blipcade-audio/effect.cpp
+        src/blipcade-audio/reverb.cpp
+        src/blipcade-audio/echo.cpp
 )
 
 # Path to the JSON file

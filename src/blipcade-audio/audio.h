@@ -26,6 +26,8 @@ namespace blipcade::audio {
 
         void SetSoundVolume(SoundHandle sound, float volume) const;
 
+        AudioStream musicStream;
+
     private:
         std::unordered_map<SoundHandle, ::Sound> sounds;
     };

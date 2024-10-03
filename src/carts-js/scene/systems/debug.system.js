@@ -47,7 +47,7 @@ function drawColliders() {
             const originX = Math.round(x + width * ox * scale);
             const originY = Math.round(y + height * oy * scale);
 
-            Graphics.drawLine(startX + originX, startY + originY, endX + originX, endY + originY, 0xfe);
+            // Graphics.drawLine(startX + originX, startY + originY, endX + originX, endY + originY, 0xfe);
         }
     });
 

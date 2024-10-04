@@ -9,22 +9,9 @@ export const RenderLayer = {
 
 class DrawSystem {
     constructor() {
-        this.playerEntity = null;
-        this.bgOverlayEntity = null;
     }
 
     init() {
-        ECS.forEachEntity(["Player"], (entity) => {
-            this.playerEntity = entity;
-        });
-
-        ECS.forEachEntity(["Tag"], (entity, tag) => {
-            if (tag !== "BackgroundOverlay") {
-                return;
-            }
-
-            this.bgOverlayEntity = entity;
-        });
     }
 
     draw() {

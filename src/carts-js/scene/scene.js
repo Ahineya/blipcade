@@ -35,6 +35,7 @@ function init() {
     //     velocityVariation = 20,
     //     particleClass = Particle
 
+    // TODO: This is not ideal. We should have a separate system for particle emitters
     const createMiasmaEmitter = (position) => {
         return new ParticlesEmitter("Miasma Emitter", position, 5, 10, { x: 0, y: 2 }, 2, MiasmaParticle);
     }

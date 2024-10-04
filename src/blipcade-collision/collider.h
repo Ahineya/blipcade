@@ -24,6 +24,7 @@ namespace blipcade::collision {
         std::vector<Triangle> triangles{};
 
     private:
+        float computeSignedArea() const;
     };
 } // collision
 // blipcade

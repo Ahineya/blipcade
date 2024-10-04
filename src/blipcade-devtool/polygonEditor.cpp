@@ -244,6 +244,11 @@ namespace blipcade::devtool {
     Vector2 PolygonEditor::ScreenToGame(const Vector2 &screenPos) const {
         float x = (screenPos.x - devtool.getCanvasOffset().x) / devtool.getScale();
         float y = (screenPos.y - devtool.getCanvasOffset().y) / devtool.getScale();
+
+        // round to nearest integer
+        x = std::round(x);
+        y = std::round(y);
+
         return Vector2{x, y};
     }
 }

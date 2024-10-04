@@ -44,22 +44,6 @@ const normalize = (vector) => {
     return { x: vector.x / length, y: vector.y / length };
 }
 
-const isClockwise = (vertices) => {
-    let sum = 0;
-    for (let i = 0; i < vertices.length; i++) {
-        const current = vertices[i];
-        const next = vertices[(i + 1) % vertices.length];
-        sum += (next.x - current.x) * (next.y + current.y);
-    }
-    return sum > 0; // Clockwise if sum is positive
-};
-
-const ensureClockwiseWinding = (vertices) => {
-    if (isClockwise(vertices)) {
-        vertices.reverse(); // Reverse to make winding clockwise
-    }
-};
-
 class MoveSystem {
     update(deltaTime) {
         const velocityX = (() => {
@@ -98,8 +82,6 @@ class MoveSystem {
             const {vertices: playerVertices} = playerCollider;
 
             const withLast = [...playerVertices, playerVertices[0]];
-            // Let's ensure clockwise winding
-            ensureClockwiseWinding(withLast);
 
             // Let's transform player playerVertices to the world space
             const playerWorldVertices = withLast.map((vertice) => {
@@ -122,7 +104,6 @@ class MoveSystem {
 
             ECS.forEachEntity(["Collider"], (entity, collider) => {
                 const { vertices } = collider;
-                ensureClockwiseWinding(vertices); // Ensure all colliders have consistent winding
 
                 const worldVertices = vertices.map(({x, y}) => ({x, y}));
                 worldVertices.push(worldVertices[0]);

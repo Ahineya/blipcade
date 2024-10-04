@@ -13,12 +13,11 @@
 #include <iostream>
 
 namespace blipcade::collision {
-
     using Coord = double;
     using Point = std::array<Coord, 2>;
     using N = uint32_t;
 
-    std::vector<std::vector<Point>> preparePolygon(const std::vector<Vector2>& vertices) {
+    std::vector<std::vector<Point> > preparePolygon(const std::vector<Vector2> &vertices) {
         std::vector<Vector2> cleanedVertices = vertices;
 
         // Remove duplicate last vertex if it matches the first one
@@ -26,14 +25,22 @@ namespace blipcade::collision {
             cleanedVertices.front().x == cleanedVertices.back().x &&
             cleanedVertices.front().y == cleanedVertices.back().y) {
             cleanedVertices.pop_back();
-            }
-
-
-        std::vector<std::vector<Point>> polygon;
-
-        for (const auto &vertex : cleanedVertices) {
-            polygon.push_back({{vertex.x, vertex.y}});
         }
+
+        std::vector<std::vector<Point> > polygon;
+
+        // Log how many vertices are in the polygon
+        std::cout << "PREPARE: VERTICES SIZE: " << cleanedVertices.size() << std::endl;
+
+        // Create the outer ring
+        std::vector<Point> outerRing;
+        outerRing.reserve(cleanedVertices.size());
+
+        for (const auto &vertex: cleanedVertices) {
+            outerRing.emplace_back(Point{vertex.x, vertex.y});
+        }
+
+        polygon.emplace_back(std::move(outerRing));
 
         return polygon;
     }
@@ -45,14 +52,32 @@ namespace blipcade::collision {
                 this->vertices.front().x == this->vertices.back().x &&
                 this->vertices.front().y == this->vertices.back().y) {
                 this->vertices.pop_back();
-                }
+            }
+
+            // Log how many vertices are in the polygon
+            std::cout << "VERTICES SIZE: " << this->vertices.size() << std::endl;
+
+            // Check winding order
+            float signedArea = computeSignedArea();
+            if (signedArea > 0.0f) { // Positive area indicates CCW
+                std::cout << "POLYGON IS CCW" << std::endl;
+                std::reverse(this->vertices.begin(), this->vertices.end());
+            }
 
             std::cout << "PREPARE POLYGON" << std::endl;
-            const auto polygon = preparePolygon(vertices);
+            const auto polygon = preparePolygon(this->vertices);
             std::cout << "PREPARE POLYGON DONE" << std::endl;
 
+            // log how many points are in the polygon
+            std::cout << "POLYGON SIZE: " << polygon.size() << std::endl;
+            // log polygon
+            for (const auto &point: polygon) {
+                std::cout << "POINT: " << point[0][0] << ", " << point[0][1] << std::endl;
+            }
 
             std::vector<N> indices = mapbox::earcut<N>(polygon);
+
+            std::cout << "INDICES SIZE: " << indices.size() << std::endl;
 
             // Extract triangles
             triangles.reserve(indices.size() / 3);
@@ -63,6 +88,16 @@ namespace blipcade::collision {
                 tri.v3 = this->vertices[indices[i + 2]];
                 triangles.push_back(tri);
             }
+
+            std::cout << "TRIANGLES SIZE: " << triangles.size() << std::endl;
+
+            // Print all triangles. They have a friend std::ostream &operator<<(std::ostream &os, const Triangle &triangle) function
+            for (const auto &tri: triangles) {
+                std::cout << tri << std::endl;
+            }
+
+            // Reverse the vertices back to ensure CCW winding order
+            std::reverse(this->vertices.begin(), this->vertices.end());
         }
     }
 
@@ -71,11 +106,22 @@ namespace blipcade::collision {
         auto const type = colliderTypeFromString(strType);
 
         std::vector<Vector2> vertices;
-        for (const auto &vertexJson : colliderJson["vertices"]) {
+        for (const auto &vertexJson: colliderJson["vertices"]) {
             vertices.push_back({vertexJson["x"].get<float>(), vertexJson["y"].get<float>()});
         }
 
         return {type, vertices};
+    }
+
+    float Collider::computeSignedArea() const {
+        float area = 0.0f;
+        size_t n = vertices.size();
+        for (size_t i = 0; i < n; ++i) {
+            const Vector2& current = vertices[i];
+            const Vector2& next = vertices[(i + 1) % n];
+            area += (current.x * next.y) - (next.x * current.y);
+        }
+        return 0.5f * area;
     }
 } // collision
 // blipcade

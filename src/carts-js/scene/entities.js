@@ -1,3 +1,5 @@
+import {RenderLayer} from "./systems/draw.system";
+
 export class Entities {
     constructor() {
         const background = ECS.createEntity();
@@ -7,6 +9,11 @@ export class Entities {
             spriteSheet: 1,
             flipX: false,
             origin: {x: 0, y: 0},
+            size: {width: 320, height: 200},
+        });
+
+        ECS.addComponent(background, "Render", {
+            layer: RenderLayer.Background
         });
 
         ECS.addComponent(background, "Tag", "Background");
@@ -44,6 +51,10 @@ export class Entities {
             size: {width: 26, height: 54},
         });
 
+        ECS.addComponent(player, "Render", {
+            layer: RenderLayer.Entities
+        });
+
         ECS.addComponent(player, "Animation", {
             animations: {
                 idle: [0, 1],
@@ -79,6 +90,10 @@ export class Entities {
             flipX: false,
             origin: {x: 0, y: 0.75}, // 118 + 29 * 0.75 = 140
             size: {width: 100500, height: 29},
+        });
+
+        ECS.addComponent(bgOverlay, "Render", {
+            layer: RenderLayer.Entities
         });
     }
 

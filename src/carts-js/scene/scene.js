@@ -3,10 +3,11 @@ import {PICO8_COLORS} from "../celeste/colors";
 import {Entities} from "./entities";
 import {movementSystem} from "./systems/movement.system";
 import {debugSystem} from "./systems/debug.system";
-import {spriteDrawSystem} from "./systems/sprite-draw.system";
+import {drawSystem} from "./systems/draw.system";
 import {animationSystem} from "./systems/animation.system";
 import {lightingSystem} from "./systems/lighting.system";
 import {soundSystem} from "./systems/sound.system";
+import {MiasmaParticle, Particle, ParticlesEmitter} from "./particles";
 
 function init() {
     Graphics.setTransparentColor(255);
@@ -26,10 +27,39 @@ function init() {
 
     state.entities = new Entities();
 
+    // name = "Particles Emitter",
+    //     position = { x: 0, y: 0 },
+    //     emissionRate = 2000,
+    //     particleLifetime = 0.5,
+    //     initialVelocity = { x: 0, y: 2 },
+    //     velocityVariation = 20,
+    //     particleClass = Particle
+
+    const createMiasmaEmitter = (position) => {
+        return new ParticlesEmitter("Miasma Emitter", position, 5, 10, { x: 0, y: 2 }, 2, MiasmaParticle);
+    }
+
     state.systems = [
-        spriteDrawSystem,
+        drawSystem,
         movementSystem,
         animationSystem,
+        new ParticlesEmitter("Left fire", {
+            x: 60,
+            y: 60
+        }, 50, 2, { x: 1, y: 5 }, 0, Particle),
+        // new ParticlesEmitter("Particles Emitter 2", {
+        //     x: 250,
+        //     y: 60
+        // }, 2000, 0.5, { x: 0, y: 20 }, 2, Particle),
+        createMiasmaEmitter({x: 261, y: 164}),
+        createMiasmaEmitter({x: 302, y: 171}),
+        createMiasmaEmitter({x: 239, y: 202}),
+        createMiasmaEmitter({x: 66, y: 155}),
+        createMiasmaEmitter({x: 91, y: 201}),
+        createMiasmaEmitter({x: 66, y: 215}),
+        createMiasmaEmitter({x: 16, y: 145}),
+        createMiasmaEmitter({x: 320/2, y: 200}),
+
         lightingSystem,
         soundSystem,
         debugSystem

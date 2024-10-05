@@ -79,18 +79,18 @@ function update() {
     handleMouseClicks();
 
     if (state.mouseButtonStates[0] === 'pressed') {
-        const coords = Input.getMousePos();
-        log(`Mouse clicked at ${coords.x}, ${coords.y}`);
-        const path = Pathfinding.findPath(0, 0, coords.x, coords.y, 0);
-        log(`Path length: ${path.length}`);
+        // const coords = Input.getMousePos();
+        //log(`Mouse clicked at ${coords.x}, ${coords.y}`);
+        // const path = Pathfinding.findPath(0, 0, coords.x, coords.y, 0);
+        //log(`Path length: ${path.length}`);
 
         // Let's draw the path with lines
-        for (let i = 0; i < path.length - 1; i++) {
-            const p1 = path[i];
-            const p2 = path[i + 1];
-            Graphics.drawLine(p1.x, p1.y, p2.x, p2.y, 0xfe);
-            log(`Drawing line from ${p1.x}, ${p1.y} to ${p2.x}, ${p2.y}`);
-        }
+        // for (let i = 0; i < path.length - 1; i++) {
+        //     const p1 = path[i];
+        //     const p2 = path[i + 1];
+        //     Graphics.drawLine(p1.x, p1.y, p2.x, p2.y, 0xfe);
+        //     log(`Drawing line from ${p1.x}, ${p1.y} to ${p2.x}, ${p2.y}`);
+        // }
     }
 
     state.systems.forEach(s => {

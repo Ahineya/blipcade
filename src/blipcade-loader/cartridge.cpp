@@ -11,10 +11,16 @@
 
 namespace blipcade {
     Cartridge::Cartridge(
-        std::string code,
-        const std::vector<graphics::Spritesheet>& spritesheets,
-        const std::vector<collision::Collider>& colliders
-    ): code(std::move(code)), spritesheets(spritesheets), colliders(colliders) {}
+    std::string code,
+    std::vector<graphics::Spritesheet> spritesheets,
+    std::vector<collision::Collider> colliders,
+    std::vector<collision::NavMesh> navmeshes
+)
+    : code(std::move(code)),
+      spritesheets(std::move(spritesheets)),
+      colliders(std::move(colliders)),
+      navmeshes(std::move(navmeshes))
+    {}
     Cartridge::~Cartridge() {
         spritesheets.clear();
     }
@@ -55,7 +61,18 @@ namespace blipcade {
         }
         std::cout << "AFTER COLLIDERS" << std::endl;
 
-        return Cartridge(json["code"].get<std::string>(), spritesheets, colliders);
+        std::cout << "BEFORE NAVMESHES" << std::endl;
+        std::vector<collision::NavMesh> navmeshes; // Want to create navmeshes here
+        for (const auto& navmeshJson : json["navmeshes"]) {
+            navmeshes.push_back(collision::NavMesh::fromJson(navmeshJson));
+        }
+
+        // Log how many navmeshes are in the cartridge
+        std::cout << "NAVMESHES SIZE: " << navmeshes.size() << std::endl;
+
+        std::cout << "AFTER NAVMESHES" << std::endl;
+
+        return Cartridge(json["code"].get<std::string>(), spritesheets, colliders, navmeshes);
     }
 
     const std::vector<graphics::Spritesheet> &Cartridge::getSpritesheets() {
@@ -64,6 +81,10 @@ namespace blipcade {
 
     const std::vector<collision::Collider> &Cartridge::getColliders() {
         return colliders;
+    }
+
+    const std::vector<collision::NavMesh> &Cartridge::getNavmeshes() {
+        return navmeshes;
     }
 
     graphics::Spritesheet &Cartridge::getSpritesheet(uint32_t index) {

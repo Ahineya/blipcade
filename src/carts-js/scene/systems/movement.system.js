@@ -46,131 +46,197 @@ const normalize = (vector) => {
 
 class MoveSystem {
     update(deltaTime) {
-        const velocityX = (() => {
-            switch (true) {
-                case state.keyStates[1] === 'held':
-                    return -PLAYER_SPEED * SCREEN_X_SCALE;
-                case state.keyStates[2] === 'held':
-                    return PLAYER_SPEED * SCREEN_X_SCALE;
-                default:
-                    return 0;
-            }
-        })();
-
-        const velocityY = (() => {
-            switch (true) {
-                case state.keyStates[4] === 'held':
-                    return -PLAYER_SPEED;
-                case state.keyStates[8] === 'held':
-                    return PLAYER_SPEED;
-                default:
-                    return 0;
-            }
-        })();
-
         ECS.forEachEntity(["Player", "Sprite", "Animation", "Collider", "Sound"], (playerEntity, player, sprite, animation, playerCollider, sound) => {
-            const {position: {y}} = player;
+            if (player.path && player.currentPathIndex < player.path.length) {
+                const targetPoint = player.path[player.currentPathIndex];
+                const direction = Geometry.distance(player.position, targetPoint);
+                const distanceToTarget = Math.sqrt(direction.x * direction.x + direction.y * direction.y);
+                const normalizedDirection = normalize(direction);
 
-            const scale = getScale(y);
+                // Calculate the distance the player can move this frame
+                const distanceThisFrame = PLAYER_SPEED * (deltaTime / 1000);
 
-            player.velocity.x = velocityX * scale * SCREEN_X_SCALE;
-            player.velocity.y = velocityY * scale;
+                if (distanceThisFrame >= distanceToTarget) {
+                    // Move directly to the target point
+                    player.position.x = targetPoint.x;
+                    player.position.y = targetPoint.y;
+                    player.currentPathIndex += 1; // Move to the next point in the path
+                } else {
+                    // Move towards the target point
+                    player.position.x += normalizedDirection.x * distanceThisFrame;
+                    player.position.y += normalizedDirection.y * distanceThisFrame;
+                }
 
-            let nextPlayerPositionX = player.position.x + player.velocity.x * (deltaTime / 1000);
-            let nextPlayerPositionY = player.position.y + player.velocity.y * (deltaTime / 1000);
+                // Update sprite position
+                sprite.position.x = Math.round(player.position.x);
+                sprite.position.y = Math.round(player.position.y);
 
-            const {vertices: playerVertices} = playerCollider;
+                // Handle sprite flipping based on movement direction
+                if (normalizedDirection.x < 0) {
+                    sprite.flipX = true;
+                } else if (normalizedDirection.x > 0) {
+                    sprite.flipX = false;
+                }
 
-            const withLast = [...playerVertices, playerVertices[0]];
-
-            // Let's transform player playerVertices to the world space
-            const playerWorldVertices = withLast.map((vertice) => {
-                const start = vertice;
-
-                // Let's calculate where the line should be drawn in the world based on the player sprite position and origin
-                const {position: {x, y}, origin: {x: ox, y: oy}, size: {width, height}} = sprite; // Position is always top-left corner of the sprite. Origin is from 0 to 1, where 0.5 is the center
-
-                // We need to calculate the actual position of the origin in the world. And let's not forget about scale
-                const scale = getScale(y);
-
-                const startX = start.x * scale;
-                const startY = start.y * scale;
-
-                const originX = x + width * ox * scale;
-                const originY = y + height * oy * scale;
-
-                return {x: startX + originX, y: startY + originY};
-            });
-
-            ECS.forEachEntity(["Collider"], (entity, collider) => {
-                const { vertices } = collider;
-
-                const worldVertices = vertices.map(({x, y}) => ({x, y}));
-                worldVertices.push(worldVertices[0]);
-
-                let minPenetration = Infinity; // Track the smallest penetration
-                let bestCollisionNormal = null;
-
-                for (let i = 0; i < playerWorldVertices.length; i++) {
-                    const start = playerWorldVertices[i];
-                    const end = playerWorldVertices[(i + 1) % playerWorldVertices.length];
-
-                    for (let j = 0; j < worldVertices.length; j++) {
-                        const edgeStart = worldVertices[j];
-                        const edgeEnd = worldVertices[(j + 1) % worldVertices.length];
-
-                        const intersect = Geometry.lineIntersect(start, end, edgeStart, edgeEnd);
-
-                        if (intersect) {
-                            let normal = Geometry.perpendicular(edgeStart, edgeEnd);
-                            normal = normalize(normal);
-
-                            const distance = Geometry.distance(start, intersect);
-                            const penetration = Geometry.dot(normal, distance);
-
-                            // Only track the smallest positive penetration value
-                            if (penetration > 0 && penetration < minPenetration) {
-                                minPenetration = penetration;
-                                bestCollisionNormal = normal;
-                            }
-                        }
+                // Handle animations and sounds
+                if (normalizedDirection.x !== 0 || normalizedDirection.y !== 0) {
+                    animation.currentAnimation = "walk";
+                    animation.frameDuration = 300 * getScale(player.position.y);
+                    if (!sound.sounds.walk.isPlaying) {
+                        sound.sounds.walk.isPlaying = true;
+                    }
+                } else {
+                    animation.currentAnimation = "idle";
+                    animation.frameDuration = 700;
+                    if (sound.sounds.walk.isPlaying) {
+                        sound.sounds.walk.isPlaying = false;
+                        sound.sounds.walk.isStopping = true;
                     }
                 }
 
-                const penetrationMultiplier = 0.7;
-
-                // Apply the penetration only for the smallest, most significant collision
-                if (minPenetration !== Infinity && bestCollisionNormal) {
-                    nextPlayerPositionX += bestCollisionNormal.x * minPenetration * penetrationMultiplier;
-                    nextPlayerPositionY += bestCollisionNormal.y * minPenetration * penetrationMultiplier;
-                }
-            });
-
-            player.position.x = Math.round(Math.max(0, Math.min(nextPlayerPositionX, Screen.width)));
-            player.position.y = Math.round(Math.max(0, Math.min(nextPlayerPositionY, Screen.height)));
-
-            sprite.position.x = player.position.x;
-            sprite.position.y = player.position.y;
-
-            if (player.velocity.x < 0) {
-                sprite.flipX = true;
-            } else if (player.velocity.x > 0) {
-                sprite.flipX = false;
-            }
-
-            if (player.velocity.x !== 0 || player.velocity.y !== 0) {
-                animation.currentAnimation = "walk";
-                animation.frameDuration = 300 * scale;
-                sound.sounds.walk.isPlaying = true; // This will actually continuously play the sound
+                // Optionally handle collisions here
+                // handleCollisions(player, deltaTime); // TODO: Implement this function
             } else {
+                // No path to follow; ensure the player stops
+                player.velocity.x = 0;
+                player.velocity.y = 0;
+
                 animation.currentAnimation = "idle";
                 animation.frameDuration = 700;
                 sound.sounds.walk.isPlaying = false;
-                sound.sounds.walk.isStopping = true; // This will actually continuously stop the sound
+                sound.sounds.walk.isStopping = true;
             }
         });
     }
 }
+
+// class MoveSystem {
+//     update(deltaTime) {
+//         const velocityX = (() => {
+//             switch (true) {
+//                 case state.keyStates[1] === 'held':
+//                     return -PLAYER_SPEED * SCREEN_X_SCALE;
+//                 case state.keyStates[2] === 'held':
+//                     return PLAYER_SPEED * SCREEN_X_SCALE;
+//                 default:
+//                     return 0;
+//             }
+//         })();
+//
+//         const velocityY = (() => {
+//             switch (true) {
+//                 case state.keyStates[4] === 'held':
+//                     return -PLAYER_SPEED;
+//                 case state.keyStates[8] === 'held':
+//                     return PLAYER_SPEED;
+//                 default:
+//                     return 0;
+//             }
+//         })();
+//
+//         ECS.forEachEntity(["Player", "Sprite", "Animation", "Collider", "Sound"], (playerEntity, player, sprite, animation, playerCollider, sound) => {
+//             const {position: {y}} = player;
+//
+//             const scale = getScale(y);
+//
+//             player.velocity.x = velocityX * scale * SCREEN_X_SCALE;
+//             player.velocity.y = velocityY * scale;
+//
+//             let nextPlayerPositionX = player.position.x + player.velocity.x * (deltaTime / 1000);
+//             let nextPlayerPositionY = player.position.y + player.velocity.y * (deltaTime / 1000);
+//
+//             const {vertices: playerVertices} = playerCollider;
+//
+//             const withLast = [...playerVertices, playerVertices[0]];
+//
+//             // Let's transform player playerVertices to the world space
+//             const playerWorldVertices = withLast.map((vertice) => {
+//                 const start = vertice;
+//
+//                 // Let's calculate where the line should be drawn in the world based on the player sprite position and origin
+//                 const {position: {x, y}, origin: {x: ox, y: oy}, size: {width, height}} = sprite; // Position is always top-left corner of the sprite. Origin is from 0 to 1, where 0.5 is the center
+//
+//                 // We need to calculate the actual position of the origin in the world. And let's not forget about scale
+//                 const scale = getScale(y);
+//
+//                 const startX = start.x * scale;
+//                 const startY = start.y * scale;
+//
+//                 const originX = x + width * ox * scale;
+//                 const originY = y + height * oy * scale;
+//
+//                 return {x: startX + originX, y: startY + originY};
+//             });
+//
+//             ECS.forEachEntity(["Collider"], (entity, collider) => {
+//                 const { vertices } = collider;
+//
+//                 const worldVertices = vertices.map(({x, y}) => ({x, y}));
+//                 worldVertices.push(worldVertices[0]);
+//
+//                 let minPenetration = Infinity; // Track the smallest penetration
+//                 let bestCollisionNormal = null;
+//
+//                 for (let i = 0; i < playerWorldVertices.length; i++) {
+//                     const start = playerWorldVertices[i];
+//                     const end = playerWorldVertices[(i + 1) % playerWorldVertices.length];
+//
+//                     for (let j = 0; j < worldVertices.length; j++) {
+//                         const edgeStart = worldVertices[j];
+//                         const edgeEnd = worldVertices[(j + 1) % worldVertices.length];
+//
+//                         const intersect = Geometry.lineIntersect(start, end, edgeStart, edgeEnd);
+//
+//                         if (intersect) {
+//                             let normal = Geometry.perpendicular(edgeStart, edgeEnd);
+//                             normal = normalize(normal);
+//
+//                             const distance = Geometry.distance(start, intersect);
+//                             const penetration = Geometry.dot(normal, distance);
+//
+//                             // Only track the smallest positive penetration value
+//                             if (penetration > 0 && penetration < minPenetration) {
+//                                 minPenetration = penetration;
+//                                 bestCollisionNormal = normal;
+//                             }
+//                         }
+//                     }
+//                 }
+//
+//                 const penetrationMultiplier = 0.7;
+//
+//                 // Apply the penetration only for the smallest, most significant collision
+//                 if (minPenetration !== Infinity && bestCollisionNormal) {
+//                     nextPlayerPositionX += bestCollisionNormal.x * minPenetration * penetrationMultiplier;
+//                     nextPlayerPositionY += bestCollisionNormal.y * minPenetration * penetrationMultiplier;
+//                 }
+//             });
+//
+//             player.position.x = Math.round(Math.max(0, Math.min(nextPlayerPositionX, Screen.width)));
+//             player.position.y = Math.round(Math.max(0, Math.min(nextPlayerPositionY, Screen.height)));
+//
+//             sprite.position.x = player.position.x;
+//             sprite.position.y = player.position.y;
+//
+//             if (player.velocity.x < 0) {
+//                 sprite.flipX = true;
+//             } else if (player.velocity.x > 0) {
+//                 sprite.flipX = false;
+//             }
+//
+//             if (player.velocity.x !== 0 || player.velocity.y !== 0) {
+//                 animation.currentAnimation = "walk";
+//                 animation.frameDuration = 300 * scale;
+//                 sound.sounds.walk.isPlaying = true; // This will actually continuously play the sound
+//             } else {
+//                 animation.currentAnimation = "idle";
+//                 animation.frameDuration = 700;
+//                 sound.sounds.walk.isPlaying = false;
+//                 sound.sounds.walk.isStopping = true; // This will actually continuously stop the sound
+//             }
+//         });
+//     }
+// }
 
 export function getScale(y) {
     const quarterScreenY = Screen.height * 0.65;

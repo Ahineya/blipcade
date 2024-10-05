@@ -27,6 +27,8 @@ export class Entities {
             position: {x: 112, y: 167},
             velocity: {x: 0, y: 0},
             acceleration: {x: 0, y: 0},
+            path: [],
+            currentPathIndex: 0,
         });
 
         const walkSoundHandle = Sound.loadSound('resources/footsteps.mp3');

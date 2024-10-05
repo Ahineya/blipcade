@@ -104,6 +104,7 @@ set(SOURCES
         src/blipcade-audio/echo.cpp
         src/blipcade-collision/triangulation.cpp
         src/blipcade-collision/navmesh.cpp
+        src/blipcade-collision/pathfinding.cpp
 )
 
 # Path to the JSON file

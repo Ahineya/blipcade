@@ -44,8 +44,8 @@ namespace collision {
         // let's create a copy of the vertices
         std::vector<Vector2> verticesCopy = vertices;
 
-        if (signedArea > 0.0f) { // Positive area indicates CCW
-            std::cout << "POLYGON IS CCW, reversing" << std::endl;
+        if (signedArea < 0.0f) { // Negative area indicates CW
+            std::cout << "POLYGON IS CW, reversing to CCW" << std::endl;
             std::reverse(verticesCopy.begin(), verticesCopy.end());
         }
 

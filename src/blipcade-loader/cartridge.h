@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <collider.h>
+#include <navmesh.h>
 
 namespace blipcade::graphics {
     class Spritesheet;
@@ -15,8 +16,16 @@ namespace blipcade::graphics {
 namespace blipcade {
     class Cartridge {
     public:
-        Cartridge(std::string code, const std::vector<graphics::Spritesheet> &spritesheets,
-                  const std::vector<collision::Collider> &colliders);
+        Cartridge(std::string code, std::vector<graphics::Spritesheet> spritesheets,
+              std::vector<collision::Collider> colliders, std::vector<collision::NavMesh> navmeshes);
+
+        // Delete copy constructor and copy assignment to prevent accidental copying
+        Cartridge(const Cartridge&) = delete;
+        Cartridge& operator=(const Cartridge&) = delete;
+
+        // Default move constructor and move assignment
+        Cartridge(Cartridge&&) = default;
+        Cartridge& operator=(Cartridge&&) = default;
 
         ~Cartridge();
 
@@ -32,10 +41,13 @@ namespace blipcade {
 
         [[nodiscard]] graphics::Spritesheet &getSpritesheet(uint32_t index);
 
+        [[nodiscard]] const std::vector<collision::NavMesh> &getNavmeshes();
+
     private:
         std::string code;
         std::vector<graphics::Spritesheet> spritesheets;
         std::vector<collision::Collider> colliders;
+        std::vector<collision::NavMesh> navmeshes;
     };
 } // blipcade
 

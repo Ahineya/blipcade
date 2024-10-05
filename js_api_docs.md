@@ -33,6 +33,9 @@
    - [Function: forEachEntity](#function-foreachentity)
 - [Namespace: Collision](#namespace-collision)
    - [Function: getCollider](#function-getcollider)
+- [Namespace: Pathfinding](#namespace-pathfinding)
+   - [Function: findPath](#function-findpath)
+   - [Function: getNavMesh](#function-getnavmesh)
 - [Namespace: Sound](#namespace-sound)
    - [Function: loadSound](#function-loadsound)
    - [Function: playSound](#function-playsound)
@@ -540,6 +543,52 @@ Namespace: `Collision`
 
 ```javascript
 const collider = Collision.getCollider(0); // Gets the collider object at index 0.
+```
+
+---
+Namespace: `Pathfinding`
+---
+### 
+
+Provides pathfinding-related functionalities.
+
+#### Function: `findPath`
+**Description:**   Finds a path from the starting point to the ending point using the specified navigation mesh.  
+
+**Parameters (Required):**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `startX` | `number` | The x-coordinate of the starting point. |
+| `startY` | `number` | The y-coordinate of the starting point. |
+| `endX` | `number` | The x-coordinate of the ending point. |
+| `endY` | `number` | The y-coordinate of the ending point. |
+| `navigationMeshId` | `number` | The ID of the navigation mesh to use. |
+
+**Returns:** {Array} - An array of points representing the path. Each point is an object with `x` and `y` properties.
+
+**Example:**
+
+```javascript
+Pathfinding.findPath(0, 0, 100, 100, 0); // Finds a path from (0, 0) to (100, 100) using the navigation mesh with ID 0.
+```
+
+---
+#### Function: `getNavMesh`
+**Description:**   Gets the navigation mesh with the specified ID.  
+
+**Parameters (Required):**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `navMeshId` | `number` | The ID of the navigation mesh to get. |
+
+**Returns:** {Array} - An array of regions in the navigation mesh. Each region is an object with a `vertices` property containing an array of points.
+
+**Example:**
+
+```javascript
+Pathfinding.getNavMesh(0); // Gets the navigation mesh with ID 0.
 ```
 
 ---

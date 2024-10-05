@@ -25,10 +25,11 @@ namespace blipcade::runtime {
                                                        key_flags(std::make_shared<Keystate>()),
                                                        mouse_state(std::make_shared<Mousestate>()), font(nullptr),
                                                        js_bindings(std::make_unique<JSBindings>(*this)),
-                                                       canvasWidth(width), canvasHeight(height), audio(nullptr) {
+                                                       canvasWidth(width), canvasHeight(height), audio(nullptr), navmeshes(nullptr) {
         canvas = std::make_shared<graphics::Canvas>(canvasWidth, canvasHeight); // TODO: make this configurable
         spritesheets = std::make_shared<std::vector<graphics::Spritesheet> >();
         colliders = std::make_shared<std::vector<collision::Collider> >();
+        navmeshes = std::make_shared<std::vector<collision::NavMesh> >();
         audio = std::make_shared<audio::Audio>();
 
         std::string fontHeader = "40 24 04 06";
@@ -72,6 +73,10 @@ namespace blipcade::runtime {
             this->colliders->push_back(collider);
         }
 
+        const auto navmeshes = cart->getNavmeshes();
+        for (const auto &navmesh: navmeshes) {
+            this->navmeshes->push_back(navmesh);
+        }
 
         std::cout << "Loaded " << spritesheets.size() << " spritesheets" << std::endl;
         std::cout << "Loaded " << colliders.size() << " colliders" << std::endl;
@@ -95,6 +100,10 @@ namespace blipcade::runtime {
 
     std::shared_ptr<std::vector<collision::Collider> > Runtime::getColliders() const {
         return colliders;
+    }
+
+    std::shared_ptr<std::vector<collision::NavMesh> > Runtime::getNavmeshes() const {
+        return navmeshes;
     }
 
     std::shared_ptr<ecs::ECS> Runtime::getECS() const {

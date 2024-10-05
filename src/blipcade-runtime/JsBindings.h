@@ -78,6 +78,12 @@ namespace blipcade {
 
             void bindGetCollider(quickjs::value &global);
 
+            void bindPathfindingMethods(quickjs::value &global);
+
+            void bindFindPath(quickjs::value &global);
+
+            void bindGetNavMesh(quickjs::value &global);
+
             void bindSoundMethods(quickjs::value &global);
 
             void bindLoadSound(quickjs::value &global);

@@ -51,6 +51,8 @@ function drawColliders() {
         }
     });
 
+
+
     ECS.forEachEntity(["Collider", "Visible"], (entity, collider, visible) => {
         if (ECS.getComponent(entity, "Player")) {
             return;
@@ -67,6 +69,32 @@ function drawColliders() {
             const end = vertices[(i + 1) % vertices.length];
 
             Graphics.drawLine(start.x, start.y, end.x, end.y, 0xfe);
+        }
+    });
+
+    const navMesh = Pathfinding.getNavMesh(0); // array of polygons, [{vertices: [{x, y}, {x, y}, ...]}, ...]
+
+    for (let i = 0; i < navMesh.length; i++) {
+        const polygon = navMesh[i];
+        const vertices = polygon.vertices;
+
+        for (let j = 0; j < vertices.length; j++) {
+            const start = vertices[j];
+            const end = vertices[(j + 1) % vertices.length];
+
+            Graphics.drawLine(start.x, start.y, end.x, end.y, 35);
+        }
+    }
+
+    ECS.forEachEntity(["Player"], (_, player) => {
+        const path = player.path;
+
+        if (path.length > 0) {
+            for (let i = 0; i < path.length - 1; i++) {
+                const p1 = path[i];
+                const p2 = path[i + 1];
+                Graphics.drawLine(p1.x, p1.y, p2.x, p2.y, 0xfe);
+            }
         }
     });
 }

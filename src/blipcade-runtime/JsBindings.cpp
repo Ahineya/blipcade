@@ -9,6 +9,8 @@
 #include <codecvt>
 #include <collider.h>
 #include <iostream>
+#include <navmesh.h>
+#include <pathfinding.h>
 
 #include "runtime.h"
 
@@ -48,8 +50,9 @@ namespace blipcade::runtime {
         // ECS
         bindECSMethods(global, ecs);
 
-        // Collision Detection
+        // Collision Detection and pathfinding
         bindCollisionDetectionMethods(global);
+        bindPathfindingMethods(global);
 
         // Sound
         bindSoundMethods(global);
@@ -1034,6 +1037,126 @@ namespace blipcade::runtime {
             // obj.set_property("triangles", triangles);
 
             return obj;
+        });
+    }
+
+    /**
+     * @namespace Pathfinding
+     *
+     * @description Provides pathfinding-related functionalities.
+     */
+    void JSBindings::bindPathfindingMethods(quickjs::value &global) {
+        createNamespace(global, "Pathfinding");
+
+        bindFindPath(global);
+        bindGetNavMesh(global);
+    }
+
+    /**
+     * @function findPath
+     *
+     * @param {number} startX - The x-coordinate of the starting point.
+     * @param {number} startY - The y-coordinate of the starting point.
+     * @param {number} endX - The x-coordinate of the ending point.
+     * @param {number} endY - The y-coordinate of the ending point.
+     * @param {number} navigationMeshId - The ID of the navigation mesh to use.
+     *
+     * @description Finds a path from the starting point to the ending point using the specified navigation mesh.
+     *
+     * @returns {Array} - An array of points representing the path. Each point is an object with `x` and `y` properties.
+     *
+     * @example Pathfinding.findPath(0, 0, 100, 100, 0); // Finds a path from (0, 0) to (100, 100) using the navigation mesh with ID 0.
+     */
+    void JSBindings::bindFindPath(quickjs::value &global) {
+        auto pathfinding = global.get_property("Pathfinding");
+
+        pathfinding.set_property("findPath", [this](const quickjs::args &a) -> quickjs::value {
+            std::shared_ptr<quickjs::context> ctx = m_runtime.getContext();
+
+            auto argsCount = a.size();
+
+            if (argsCount < 5) {
+                std::cout << "argsCount: " << argsCount << std::endl;
+                throw std::runtime_error("findPath: Missing arguments.");
+            }
+
+            auto startX = a[0].as_int32();
+            auto startY = a[1].as_int32();
+            auto endX = a[2].as_int32();
+            auto endY = a[3].as_int32();
+            auto navigationMeshId = a[4].as_int32();
+
+            auto navMesh = m_runtime.getNavmeshes()->at(navigationMeshId);
+
+            auto path = collision::Pathfinding::pathfind(startX, startY, endX, endY, navMesh);
+
+            quickjs::value Object = ctx->get_global_object().get_property("Object");
+            quickjs::value Array = ctx->get_global_object().get_property("Array");
+            quickjs::value pathArray = Array.call_member("from", 0);
+            for (const auto &point : path) {
+                quickjs::value pointObj = Object.call_member("create", quickjs::value::null(*ctx));
+
+                pointObj.set_property("x", static_cast<double>(point.x));
+                pointObj.set_property("y", static_cast<double>(point.y));
+
+                pathArray.call_member("push", pointObj);
+            }
+
+            return pathArray;
+        });
+    }
+
+    /**
+     * @function getNavMesh
+     *
+     * @param {number} navMeshId - The ID of the navigation mesh to get.
+     *
+     * @description Gets the navigation mesh with the specified ID.
+     *
+     * @returns {Array} - An array of regions in the navigation mesh. Each region is an object with a `vertices` property containing an array of points.
+     *
+     * @example Pathfinding.getNavMesh(0); // Gets the navigation mesh with ID 0.
+     */
+    void JSBindings::bindGetNavMesh(quickjs::value &global) {
+        auto pathfinding = global.get_property("Pathfinding");
+
+        pathfinding.set_property("getNavMesh", [this](const quickjs::args &a) -> quickjs::value {
+            std::shared_ptr<quickjs::context> ctx = m_runtime.getContext();
+
+            if (a.size() < 1) {
+                throw std::runtime_error("getNavMesh: Missing argument.");
+            }
+
+            auto navMeshes = m_runtime.getNavmeshes();
+            auto const navMeshId = a[0].as_int32();
+            auto const navMesh = navMeshes->at(navMeshId);
+
+            auto const regions = navMesh.regions;
+
+            quickjs::value Object = ctx->get_global_object().get_property("Object");
+
+            quickjs::value Array = ctx->get_global_object().get_property("Array");
+            quickjs::value pathArray = Array.call_member("from", 0);
+
+            for (const auto &region : regions) {
+                quickjs::value regionObj = Object.call_member("create", quickjs::value::null(*ctx));
+                quickjs::value verticesArray = Array.call_member("from", 0);
+
+                for (const auto &vertex : region->vertices) {
+                    quickjs::value vertexObj = Object.call_member("create", quickjs::value::null(*ctx));
+
+                    vertexObj.set_property("x", static_cast<double>(vertex.x));
+                    vertexObj.set_property("y", static_cast<double>(vertex.y));
+
+                    verticesArray.call_member("push", vertexObj);
+                }
+
+                regionObj.set_property("vertices", verticesArray);
+
+                pathArray.call_member("push", regionObj);
+            }
+
+            return pathArray;
         });
     }
 

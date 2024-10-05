@@ -23,17 +23,7 @@ function init() {
     state.keyStates = {};
     state.mouseButtonStates = {};
 
-    // state.particlesSystem = new ParticlesSystem();
-
     state.entities = new Entities();
-
-    // name = "Particles Emitter",
-    //     position = { x: 0, y: 0 },
-    //     emissionRate = 2000,
-    //     particleLifetime = 0.5,
-    //     initialVelocity = { x: 0, y: 2 },
-    //     velocityVariation = 20,
-    //     particleClass = Particle
 
     // TODO: This is not ideal. We should have a separate system for particle emitters
     const createMiasmaEmitter = (position) => {
@@ -84,92 +74,23 @@ function update() {
         }
     }
 
-    // TODO: THis bullshit should be handled by the engine
-
-    Object.keys(state.keyStates).forEach(key => {
-        if (state.keyStates[key] === 'pressed') {
-            state.keyStates[key] = 'held';
-        } else if (state.keyStates[key] === 'released') {
-            state.keyStates[key] = 'up';
-        }
-    });
-
-    // X key
-    if (Input.isKeyPressed(32)) {
-        if (state.keyStates[32] !== 'held' && state.keyStates[32] !== 'pressed') {
-            state.keyStates[32] = 'pressed';
-        }
-    } else {
-        if (state.keyStates[32] === 'held' || state.keyStates[32] === 'pressed') {
-            state.keyStates[32] = 'released';
-        }
-    }
-
-    // Left key
-    if (Input.isKeyPressed(1)) {
-        if (state.keyStates[1] !== 'held' && state.keyStates[1] !== 'pressed') {
-            state.keyStates[1] = 'pressed';
-        }
-    } else {
-        if (state.keyStates[1] === 'held' || state.keyStates[1] === 'pressed') {
-            state.keyStates[1] = 'released';
-        }
-    }
-
-    // Right key
-    if (Input.isKeyPressed(2)) {
-        if (state.keyStates[2] !== 'held' && state.keyStates[2] !== 'pressed') {
-            state.keyStates[2] = 'pressed';
-        }
-    } else {
-        if (state.keyStates[2] === 'held' || state.keyStates[2] === 'pressed') {
-            state.keyStates[2] = 'released';
-        }
-    }
-    
-    // Up key
-    if (Input.isKeyPressed(4)) {
-        if (state.keyStates[4] !== 'held' && state.keyStates[4] !== 'pressed') {
-            state.keyStates[4] = 'pressed';
-        }
-    } else {
-        if (state.keyStates[4] === 'held' || state.keyStates[4] === 'pressed') {
-            state.keyStates[4] = 'released';
-        }
-    }
-
-    // Down key
-    if (Input.isKeyPressed(8)) {
-        if (state.keyStates[8] !== 'held' && state.keyStates[8] !== 'pressed') {
-            state.keyStates[8] = 'pressed';
-        }
-    } else {
-        if (state.keyStates[8] === 'held' || state.keyStates[8] === 'pressed') {
-            state.keyStates[8] = 'released';
-        }
-    }
-
-    Object.keys(state.mouseButtonStates).forEach(button => {
-        if (state.mouseButtonStates[button] === 'pressed') {
-            state.mouseButtonStates[button] = 'held';
-        } else if (state.mouseButtonStates[button] === 'released') {
-            state.mouseButtonStates[button] = 'up';
-        }
-    });
-
-    if (Input.isMouseButtonPressed(0)) {
-        if (state.mouseButtonStates[0] !== 'held' && state.mouseButtonStates[0] !== 'pressed') {
-            state.mouseButtonStates[0] = 'pressed';
-        }
-    } else {
-        if (state.mouseButtonStates[0] === 'held' || state.mouseButtonStates[0] === 'pressed') {
-            state.mouseButtonStates[0] = 'released';
-        }
-    }
+    updateKeyStates();
+    updateMouseStates();
+    handleMouseClicks();
 
     if (state.mouseButtonStates[0] === 'pressed') {
         const coords = Input.getMousePos();
         log(`Mouse clicked at ${coords.x}, ${coords.y}`);
+        const path = Pathfinding.findPath(0, 0, coords.x, coords.y, 0);
+        log(`Path length: ${path.length}`);
+
+        // Let's draw the path with lines
+        for (let i = 0; i < path.length - 1; i++) {
+            const p1 = path[i];
+            const p2 = path[i + 1];
+            Graphics.drawLine(p1.x, p1.y, p2.x, p2.y, 0xfe);
+            log(`Drawing line from ${p1.x}, ${p1.y} to ${p2.x}, ${p2.y}`);
+        }
     }
 
     state.systems.forEach(s => {
@@ -199,3 +120,104 @@ function draw() {
 globalThis.draw = draw;
 globalThis.update = update;
 globalThis.init = init;
+
+function updateKeyStates() {
+    Object.keys(state.keyStates).forEach(key => {
+        if (state.keyStates[key] === 'pressed') {
+            state.keyStates[key] = 'held';
+        } else if (state.keyStates[key] === 'released') {
+            state.keyStates[key] = 'up';
+        }
+    });
+
+    // Example for updating a specific key (e.g., Left arrow key with key code 1)
+    updateSingleKeyState(1, Input.isKeyPressed(1));
+    updateSingleKeyState(2, Input.isKeyPressed(2));
+    updateSingleKeyState(4, Input.isKeyPressed(4));
+    updateSingleKeyState(8, Input.isKeyPressed(8));
+    updateSingleKeyState(32, Input.isKeyPressed(32)); // Space key
+}
+
+function updateSingleKeyState(keyCode, isPressed) {
+    if (isPressed) {
+        if (state.keyStates[keyCode] !== 'held' && state.keyStates[keyCode] !== 'pressed') {
+            state.keyStates[keyCode] = 'pressed';
+        }
+    } else {
+        if (state.keyStates[keyCode] === 'held' || state.keyStates[keyCode] === 'pressed') {
+            state.keyStates[keyCode] = 'released';
+        }
+    }
+}
+
+function updateMouseStates() {
+    Object.keys(state.mouseButtonStates).forEach(button => {
+        if (state.mouseButtonStates[button] === 'pressed') {
+            state.mouseButtonStates[button] = 'held';
+        } else if (state.mouseButtonStates[button] === 'released') {
+            state.mouseButtonStates[button] = 'up';
+        }
+    });
+}
+
+function handleMouseClicks() {
+    // Handle left mouse button (button index 0)
+    const button = 0;
+    const isPressed = Input.isMouseButtonPressed(button);
+    if (isPressed) {
+        if (state.mouseButtonStates[button] !== 'held' && state.mouseButtonStates[button] !== 'pressed') {
+            state.mouseButtonStates[button] = 'pressed';
+        }
+    } else {
+        if (state.mouseButtonStates[button] === 'held' || state.mouseButtonStates[button] === 'pressed') {
+            state.mouseButtonStates[button] = 'released';
+        }
+    }
+
+    // If the left mouse button was just pressed, set the destination
+    if (state.mouseButtonStates[button] === 'pressed') {
+        const coords = Input.getMousePos();
+        log(`Mouse clicked at ${coords.x}, ${coords.y}`);
+
+        // Assuming player entity has a unique identifier, e.g., "Player"
+
+        ECS.forEachEntity(["Player"], (playerEntity, player) => {
+            if (playerEntity) {
+                const currentPosition = player.position;
+
+                log(`Current position: ${currentPosition.x}, ${currentPosition.y}`);
+
+                // Calculate the path from current position to clicked position
+                const path = Pathfinding.findPath(
+                    Math.round(currentPosition.x),
+                    Math.round(currentPosition.y),
+                    Math.round(coords.x),
+                    Math.round(coords.y),
+                    0 // Assuming '0' is a parameter for the pathfinding algorithm
+                );
+
+                log(`Path length: ${path.length}`);
+
+                if (path.length > 0) {
+                    player.path = path; // Store the path in the player's component
+                    player.currentPathIndex = 0; // Reset the current path index
+                    log(`Path length: ${path.length}`);
+
+                    // Optionally, draw the path for debugging
+                    // drawPath(path);
+                } else {
+                    log("No path found to the destination.");
+                }
+            }
+        });
+    }
+}
+
+function drawPath(path) {
+    for (let i = 0; i < path.length - 1; i++) {
+        const p1 = path[i];
+        const p2 = path[i + 1];
+        Graphics.drawLine(p1.x, p1.y, p2.x, p2.y, 0xfe);
+        log(`Drawing line from ${p1.x}, ${p1.y} to ${p2.x}, ${p2.y}`);
+    }
+}

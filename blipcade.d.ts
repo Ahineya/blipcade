@@ -151,6 +151,19 @@ declare global {
 
     }
 
+    namespace Pathfinding {
+        /**
+         * Finds a path from the starting point to the ending point using the specified navigation mesh.
+         */
+        function findPath(startX: number, startY: number, endX: number, endY: number, navigationMeshId: number): any[];
+
+        /**
+         * Gets the navigation mesh with the specified ID.
+         */
+        function getNavMesh(navMeshId: number): any[];
+
+    }
+
     namespace Sound {
         /**
          * Loads a sound file.

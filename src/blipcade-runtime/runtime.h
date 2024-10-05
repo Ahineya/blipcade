@@ -22,6 +22,7 @@ namespace blipcade {
 
     namespace collision {
         class Collider;
+        class NavMesh;
     }
 
     class Cartridge;
@@ -88,6 +89,8 @@ namespace blipcade::runtime {
 
         [[nodiscard]] std::shared_ptr<std::vector<collision::Collider>> getColliders() const;
 
+        [[nodiscard]] std::shared_ptr<std::vector<collision::NavMesh>> getNavmeshes() const;
+
         [[nodiscard]] std::shared_ptr<ecs::ECS> getECS() const;
 
         void setCartridge(std::shared_ptr<Cartridge>);
@@ -101,6 +104,7 @@ namespace blipcade::runtime {
         std::shared_ptr<graphics::Canvas> canvas;
         std::shared_ptr<std::vector<graphics::Spritesheet>> spritesheets;
         std::shared_ptr<std::vector<collision::Collider>> colliders;
+        std::shared_ptr<std::vector<collision::NavMesh>> navmeshes;
         std::shared_ptr<std::string> code;
         std::shared_ptr<Keystate> key_flags;
         std::shared_ptr<Mousestate> mouse_state;

@@ -6,6 +6,7 @@
 // #include "utils/Clipboard.h"
 #include <vector>
 #include <raylib.h>
+#include "navmesh.h"
 #include <nlohmann/json_fwd.hpp>
 
 namespace blipcade::devtool {
@@ -20,6 +21,8 @@ namespace blipcade::devtool {
 
         void Draw(); // Draw the ImGui window for polygon management
         void RenderPolygons(); // Render polygons over the game
+        void RenderNavMeshes();
+
         void HandleInput(); // Handle mouse and keyboard input for polygon creation
         void CopyPolygonData(const Polygon& polygon); // Copy polygon data to clipboard and console
         void CopyAllPolygonData();
@@ -36,12 +39,17 @@ namespace blipcade::devtool {
         bool active;
 
         std::vector<Polygon> polygons;
+
+        std::unordered_map<size_t, collision::NavMesh> navmeshes;
+
         int currentEditingPolygon; // -1 indicates no polygon being edited
         int selectedPolygon; // -1 indicates no selection
 
         // Helper Methods
         [[nodiscard]] Vector2 GameToScreen(const Vector2& gamePos) const;
         [[nodiscard]] Vector2 ScreenToGame(const Vector2& screenPos) const;
+
+        void GenerateNavmesh(Polygon &polygon);
 
         // UI State
         bool show_demo_window;

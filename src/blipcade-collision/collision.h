@@ -10,8 +10,7 @@
 
 
 namespace blipcade::collision {
-
-    const enum class ColliderType {
+    enum class ColliderType {
         RECTANGLE,
         CIRCLE,
         CONVEX_POLYGON,

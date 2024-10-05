@@ -5,16 +5,18 @@
 #include <imgui.h>
 #include <raylib.h>
 #include <iostream>
+#include <navmesh.h>
 #include <sstream>
 #include <raymath.h>
+#include <triangulation.h>
 #include <nlohmann/json.hpp>
 #include <nlohmann/json_fwd.hpp>
 
 namespace blipcade::devtool {
     PolygonEditor::PolygonEditor(Devtool &devtool)
         : devtool(devtool), active(false),
-          polygons(), currentEditingPolygon(-1),
-          selectedPolygon(-1), show_demo_window(false) {
+          polygons(), navmeshes(),
+          currentEditingPolygon(-1), selectedPolygon(-1), show_demo_window(false) {
     }
 
     PolygonEditor::~PolygonEditor() {
@@ -44,7 +46,7 @@ namespace blipcade::devtool {
 
             // Let's create submenus for the copying active polygon or all polygons
             if (ImGui::BeginMenu("Copy")) {
-                if (ImGui::MenuItem("Copy Active Polygon") && currentEditingPolygon != -1) {
+                if (ImGui::MenuItem("Copy Active Polygon") && selectedPolygon != -1) {
                     CopyPolygonData(polygons[currentEditingPolygon]);
                 }
                 if (ImGui::MenuItem("Copy All Polygons")) {
@@ -83,12 +85,20 @@ namespace blipcade::devtool {
         ImGui::Text("Selected Polygon: %d", selectedPolygon + 1);
         ImGui::TextWrapped(
             "Left-click to add vertices.\nPress 'C' or click close to a starting point to close the polygon.");
+        // Add button to generate navmesh if the polygon is selected
+        if (selectedPolygon != -1) {
+            if (ImGui::Button("Generate Navmesh")) {
+                // Generate navmesh
+                GenerateNavmesh(polygons[selectedPolygon]);
+            }
+        }
         ImGui::EndGroup();
 
         ImGui::End();
 
         HandleInput();
 
+        RenderNavMeshes();
         RenderPolygons();
 
         if (show_demo_window) {
@@ -114,7 +124,10 @@ namespace blipcade::devtool {
                     // Threshold for closing
                     poly.vertices.push_back(poly.vertices[0]);
                     poly.isClosed = true;
+                    selectedPolygon = currentEditingPolygon;
+                    GenerateNavmesh(polygons[selectedPolygon]);
                     currentEditingPolygon = -1; // Finish editing
+                    // select the polygon
                     return;
                 }
             }
@@ -128,6 +141,8 @@ namespace blipcade::devtool {
             // Push the first vertex to the end to close the polygon
             poly.vertices.push_back(poly.vertices[0]);
             poly.isClosed = true;
+            selectedPolygon = currentEditingPolygon;
+            GenerateNavmesh(polygons[selectedPolygon]);
             currentEditingPolygon = -1; // Finish editing
         }
     }
@@ -153,15 +168,20 @@ namespace blipcade::devtool {
                         ImVec2(coords2.x, coords2.y),
                         lineColor, 2.0f
                     );
+                }
 
-                    // And let's draw the filled polygon with PathFillConcave:
-                    ImVec2 *points = new ImVec2[poly.vertices.size()];
-                    std::transform(poly.vertices.begin(), poly.vertices.end(), points, [this](const Vector2 &v) {
-                        auto const coords = GameToScreen(v);
-                        return ImVec2(coords.x, coords.y);
-                    });
+                // For polygon navigation mesh, we will draw the filled polygon with PathFillConvex:
+                const auto navmesh = navmeshes.find(i);
+                if (navmesh != navmeshes.end()) {
+                    for (const auto &region : navmesh->second.regions) {
+                        ImVec2 *points = new ImVec2[region->vertices.size()];
+                        std::transform(region->vertices.begin(), region->vertices.end(), points, [this](const Vector2 &v) {
+                            auto const coords = GameToScreen(v);
+                            return ImVec2(coords.x, coords.y);
+                        });
 
-                    drawList->AddConcavePolyFilled(points, static_cast<int>(poly.vertices.size()), fillColor);
+                        drawList->AddConvexPolyFilled(points, static_cast<int>(region->vertices.size()), fillColor);
+                    }
                 }
             } else {
                 for (size_t j = 0; j < poly.vertices.size() - 1; ++j) {
@@ -183,6 +203,27 @@ namespace blipcade::devtool {
                         ImVec2(coords.x, coords.y),
                         ImVec2(mousePos.x, mousePos.y),
                         lineColor, 2.0f
+                    );
+                }
+            }
+        }
+    }
+
+    void PolygonEditor::RenderNavMeshes() {
+        // for each navmesh
+        for (const auto &navMesh : navmeshes) {
+            for (size_t i = 0; i < navMesh.second.regions.size(); ++i) {
+                for (size_t j = 0; j < navMesh.second.regions[i]->vertices.size(); ++j) {
+                    const Vector2 &v1 = navMesh.second.regions[i]->vertices[j];
+                    const Vector2 &v2 = navMesh.second.regions[i]->vertices[(j + 1) % navMesh.second.regions[i]->vertices.size()];
+
+                    const auto coords1 = GameToScreen(v1);
+                    const auto coords2 = GameToScreen(v2);
+
+                    ImGui::GetBackgroundDrawList()->AddLine(
+                        ImVec2(coords1.x, coords1.y),
+                        ImVec2(coords2.x, coords2.y),
+                        IM_COL32(0, 0, 255, 255), 2.0f
                     );
                 }
             }
@@ -219,6 +260,12 @@ namespace blipcade::devtool {
             json.push_back(polyJson);
         }
 
+        // Output to console navmeshes
+        for (const auto &navMesh : navmeshes) {
+            std::cout << "NavMesh:\n";
+            std::cout << navMesh.second.toJson().dump() << std::endl;
+        }
+
         return json;
     }
 
@@ -250,5 +297,47 @@ namespace blipcade::devtool {
         y = std::round(y);
 
         return Vector2{x, y};
+    }
+
+    void PolygonEditor::GenerateNavmesh(Polygon &polygon) {
+
+        // 1. Exclude the last vertex if the polygon is closed
+        std::vector<Vector2> vertices = polygon.vertices;
+        if (polygon.isClosed) {
+            vertices.pop_back();
+        }
+
+        std::cout << "Generating navmesh for polygon with " << vertices.size() << " vertices" << std::endl;
+
+        const auto indices = collision::Triangulation::triangulate(vertices);
+
+        collision::NavMesh navMesh;
+
+
+        // Partition polygon into convex regions
+        // auto convexRegions = partitionIntoConvex(this->vertices);
+        std::vector<std::vector<Vector2>> convexRegions;
+
+        // Let's partition the polygon into convex regions
+        std::vector<Vector2> region;
+        for (size_t i = 0; i < indices.size(); ++i) {
+            region.push_back(vertices[indices[i]]);
+            if (i % 3 == 2) {
+                convexRegions.push_back(region);
+                region.clear();
+            }
+        }
+
+        std::cout << "Partitioned into " << convexRegions.size() << " convex regions.\n";
+
+        // Add convex regions to navMesh
+        for (auto& region : convexRegions) {
+            navMesh.addRegion(region);
+        }
+
+        navMesh.buildConnectivity();
+
+        navmeshes.emplace(selectedPolygon, std::move(navMesh));
+
     }
 }

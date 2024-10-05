@@ -4,6 +4,8 @@ project(blipcade_cmake)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+Set(FETCHCONTENT_QUIET FALSE)
+
 include(FetchContent)
 
 # Add the directory containing your header files
@@ -18,10 +20,12 @@ include_directories(${CMAKE_SOURCE_DIR}/src/blipcade-audio)
 include_directories(${CMAKE_SOURCE_DIR}/external/quickjs-patched)
 include_directories(${CMAKE_SOURCE_DIR}/external/earcut)
 
+
 FetchContent_Declare(
         json
         GIT_REPOSITORY https://github.com/nlohmann/json.git
         GIT_TAG v3.11.2  # Specify the version you need
+        GIT_PROGRESS TRUE
 )
 
 FetchContent_MakeAvailable(json)
@@ -30,6 +34,7 @@ FetchContent_Declare(
         dynamic_bitset
         GIT_REPOSITORY https://github.com/pinam45/dynamic_bitset.git
         GIT_TAG v1.3.0
+        GIT_PROGRESS TRUE
 )
 
 FetchContent_MakeAvailable(dynamic_bitset)
@@ -57,6 +62,7 @@ FetchContent_Declare(
         GIT_REPOSITORY "https://github.com/ocornut/imgui.git"
         GIT_TAG "v1.91.2"
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/imgui
+        GIT_PROGRESS TRUE
 )
 
 FetchContent_Populate(imgui)
@@ -67,6 +73,7 @@ FetchContent_Declare(
         GIT_REPOSITORY "https://github.com/raylib-extras/rlImGui.git"
         GIT_TAG "main"
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/rlImGui
+        GIT_PROGRESS TRUE
 )
 
 FetchContent_Populate(rlImGui)
@@ -95,6 +102,8 @@ set(SOURCES
         src/blipcade-audio/effect.cpp
         src/blipcade-audio/reverb.cpp
         src/blipcade-audio/echo.cpp
+        src/blipcade-collision/triangulation.cpp
+        src/blipcade-collision/navmesh.cpp
 )
 
 # Path to the JSON file

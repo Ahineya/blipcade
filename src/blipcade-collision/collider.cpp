@@ -64,6 +64,8 @@ namespace blipcade::collision {
                 std::reverse(this->vertices.begin(), this->vertices.end());
             }
 
+            // Here we want to build navmesh from the polygon
+
             std::cout << "PREPARE POLYGON" << std::endl;
             const auto polygon = preparePolygon(this->vertices);
             std::cout << "PREPARE POLYGON DONE" << std::endl;

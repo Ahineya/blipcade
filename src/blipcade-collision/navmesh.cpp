@@ -43,20 +43,20 @@ namespace blipcade::collision {
 
     // pathfinding.cpp
 
-    bool vectorsAreEqual(const Vector2& a, const Vector2& b, float epsilon = 1e-5f) {
+    bool vectorsAreEqual(const Vector2 &a, const Vector2 &b, float epsilon = 1e-5f) {
         return fabs(a.x - b.x) < epsilon && fabs(a.y - b.y) < epsilon;
     }
 
-    std::optional<std::pair<Vector2, Vector2>> ConvexPolygon::getSharedEdge(const ConvexPolygon& other) const {
-        std::vector<std::pair<Vector2, Vector2>> sharedEdges;
+    std::optional<std::pair<Vector2, Vector2> > ConvexPolygon::getSharedEdge(const ConvexPolygon &other) const {
+        std::vector<std::pair<Vector2, Vector2> > sharedEdges;
 
         for (size_t i = 0; i < vertices.size(); ++i) {
-            const Vector2& this_v1 = vertices[i];
-            const Vector2& this_v2 = vertices[(i + 1) % vertices.size()];
+            const Vector2 &this_v1 = vertices[i];
+            const Vector2 &this_v2 = vertices[(i + 1) % vertices.size()];
 
             for (size_t j = 0; j < other.vertices.size(); ++j) {
-                const Vector2& other_v1 = other.vertices[j];
-                const Vector2& other_v2 = other.vertices[(j + 1) % other.vertices.size()];
+                const Vector2 &other_v1 = other.vertices[j];
+                const Vector2 &other_v2 = other.vertices[(j + 1) % other.vertices.size()];
 
                 if (vectorsAreEqual(this_v1, other_v1) && vectorsAreEqual(this_v2, other_v2)) {
                     sharedEdges.emplace_back(std::make_pair(this_v1, this_v2));
@@ -82,7 +82,7 @@ namespace blipcade::collision {
     }
 
     void NavMesh::calculateCentroids() {
-        for (auto &region : regions) {
+        for (auto &region: regions) {
             region->calculateCentroid();
         }
     }
@@ -101,105 +101,6 @@ namespace blipcade::collision {
         for (size_t i = 0; i < regions.size(); ++i) {
             std::cout << "Region " << i << " has " << regions[i]->neighbors.size() << " neighbors.\n";
         }
-    }
-
-    bool NavMesh::isPointOnNavMesh(Vector2 point) const {
-        for (const auto &region : regions) {
-            if (pointInTriangle(point, *region) || Vector2Equals(point, region->vertices[0]) || Vector2Equals(point, region->vertices[1]) || Vector2Equals(point, region->vertices[2])) {
-                return true;
-            }
-        }
-
-        std::cout << "Point is not on the navmesh.\n";
-        std::cout << "Point: " << point.x << ", " << point.y << "\n";
-        std::cout << "Checks:\n";
-        std::cout << "is point in triangle: " << pointInTriangle(point, *regions[0]) << "\n";
-        std::cout << "is point equal to vertex 0: " << Vector2Equals(point, regions[0]->vertices[0]) << "\n";
-        std::cout << "is point equal to vertex 1: " << Vector2Equals(point, regions[0]->vertices[1]) << "\n";
-        std::cout << "is point equal to vertex 2: " << Vector2Equals(point, regions[0]->vertices[2]) << "\n";
-        return false;
-    }
-
-    bool NavMesh::pointInTriangle(const Vector2 point, const ConvexPolygon triangle) const {
-        // Barycentric coordinates
-        float alpha = ((triangle.vertices[1].y - triangle.vertices[2].y) * (point.x - triangle.vertices[2].x) +
-                       (triangle.vertices[2].x - triangle.vertices[1].x) * (point.y - triangle.vertices[2].y)) /
-                      ((triangle.vertices[1].y - triangle.vertices[2].y) * (triangle.vertices[0].x - triangle.vertices[2].x) +
-                       (triangle.vertices[2].x - triangle.vertices[1].x) * (triangle.vertices[0].y - triangle.vertices[2].y));
-        float beta = ((triangle.vertices[2].y - triangle.vertices[0].y) * (point.x - triangle.vertices[2].x) +
-                      (triangle.vertices[0].x - triangle.vertices[2].x) * (point.y - triangle.vertices[2].y)) /
-                     ((triangle.vertices[1].y - triangle.vertices[2].y) * (triangle.vertices[0].x - triangle.vertices[2].x) +
-                      (triangle.vertices[2].x - triangle.vertices[1].x) * (triangle.vertices[0].y - triangle.vertices[2].y));
-        float gamma = 1.0f - alpha - beta;
-
-        return alpha > 0 && beta > 0 && gamma > 0;
-    }
-
-    bool NavMesh::isLineCompletelyOnNavMesh(const Vector2 A, const Vector2 B) const {
-        if (!isPointOnNavMesh(A) || !isPointOnNavMesh(B)) {
-            std::cout << "One of the points is not on the navmesh.\n";
-            return false;  // If either endpoint is not on the mesh, return false
-        }
-
-        Vector2 currentPoint = A;
-        while (true) {
-            std::shared_ptr<ConvexPolygon> currentRegion = findRegionContainingPoint(currentPoint);
-            if (!currentRegion) {
-                return false;  // This shouldn't happen if isPointOnNavMesh is correct
-            }
-
-            Vector2 exitPoint = {};
-            std::cout << "BEFORE FIND NEXT REGION\n";
-            std::shared_ptr<ConvexPolygon> nextRegion = findNextRegionAlongLine(currentRegion, currentPoint, B, exitPoint);
-            std::cout << "AFTER FIND NEXT REGION\n";
-
-            if (!nextRegion) {
-                std::cout << "No next region found.\n";
-                // We've reached B or there's no next region
-                return (exitPoint.x == B.x && exitPoint.y == B.y);
-            }
-
-            std::cout << "Exit point: " << exitPoint.x << ", " << exitPoint.y << "\n";
-
-            currentPoint = exitPoint;
-
-            std::cout << "Current point: " << currentPoint.x << ", " << currentPoint.y << "\n";
-        }
-    }
-
-    std::shared_ptr<ConvexPolygon> NavMesh::findRegionContainingPoint(const Vector2 point) const {
-        for (const auto& region : regions) {
-            if (pointInTriangle(point, *region)) {
-                return region;
-            }
-        }
-        return nullptr;
-    }
-
-    std::shared_ptr<ConvexPolygon> NavMesh::findNextRegionAlongLine(const std::shared_ptr<ConvexPolygon> currentRegion,
-                                                           const Vector2 start, const Vector2 end,
-                                                           Vector2& exitPoint) const {
-        for (size_t i = 0; i < 3; ++i) {
-            Vector2 edgeStart = currentRegion->vertices[i];
-            Vector2 edgeEnd = currentRegion->vertices[(i + 1) % 3];
-
-            Vector2 intersection = {};
-            if (CheckCollisionLines(start, end, edgeStart, edgeEnd, &intersection)) {
-                // Find the neighboring region that shares this edge
-                for (const auto& neighbor : currentRegion->neighbors) {
-                    if (neighbor->sharesEdge(*currentRegion)) {
-                        return std::shared_ptr<ConvexPolygon>(neighbor);
-                    }
-                }
-            }
-
-            exitPoint.x = intersection.x;
-            exitPoint.y = intersection.y;
-        }
-
-        // If we're here, the line ends in this region
-        exitPoint = end;
-        return nullptr;
     }
 
     nlohmann::json NavMesh::toJson() const {
@@ -242,36 +143,9 @@ namespace blipcade::collision {
         return j;
     }
 
-    // Helper function to calculate signed area
-    float signedArea(const ConvexPolygon& polygon) {
-        float area = 0.0f;
-        size_t n = polygon.vertices.size();
-        for (size_t i = 0; i < n; ++i) {
-            const Vector2& current = polygon.vertices[i];
-            const Vector2& next = polygon.vertices[(i + 1) % n];
-            area += (current.x * next.y) - (next.x * current.y);
-        }
-        return area * 0.5f;
-    }
-
-    // Function to enforce consistent winding order (CCW by default)
-    void ensureConsistentWinding(NavMesh& navMesh, bool clockwise /*= false*/) {
-        for (auto& region : navMesh.regions) {
-            float area = signedArea(*region);
-            bool isClockwise = area < 0.0f;
-            if (isClockwise != clockwise) {
-                std::reverse(region->vertices.begin(), region->vertices.end());
-                // Optionally recompute centroid if your ConvexPolygon class stores it
-                // region->computeCentroid();
-            }
-        }
-    }
-
-
-
-    std::vector<std::pair<Vector2, Vector2> > NavMesh::getOutline() const {
-        std::unordered_set<std::pair<Vector2, Vector2>, VectorPairHash, VectorPairHash > sharedEdges;
-        std::vector<std::pair<Vector2, Vector2> > outline;
+    void NavMesh::buildOutline() {
+        std::unordered_set<std::pair<Vector2, Vector2>, VectorPairHash, VectorPairHash> sharedEdges;
+        std::vector<std::pair<Vector2, Vector2> > builtOutline;
 
         // Get all shared edges
         for (size_t i = 0; i < regions.size(); ++i) {
@@ -293,7 +167,7 @@ namespace blipcade::collision {
             }
         }
 
-        for (const auto& region: regions ) {
+        for (const auto &region: regions) {
             for (size_t i = 0; i < region->vertices.size(); ++i) {
                 Vector2 start = region->vertices[i];
                 Vector2 end = region->vertices[(i + 1) % region->vertices.size()];
@@ -305,12 +179,34 @@ namespace blipcade::collision {
                 }
 
                 if (!sharedEdges.contains(edge)) {
-                    outline.push_back(edge);
+                    builtOutline.push_back(edge);
                 }
             }
         }
 
-        return outline;
+        this->outline = std::move(builtOutline);
+    }
+
+    const std::vector<std::pair<Vector2, Vector2> > *NavMesh::getOutline() const {
+        return &outline;
+    }
+
+    bool NavMesh::isLineIntersectingOutline(Vector2 a, Vector2 b, Vector2& intersection) const {
+        bool intersects = true;
+        auto meshOutline = getOutline();
+
+        for (const auto &outline: *meshOutline) {
+            if (
+                CheckCollisionLines(a, b, outline.first, outline.second, &intersection)
+                && !Vector2Equals(a, outline.first) && !Vector2Equals(b, outline.second)
+                && !Vector2Equals(a, outline.second) && !Vector2Equals(b, outline.first)
+                && !Vector2Equals(intersection, a) && !Vector2Equals(intersection, b)
+            ) {
+                intersects = false;
+            }
+        }
+
+        return intersects;
     }
 
     NavMesh NavMesh::fromJson(const nlohmann::json &j) {
@@ -396,6 +292,8 @@ namespace blipcade::collision {
 
 
         navMesh.calculateCentroids();
+        navMesh.buildConnectivity();
+        navMesh.buildOutline();
 
         return navMesh;
     }

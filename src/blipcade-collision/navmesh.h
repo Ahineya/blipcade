@@ -12,20 +12,17 @@
 #include <nlohmann/json.hpp>
 
 
-namespace blipcade {
-namespace collision {
-
+namespace blipcade::collision {
     class ConvexPolygon {
     public:
         std::vector<Vector2> vertices;
-        std::vector<ConvexPolygon*> neighbors; // Adjacent regions
+        std::vector<ConvexPolygon *> neighbors; // Adjacent regions
         Vector2 centroid; // Added centroid
 
-        ConvexPolygon(std::vector<Vector2> verts);
+        explicit ConvexPolygon(std::vector<Vector2> verts);
 
-        bool sharesEdge(const ConvexPolygon& other) const;
-
-        std::optional<std::pair<Vector2, Vector2>> getSharedEdge(const ConvexPolygon &other) const;
+        [[nodiscard]] bool sharesEdge(const ConvexPolygon &other) const;
+        [[nodiscard]] std::optional<std::pair<Vector2, Vector2> > getSharedEdge(const ConvexPolygon &other) const;
 
         void calculateCentroid() {
             float signedArea = 0;
@@ -47,13 +44,13 @@ namespace collision {
     };
 
     struct VectorPairHash {
-        std::size_t operator()(const std::pair<Vector2, Vector2>& pair) const {
+        std::size_t operator()(const std::pair<Vector2, Vector2> &pair) const {
             std::size_t h1 = std::hash<float>()(pair.first.x) ^ std::hash<float>()(pair.first.y);
             std::size_t h2 = std::hash<float>()(pair.second.x) ^ std::hash<float>()(pair.second.y);
-            return h1 ^ (h2 << 1);  // Combining the hashes
+            return h1 ^ (h2 << 1); // Combining the hashes
         }
 
-        bool operator()(const std::pair<Vector2, Vector2>& lhs, const std::pair<Vector2, Vector2>& rhs) const {
+        bool operator()(const std::pair<Vector2, Vector2> &lhs, const std::pair<Vector2, Vector2> &rhs) const {
             return Vector2Equals(lhs.first, rhs.first) && Vector2Equals(lhs.second, rhs.second);
         }
     };
@@ -61,35 +58,32 @@ namespace collision {
     class NavMesh {
     public:
         NavMesh() = default;
+
         ~NavMesh() = default;
-        std::vector<std::shared_ptr<ConvexPolygon>> regions;
+
+        std::vector<std::shared_ptr<ConvexPolygon> > regions;
 
         void addRegion(std::vector<Vector2> verts);
 
-        bool isPointOnNavMesh(Vector2 point) const;
-        bool isLineCompletelyOnNavMesh(Vector2 A, Vector2 B) const;
-
-        [[nodiscard]] std::shared_ptr<ConvexPolygon> findRegionContainingPoint(Vector2 point) const;
-
-        std::shared_ptr<ConvexPolygon> findNextRegionAlongLine(std::shared_ptr<ConvexPolygon> currentRegion,
-                                                               Vector2 start, Vector2 end,
-                                                               Vector2 &exitPoint) const;
-
-
         void buildConnectivity();
+
         void calculateCentroids();
 
-        std::vector<std::pair<Vector2, Vector2>> getOutline() const;
+        void buildOutline();
+
+        [[nodiscard]] bool isLineIntersectingOutline(Vector2 a, Vector2 b, Vector2 &intersection) const;
+
+        [[nodiscard]] const std::vector<std::pair<Vector2, Vector2> > *getOutline() const;
 
         [[nodiscard]] nlohmann::json toJson() const;
 
+
         static NavMesh fromJson(const nlohmann::json &j);
+
     private:
-        bool pointInTriangle(Vector2 point, ConvexPolygon triangle) const;
-
+        std::vector<std::pair<Vector2, Vector2> > outline;
     };
-
 } // collision
-} // blipcade
+// blipcade
 
 #endif //NAVMESH_H

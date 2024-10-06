@@ -8,103 +8,74 @@
 #include <optional>
 #include <raymath.h>
 
-namespace blipcade {
-    namespace collision {
+namespace blipcade::collision {
+    struct PathPoint {
+        Vector2 *point;
+        ConvexPolygon *region;
+        PathPoint *parent;
+        float gCost; // Cost from start
+        float hCost; // Heuristic cost to end
+        [[nodiscard]] float fCost() const { return gCost + hCost; }
 
-        struct PathNode {
-            ConvexPolygon* region;
-            float gCost; // Cost from start
-            float hCost; // Heuristic cost to end
-            float fCost() const { return gCost + hCost; }
+        PathPoint(ConvexPolygon *r, Vector2 *pp, float g, float h, PathPoint *p = nullptr)
+            : region(r), point(pp), gCost(g), hCost(h), parent(p) {
+        }
 
-            PathNode(ConvexPolygon* r, float g, float h, ConvexPolygon* p = nullptr)
-                : region(r), gCost(g), hCost(h) {}
-        };
+        // Copy constructor to handle deep copy of pointer members
+        PathPoint(const PathPoint &other)
+            : region(other.region), point(new Vector2(*other.point)), gCost(other.gCost),
+              hCost(other.hCost), parent(other.parent ? new PathPoint(*other.parent) : nullptr) {
+        }
 
-        // Comparator for the priority queue
-        struct ComparePathNode {
-            bool operator()(const PathNode& a, const PathNode& b) const {
-                return a.fCost() > b.fCost();
-            }
-        };
+        ~PathPoint() = default;
 
-        struct PathPoint {
-            Vector2 *point;
-            ConvexPolygon *region;
-            PathPoint *parent;
-            float gCost; // Cost from start
-            float hCost; // Heuristic cost to end
-            float fCost() const { return gCost + hCost; }
+        bool operator==(const PathPoint &other) const {
+            return Vector2Equals(*point, *other.point) && region == other.region;
+        }
+    };
 
-            PathPoint(ConvexPolygon* r, Vector2* pp, float g, float h, PathPoint* p = nullptr)
-                : region(r), point(pp), gCost(g), hCost(h), parent(p) {}
+    // Comparator for the priority queue
+    struct ComparePathPoint {
+        bool operator()(const PathPoint &a, const PathPoint &b) const {
+            return a.fCost() > b.fCost();
+        }
+    };
 
-            // Copy constructor to handle deep copy of pointer members
-            PathPoint(const PathPoint &other)
-                : region(other.region), point(new Vector2(*other.point)), gCost(other.gCost),
-                  hCost(other.hCost), parent(other.parent ? new PathPoint(*other.parent) : nullptr) {}
+    struct PathPointHash {
+        std::size_t operator()(const PathPoint &p) const {
+            constexpr std::hash<float> floatHasher;
+            const std::size_t h1 = floatHasher(p.point->x);
+            const std::size_t h2 = floatHasher(p.point->y);
+            const std::size_t h3 = std::hash<ConvexPolygon *>()(p.region);
+            return h1 ^ (h2 << 1) ^ (h3 << 2);
+        }
+    };
 
-            ~PathPoint() {
-            }
+    class Pathfinding {
+    public:
+        static std::vector<Vector2> pathfind(float startX, float startY, float endX, float endY, const NavMesh &navMesh,
+                                             bool custom);
 
-            bool operator==(const PathPoint &other) const {
-                return Vector2Equals(*point, *other.point) && region == other.region;
-            }
-        };
+        static std::vector<Vector2> cleanPath(const std::vector<Vector2> &path,
+                                              const std::vector<std::pair<Vector2, Vector2> > &meshOutline);
 
-        // Comparator for the priority queue
-        struct ComparePathPoint {
-            bool operator()(const PathPoint& a, const PathPoint& b) const {
-                return a.fCost() > b.fCost();
-            }
-        };
+        static std::vector<Vector2> reconstructPath(const PathPoint *current);
 
-        struct PathPointHash {
-            std::size_t operator()(const PathPoint& p) const {
-                std::hash<float> floatHasher;
-                std::size_t h1 = floatHasher(p.point->x);
-                std::size_t h2 = floatHasher(p.point->y);
-                std::size_t h3 = std::hash<ConvexPolygon*>()(p.region);
-                return h1 ^ (h2 << 1) ^ (h3 << 2);
-            }
-        };
+    private:
+        // Helper methods
+        static ConvexPolygon *findContainingRegion(float x, float y, const NavMesh &navMesh);
 
-        class Pathfinding {
-        public:
-            // Finds a path from (startX, startY) to (endX, endY) on the navmesh
-            // Returns a vector of waypoints (Vector2)
-            static std::vector<Vector2> pathfind(float startX, float startY,
-                                                 float endX, float endY,
-                                                 const NavMesh &navMesh);
-            static std::vector<Vector2> pathfind(float startX, float startY, float endX, float endY, const NavMesh &navMesh,
-                                          bool custom);
+        static std::optional<Vector2> findClosestPoint(float x, float y, const NavMesh &navMesh,
+                                                       ConvexPolygon *&regionOut);
 
-            static std::vector<Vector2> cleanPath(const std::vector<Vector2> &path, const std::vector<std::pair<Vector2, Vector2>> &meshOutline);
+        static float heuristic(const Vector2 &a, const Vector2 &b);
 
-            static std::vector<Vector2> reconstructPath(PathPoint *current);
+        static bool pointInConvexPolygon(const Vector2 &point, const ConvexPolygon &polygon);
 
-        private:
-            // Helper methods
-            static ConvexPolygon* findContainingRegion(float x, float y, const NavMesh& navMesh);
-            static std::optional<Vector2> findClosestPoint(float x, float y, const NavMesh& navMesh, ConvexPolygon*& region);
-            static float heuristic(const Vector2& a, const Vector2& b);
-
-            static bool pointInConvexPolygon(const Vector2& point, const ConvexPolygon& polygon);
-
-            static float triangleArea(const Vector2& a, const Vector2& b, const Vector2& c);
-            static std::optional<std::pair<Vector2, Vector2>> findSharedEdge(const ConvexPolygon& a, const ConvexPolygon& b);
-            static std::vector<ConvexPolygon*> reconstructPath(const std::unordered_map<ConvexPolygon*, ConvexPolygon*>& cameFrom, ConvexPolygon* current);
-
-            static std::vector<std::pair<Vector2, Vector2>> extractPortals(const std::vector<ConvexPolygon *> &regionPath);
-
-            static std::vector<Vector2> applyFunnelAlgorithm(
-        const std::vector<std::pair<Vector2, Vector2>>& portals,
-        const Vector2& startPoint,
-        const Vector2& endPoint);
-
-        };
-
-    } // collision
-} // blipcade
+        static std::vector<ConvexPolygon *> reconstructPath(
+            const std::unordered_map<ConvexPolygon *, ConvexPolygon *> &cameFrom, ConvexPolygon *current);
+    };
+} // collision
+// blipcade
 
 #endif // PATHFINDING_H

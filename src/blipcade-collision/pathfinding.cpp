@@ -17,6 +17,7 @@ namespace blipcade::collision {
     std::vector<ConvexPolygon *> Pathfinding::reconstructPath(
         const std::unordered_map<ConvexPolygon *, ConvexPolygon *> &cameFrom,
         ConvexPolygon *current) {
+
         std::vector<ConvexPolygon *> path;
         while (current != nullptr) {
             path.push_back(current);
@@ -177,7 +178,7 @@ namespace blipcade::collision {
         Vector2 startPoint = Vector2{startX, startY};
         Vector2 endPoint = Vector2{endX, endY};
 
-        std::vector<std::optional<PathPoint> > traversed; // Used for path reconstruction
+        std::vector<std::optional<PathPoint>> traversed; // Used for path reconstruction
 
         // If start or end points are not inside any region, find the closest point on the NavMesh
         if (!startRegion) {
@@ -228,13 +229,13 @@ namespace blipcade::collision {
 
         // startRegion->vertices
         // We want to add all startRegion->vertices to the open list
-        for (auto &vertex: startRegion->vertices) {
+        for (auto& vertex : startRegion->vertices) {
             PathPoint navPoint(startRegion, &vertex, 0.0f, heuristic(vertex, endPoint), &startNavPoint);
             openList.push(navPoint);
         }
 
-        std::unordered_map<Vector2 *, Vector2 *> cameFrom;
-        std::unordered_set<ConvexPolygon *> visited;
+        std::unordered_map<Vector2*, Vector2*> cameFrom;
+        std::unordered_set<ConvexPolygon*> visited;
 
         while (!openList.empty()) {
             auto current = openList.top();
@@ -243,8 +244,7 @@ namespace blipcade::collision {
             traversed.push_back(current);
 
             std::cout << "Current Point: (" << current.point->x << ", " << current.point->y << ")\n";
-            std::cout << "Current Region: (" << current.region->centroid.x << ", " << current.region->centroid.y <<
-                    ")\n";
+            std::cout << "Current Region: (" << current.region->centroid.x << ", " << current.region->centroid.y << ")\n";
             std::cout << "Size:" << openList.size() << std::endl;
 
             // Here we want to evaluate the adjacent points.
@@ -275,13 +275,13 @@ namespace blipcade::collision {
                 path[path.size() - 1] = endPoint;
 
                 //TODO: Possible memory leak here
-                for (auto &point: traversed) {
+                for (auto& point : traversed) {
                     delete point->point;
                     delete point->parent;
                 }
 
                 // construct lines
-                std::vector<std::pair<Vector2, Vector2> > lines;
+                std::vector<std::pair<Vector2, Vector2>> lines;
                 lines.reserve(path.size() - 1);
                 for (size_t i = 0; i < path.size() - 1; ++i) {
                     lines.emplace_back(path[i], path[i + 1]);
@@ -300,7 +300,7 @@ namespace blipcade::collision {
                             CheckCollisionLines(outline.first, outline.second, line.first, line.second, &intersection)
                             && !Vector2Equals(outline.first, line.first) && !Vector2Equals(outline.second, line.second)
                             && !Vector2Equals(outline.first, line.second) && !Vector2Equals(outline.second, line.first)
-                        ) {
+                            ) {
                             std::cout << "Intersection: (" << intersection.x << ", " << intersection.y << ")\n";
                         }
                     }
@@ -312,57 +312,47 @@ namespace blipcade::collision {
             }
 
             std::cout << "Neighbors: " << currentRegion->neighbors.size() << std::endl;
+            for (auto& neighbor : currentRegion->neighbors) {
+                // Add centroid
+                PathPoint navPoint(neighbor, &neighbor->centroid, current.gCost + Vector2Distance(*current.point, neighbor->centroid),
+                                   heuristic(neighbor->centroid, endPoint), &current);
 
-            for (auto &neighbor: currentRegion->neighbors) {
-                for (auto &vertex: neighbor->vertices) {
-                    float tentativeGCost = current.gCost + Vector2Distance(*current.point, vertex);
-
-                    PathPoint navPoint(neighbor, &vertex, tentativeGCost,
-                                       tentativeGCost + heuristic(vertex, endPoint), &current);
-
-                    // Check if the point is in the closed list
-                    auto closedIt = std::find_if(closedList.begin(), closedList.end(),
-                                                 [&vertex](const PathPoint &p) {
-                                                     return Vector2Equals(*p.point, vertex);
-                                                 });
-
-                    if (closedIt != closedList.end()) {
-                        if (navPoint.fCost() < closedIt->fCost()) {
-                            closedList.erase(closedIt);
-                        } else {
-                            continue; // Skip this neighbor as we've found a better path before
-                        }
+                bool found = false;
+                for (auto& closedPoint : closedList) {
+                    if (Vector2Equals(*closedPoint.point, neighbor->centroid)) {
+                        found = true;
+                        break;
                     }
-
-                    // Check if the point is in the open list and update if necessary
-                    bool updated = false;
-                    std::priority_queue<PathPoint, std::vector<PathPoint>, ComparePathPoint> tempQueue;
-                    while (!openList.empty()) {
-                        PathPoint current = openList.top();
-                        openList.pop();
-
-                        if (Vector2Equals(*current.point, vertex)) {
-                            if (navPoint.fCost() < current.fCost()) {
-                                tempQueue.push(navPoint);
-                                updated = true;
-                            } else {
-                                tempQueue.push(current);
-                            }
-                        } else {
-                            tempQueue.push(current);
-                        }
-                    }
-
-                    // If the point wasn't in the open list, add it
-                    if (!updated) {
-                        std::cout << "Adding point to open list: (" << vertex.x << ", " << vertex.y << ")\n";
-                        std::cout << "With parent (" << current.point->x << ", " << current.point->y << ")\n";
-                        tempQueue.push(navPoint);
-                    }
-
-                    // Replace the original queue with our temporary queue
-                    openList = std::move(tempQueue);
                 }
+
+                if (!found) {
+                    std::cout << "Adding point to open list: (" << neighbor->centroid.x << ", " << neighbor->centroid.y << ")\n";
+                    std::cout << "With parent" << current.point->x << ", " << current.point->y << std::endl;
+                    openList.push(PathPoint(navPoint));
+                }
+                // for (auto& vertex : neighbor->vertices) {
+                //     PathPoint navPoint(neighbor, &vertex, current.gCost + Vector2Distance(*current.point, vertex),
+                //                        heuristic(vertex, endPoint), &current);
+                //
+                //     std::cout << "Current Point Address: " << current.point << std::endl;
+                //     std::cout << "Parent Point Address: " << current.parent->point << std::endl;
+                //
+                //     // Check if the point is already in the closed list
+                //     // auto it = closedList.find()
+                //     bool found = false;
+                //     for (auto& closedPoint : closedList) {
+                //         if (Vector2Equals(*closedPoint.point, vertex)) {
+                //             found = true;
+                //             break;
+                //         }
+                //     }
+                //
+                //     if (!found) {
+                //         std::cout << "Adding point to open list: (" << vertex.x << ", " << vertex.y << ")\n";
+                //         std::cout << "With parent" << current.point->x << ", " << current.point->y << std::endl;
+                //         openList.push(PathPoint(navPoint));
+                //     }
+                // }
             }
         }
 
@@ -371,10 +361,9 @@ namespace blipcade::collision {
         throw std::runtime_error("Not implemented.");
     }
 
-    std::vector<Vector2> Pathfinding::cleanPath(const std::vector<Vector2> &path,
-                                                const std::vector<std::pair<Vector2, Vector2> > &meshOutline) {
+    std::vector<Vector2> Pathfinding::cleanPath(const std::vector<Vector2> &path, const std::vector<std::pair<Vector2, Vector2>> &meshOutline) {
         std::vector<Vector2> pathCopy = {};
-        for (auto point: path) {
+        for (auto point : path) {
             pathCopy.push_back(point);
         }
 
@@ -389,12 +378,12 @@ namespace blipcade::collision {
         do {
             changed = false;
             for (size_t i = 0; i < pathCopy.size() - 2; ++i) {
-                const Vector2 &a = pathCopy[i];
-                const Vector2 &b = pathCopy[i + 1];
-                const Vector2 &c = pathCopy[i + 2];
+                const Vector2& a = pathCopy[i];
+                const Vector2& b = pathCopy[i + 1];
+                const Vector2& c = pathCopy[i + 2];
 
                 bool canRemoveB = true;
-                for (const auto &outline: meshOutline) {
+                for (const auto& outline : meshOutline) {
                     Vector2 intersection;
                     if (
                         CheckCollisionLines(a, c, outline.first, outline.second, &intersection)
@@ -402,7 +391,7 @@ namespace blipcade::collision {
                         && !Vector2Equals(a, outline.second) && !Vector2Equals(c, outline.first)
                         && !Vector2Equals(intersection, a) && !Vector2Equals(intersection, c)
                         && !Vector2Equals(intersection, b)
-                    ) {
+                        ) {
                         canRemoveB = false;
                         break;
                     }
@@ -411,16 +400,15 @@ namespace blipcade::collision {
                 if (canRemoveB) {
                     pathCopy.erase(pathCopy.begin() + i + 1);
                     changed = true;
-                    break; // Restart the loop as we modified the path
+                    break;  // Restart the loop as we modified the path
                 }
             }
         } while (changed);
 
-        // return pathCopy;
-        return path;
+        return pathCopy;
     }
 
-    std::vector<Vector2> Pathfinding::reconstructPath(PathPoint *current) {
+    std::vector<Vector2> Pathfinding::reconstructPath(PathPoint* current) {
         std::vector<Vector2> path;
         while (current != nullptr) {
             path.push_back(*current->point);

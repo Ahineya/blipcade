@@ -82,7 +82,7 @@ function drawColliders() {
             const start = vertices[j];
             const end = vertices[(j + 1) % vertices.length];
 
-            Graphics.drawLine(start.x, start.y, end.x, end.y, 35);
+            // Graphics.drawLine(start.x, start.y, end.x, end.y, 35);
         }
     }
 
@@ -93,7 +93,7 @@ function drawColliders() {
             for (let i = 0; i < path.length - 1; i++) {
                 const p1 = path[i];
                 const p2 = path[i + 1];
-                Graphics.drawLine(p1.x, p1.y, p2.x, p2.y, 0xfe);
+                // Graphics.drawLine(p1.x, p1.y, p2.x, p2.y, 0xfe);
             }
         }
     });

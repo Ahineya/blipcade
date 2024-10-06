@@ -78,21 +78,6 @@ function update() {
     updateMouseStates();
     handleMouseClicks();
 
-    if (state.mouseButtonStates[0] === 'pressed') {
-        // const coords = Input.getMousePos();
-        //log(`Mouse clicked at ${coords.x}, ${coords.y}`);
-        // const path = Pathfinding.findPath(0, 0, coords.x, coords.y, 0);
-        //log(`Path length: ${path.length}`);
-
-        // Let's draw the path with lines
-        // for (let i = 0; i < path.length - 1; i++) {
-        //     const p1 = path[i];
-        //     const p2 = path[i + 1];
-        //     Graphics.drawLine(p1.x, p1.y, p2.x, p2.y, 0xfe);
-        //     log(`Drawing line from ${p1.x}, ${p1.y} to ${p2.x}, ${p2.y}`);
-        // }
-    }
-
     state.systems.forEach(s => {
         s.update && s.update(state.FRAME_TIME);
     })
@@ -175,49 +160,5 @@ function handleMouseClicks() {
     }
 
     // If the left mouse button was just pressed, set the destination
-    if (state.mouseButtonStates[button] === 'pressed') {
-        const coords = Input.getMousePos();
-        log(`Mouse clicked at ${coords.x}, ${coords.y}`);
 
-        // Assuming player entity has a unique identifier, e.g., "Player"
-
-        ECS.forEachEntity(["Player"], (playerEntity, player) => {
-            if (playerEntity) {
-                const currentPosition = player.position;
-
-                log(`Current position: ${currentPosition.x}, ${currentPosition.y}`);
-
-                // Calculate the path from current position to clicked position
-                const path = Pathfinding.findPath(
-                    Math.round(currentPosition.x),
-                    Math.round(currentPosition.y),
-                    Math.round(coords.x),
-                    Math.round(coords.y),
-                    0 // Assuming '0' is a parameter for the pathfinding algorithm
-                );
-
-                log(`Path length: ${path.length}`);
-
-                if (path.length > 0) {
-                    player.path = path; // Store the path in the player's component
-                    player.currentPathIndex = 0; // Reset the current path index
-                    log(`Path length: ${path.length}`);
-
-                    // Optionally, draw the path for debugging
-                    // drawPath(path);
-                } else {
-                    log("No path found to the destination.");
-                }
-            }
-        });
-    }
-}
-
-function drawPath(path) {
-    for (let i = 0; i < path.length - 1; i++) {
-        const p1 = path[i];
-        const p2 = path[i + 1];
-        Graphics.drawLine(p1.x, p1.y, p2.x, p2.y, 0xfe);
-        log(`Drawing line from ${p1.x}, ${p1.y} to ${p2.x}, ${p2.y}`);
-    }
 }

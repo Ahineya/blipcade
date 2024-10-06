@@ -49,7 +49,7 @@ export class Entities {
             spriteIndex: 0,
             spriteSheet: 2,
             flipX: false,
-            origin: {x: 0.5, y: 1},
+            origin: {x: 0.5, y: 0.8},
             size: {width: 26, height: 54},
         });
 

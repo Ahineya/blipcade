@@ -245,8 +245,19 @@ lightEffects()  {
             static_cast<float>(y + offsetY)
         };
 
+        // Vector2 origin = {originX, originY};
+        Rectangle destRect = {position.x, position.y, sourceRec.width * scale, sourceRec.height * scale};
+        Vector2 origin = {abs(originX * destRect.width), abs(originY * destRect.height)};
+
+        // Logging.
+        // std::cout << "x: " << x << ", y: " << y << ", offsetX: " << offsetX << ", offsetY: " << offsetY << std::endl;
+        // std::cout << "sourceRec: " << sourceRec.x << ", " << sourceRec.y << ", " << sourceRec.width << ", " << sourceRec.height << std::endl;
+        // std::cout << "position: " << position.x << ", " << position.y << std::endl;
+        // std::cout << "destRect: " << destRect.x << ", " << destRect.y << ", " << destRect.width << ", " << destRect.height << std::endl;
+        // std::cout << "origin: " << origin.x << ", " << origin.y << std::endl;
+
         BeginShaderMode(paletteShader);
-        DrawTexturePro(spritesheet.texture, sourceRec, {position.x, position.y, sourceRec.width * scale, sourceRec.height * scale}, {0, 0}, 0, WHITE);
+        DrawTexturePro(spritesheet.texture, sourceRec, destRect, origin, 0, WHITE);
         EndShaderMode();
     }
 

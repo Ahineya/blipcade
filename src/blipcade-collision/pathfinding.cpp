@@ -119,26 +119,6 @@ namespace blipcade::collision {
                 }
 
                 const auto meshOutline = navMesh.getOutline(); // const std::vector<std::pair<Vector2, Vector2>>*
-
-                // for mesh outline
-                for (auto line: *meshOutline) {
-                    std::cout << "Outline: (" << line.first.x << ", " << line.first.y << ") to ("
-                            << line.second.x << ", " << line.second.y << ")\n";
-                }
-
-                for (auto line: lines) {
-                    for (auto outline: *meshOutline) {
-                        Vector2 intersection;
-                        if (
-                            CheckCollisionLines(outline.first, outline.second, line.first, line.second, &intersection)
-                            && !Vector2Equals(outline.first, line.first) && !Vector2Equals(outline.second, line.second)
-                            && !Vector2Equals(outline.first, line.second) && !Vector2Equals(outline.second, line.first)
-                            ) {
-                            std::cout << "Intersection: (" << intersection.x << ", " << intersection.y << ")\n";
-                        }
-                    }
-                }
-
                 auto const cleanedPath = cleanPath(path, *meshOutline);
 
                 return cleanedPath;

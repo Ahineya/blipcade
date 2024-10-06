@@ -30,26 +30,18 @@ class DrawSystem {
             const sprite = ECS.getComponent(entity, "Sprite");
             if (sprite) {
                 // Entities with sprite
-                const {position: {x, y}, spriteIndex, spriteSheet, size: {height}, flipX, origin: {x: ox, y: oy}} = sprite;
+                const {position: {x, y}, spriteIndex, spriteSheet, size: {width, height}, flipX, origin: {x: ox, y: oy}} = sprite;
                 const layer = render.layer;
 
                 if (!layer) {
                     return;
                 }
 
-                let originY;
-                let scale = null;
-
-                if (ECS.getComponent(entity, "Player")) {
-                    scale = getScale(y);
-                    originY = y + height * oy * scale;
-                } else {
-                    originY = y + height * oy;
-                }
+                const scale = ECS.getComponent(entity, "Player") ? getScale(y) : 1;
 
                 const o = {
                     entity,
-                    properties: {x, y, spriteIndex, spriteSheet, flipX, ox, oy: originY, scale}
+                    properties: {x, y, width, height, spriteIndex, spriteSheet, flipX, ox, oy, scale}
                 };
 
                 renderLayers[layer].push(o);
@@ -64,7 +56,7 @@ class DrawSystem {
 
                 const o = {
                     entity,
-                    properties: {x: 0, y: 0, ox: emitter.position.x, oy: emitter.position.y, id: emitter.id}
+                    properties: {x: emitter.position.x, y: emitter.position.y, width: 1, height: 100, ox: 0.5 , oy: 0.5, id: emitter.id}
                 };
 
                 renderLayers[layer].push(o);
@@ -77,7 +69,10 @@ class DrawSystem {
         });
 
         // Sort entities by origin Y
-        renderLayers[RenderLayer.Entities].sort((a, b) => a.properties.oy - b.properties.oy);
+        renderLayers[RenderLayer.Entities].sort((a, b) => {
+            return (a.properties.y - a.properties.height * a.properties.oy)
+                - (b.properties.y - b.properties.height * b.properties.oy);
+        });
 
         // Render entities and player with y-sorting
         renderLayers[RenderLayer.Entities].forEach(({entity, properties}) => {

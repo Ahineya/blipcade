@@ -46,9 +46,35 @@ const normalize = (vector) => {
 
 class MoveSystem {
     update(deltaTime) {
+        if (state.mouseButtonStates[0] === 'pressed') {
+            const coords = Input.getMousePos();
+            log(`Mouse clicked at ${coords.x}, ${coords.y}`);
+
+            ECS.forEachEntity(["Player", "Sprite"], (playerEntity, player) => {
+                if (playerEntity) {
+                    const currentPosition = player.position;
+
+                    // Calculate the path from current position to clicked position
+                    const path = Pathfinding.findPath(
+                        Math.round(currentPosition.x),
+                        Math.round(currentPosition.y),
+                        Math.round(coords.x),
+                        Math.round(coords.y),
+                        0 // Assuming '0' is a parameter for the pathfinding algorithm
+                    );
+
+                    if (path.length > 0) {
+                        player.path = path; // Store the path in the player's component
+                        player.currentPathIndex = 0; // Reset the current path index
+                    }
+                }
+            });
+        }
+
         ECS.forEachEntity(["Player", "Sprite", "Animation", "Collider", "Sound"], (playerEntity, player, sprite, animation, playerCollider, sound) => {
             if (player.path && player.currentPathIndex < player.path.length) {
                 const targetPoint = player.path[player.currentPathIndex];
+
                 const direction = Geometry.distance(player.position, targetPoint);
                 const distanceToTarget = Math.sqrt(direction.x * direction.x + direction.y * direction.y);
                 const normalizedDirection = normalize(direction);
@@ -110,6 +136,7 @@ class MoveSystem {
     }
 }
 
+// Movement with arrow keys
 // class MoveSystem {
 //     update(deltaTime) {
 //         const velocityX = (() => {

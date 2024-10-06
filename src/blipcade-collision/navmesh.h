@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <raylib.h>
+#include <raymath.h>
 #include <vector>
 #include <nlohmann/json.hpp>
 
@@ -45,6 +46,18 @@ namespace collision {
         }
     };
 
+    struct VectorPairHash {
+        std::size_t operator()(const std::pair<Vector2, Vector2>& pair) const {
+            std::size_t h1 = std::hash<float>()(pair.first.x) ^ std::hash<float>()(pair.first.y);
+            std::size_t h2 = std::hash<float>()(pair.second.x) ^ std::hash<float>()(pair.second.y);
+            return h1 ^ (h2 << 1);  // Combining the hashes
+        }
+
+        bool operator()(const std::pair<Vector2, Vector2>& lhs, const std::pair<Vector2, Vector2>& rhs) const {
+            return Vector2Equals(lhs.first, rhs.first) && Vector2Equals(lhs.second, rhs.second);
+        }
+    };
+
     class NavMesh {
     public:
         NavMesh() = default;
@@ -53,12 +66,27 @@ namespace collision {
 
         void addRegion(std::vector<Vector2> verts);
 
+        bool isPointOnNavMesh(Vector2 point) const;
+        bool isLineCompletelyOnNavMesh(Vector2 A, Vector2 B) const;
+
+        [[nodiscard]] std::shared_ptr<ConvexPolygon> findRegionContainingPoint(Vector2 point) const;
+
+        std::shared_ptr<ConvexPolygon> findNextRegionAlongLine(std::shared_ptr<ConvexPolygon> currentRegion,
+                                                               Vector2 start, Vector2 end,
+                                                               Vector2 &exitPoint) const;
+
+
         void buildConnectivity();
         void calculateCentroids();
 
-        nlohmann::json toJson() const;
+        std::vector<std::pair<Vector2, Vector2>> getOutline() const;
+
+        [[nodiscard]] nlohmann::json toJson() const;
 
         static NavMesh fromJson(const nlohmann::json &j);
+    private:
+        bool pointInTriangle(Vector2 point, ConvexPolygon triangle) const;
+
     };
 
 } // collision

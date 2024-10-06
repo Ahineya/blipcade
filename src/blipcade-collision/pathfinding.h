@@ -6,6 +6,7 @@
 #include "navmesh.h"
 #include <vector>
 #include <optional>
+#include <raymath.h>
 
 namespace blipcade {
     namespace collision {
@@ -27,6 +28,47 @@ namespace blipcade {
             }
         };
 
+        struct PathPoint {
+            Vector2 *point;
+            ConvexPolygon *region;
+            PathPoint *parent;
+            float gCost; // Cost from start
+            float hCost; // Heuristic cost to end
+            float fCost() const { return gCost + hCost; }
+
+            PathPoint(ConvexPolygon* r, Vector2* pp, float g, float h, PathPoint* p = nullptr)
+                : region(r), point(pp), gCost(g), hCost(h), parent(p) {}
+
+            // Copy constructor to handle deep copy of pointer members
+            PathPoint(const PathPoint &other)
+                : region(other.region), point(new Vector2(*other.point)), gCost(other.gCost),
+                  hCost(other.hCost), parent(other.parent ? new PathPoint(*other.parent) : nullptr) {}
+
+            ~PathPoint() {
+            }
+
+            bool operator==(const PathPoint &other) const {
+                return Vector2Equals(*point, *other.point) && region == other.region;
+            }
+        };
+
+        // Comparator for the priority queue
+        struct ComparePathPoint {
+            bool operator()(const PathPoint& a, const PathPoint& b) const {
+                return a.fCost() > b.fCost();
+            }
+        };
+
+        struct PathPointHash {
+            std::size_t operator()(const PathPoint& p) const {
+                std::hash<float> floatHasher;
+                std::size_t h1 = floatHasher(p.point->x);
+                std::size_t h2 = floatHasher(p.point->y);
+                std::size_t h3 = std::hash<ConvexPolygon*>()(p.region);
+                return h1 ^ (h2 << 1) ^ (h3 << 2);
+            }
+        };
+
         class Pathfinding {
         public:
             // Finds a path from (startX, startY) to (endX, endY) on the navmesh
@@ -34,6 +76,13 @@ namespace blipcade {
             static std::vector<Vector2> pathfind(float startX, float startY,
                                                  float endX, float endY,
                                                  const NavMesh &navMesh);
+            static std::vector<Vector2> pathfind(float startX, float startY, float endX, float endY, const NavMesh &navMesh,
+                                          bool custom);
+
+            static std::vector<Vector2> cleanPath(const std::vector<Vector2> &path, const std::vector<std::pair<Vector2, Vector2>> &meshOutline);
+
+            static std::vector<Vector2> reconstructPath(PathPoint *current);
+
         private:
             // Helper methods
             static ConvexPolygon* findContainingRegion(float x, float y, const NavMesh& navMesh);
@@ -52,6 +101,7 @@ namespace blipcade {
         const std::vector<std::pair<Vector2, Vector2>>& portals,
         const Vector2& startPoint,
         const Vector2& endPoint);
+
         };
 
     } // collision

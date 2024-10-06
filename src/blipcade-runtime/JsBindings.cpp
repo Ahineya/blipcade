@@ -1088,7 +1088,7 @@ namespace blipcade::runtime {
 
             auto navMesh = m_runtime.getNavmeshes()->at(navigationMeshId);
 
-            auto path = collision::Pathfinding::pathfind(startX, startY, endX, endY, navMesh);
+            auto path = collision::Pathfinding::pathfind(startX, startY, endX, endY, navMesh, true);
 
             quickjs::value Object = ctx->get_global_object().get_property("Object");
             quickjs::value Array = ctx->get_global_object().get_property("Array");

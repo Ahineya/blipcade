@@ -162,6 +162,273 @@ namespace blipcade::collision {
         return path;
     }
 
+    class NavPoint {
+    public:
+        Vector2 point;
+        Vector2 parent;
+    };
+
+    std::vector<Vector2> Pathfinding::pathfind(float startX, float startY,
+                                               float endX, float endY,
+                                               const NavMesh &navMesh, bool custom) {
+        ConvexPolygon *startRegion = findContainingRegion(startX, startY, navMesh);
+        ConvexPolygon *endRegion = findContainingRegion(endX, endY, navMesh);
+
+        Vector2 startPoint = Vector2{startX, startY};
+        Vector2 endPoint = Vector2{endX, endY};
+
+        std::vector<std::optional<PathPoint> > traversed; // Used for path reconstruction
+
+        // If start or end points are not inside any region, find the closest point on the NavMesh
+        if (!startRegion) {
+            auto closestStart = findClosestPoint(startX, startY, navMesh, startRegion);
+            if (closestStart) {
+                startPoint = closestStart.value();
+            } else {
+                throw std::runtime_error("Start point is not on the NavMesh and no closest point found.");
+            }
+        }
+
+        if (!endRegion) {
+            auto closestEnd = findClosestPoint(endX, endY, navMesh, endRegion);
+            if (closestEnd) {
+                endPoint = closestEnd.value();
+            } else {
+                throw std::runtime_error("End point is not on the NavMesh and no closest point found.");
+            }
+        }
+
+        if (!startRegion || !endRegion) {
+            throw std::runtime_error("Unable to determine start or end region.");
+        }
+
+        // If the start and end regions are the same, return a direct path
+        if (startRegion == endRegion) {
+            return {startPoint, endPoint};
+        }
+
+        /*
+         *Now that you know on which triangle your starting point is located you can add this point to the closed list
+         *and send all the adjacent points to the open list (and keep a record of its parent point — in this case the starting point).
+         *The adjacent points in this case are all the triangle vertices
+         */
+
+        // Let's create a closed list to store the points that have been evaluated
+        std::priority_queue<PathPoint, std::vector<PathPoint>, ComparePathPoint> openList;
+        // Let's create an open list to store the points that need to be evaluated
+        // std::unordered_set<PathPoint*> closedList;
+        std::unordered_set<PathPoint, PathPointHash> closedList;
+
+        // Add the starting point to the closed list
+        PathPoint startNavPoint(startRegion, &startPoint, 0.0f, heuristic(startPoint, endPoint), nullptr);
+        closedList.insert(startNavPoint);
+
+        // Add the starting point to the open list
+        // openList.push(startNavPoint);
+
+        // startRegion->vertices
+        // We want to add all startRegion->vertices to the open list
+        for (auto &vertex: startRegion->vertices) {
+            PathPoint navPoint(startRegion, &vertex, 0.0f, heuristic(vertex, endPoint), &startNavPoint);
+            openList.push(navPoint);
+        }
+
+        std::unordered_map<Vector2 *, Vector2 *> cameFrom;
+        std::unordered_set<ConvexPolygon *> visited;
+
+        while (!openList.empty()) {
+            auto current = openList.top();
+            openList.pop();
+
+            traversed.push_back(current);
+
+            std::cout << "Current Point: (" << current.point->x << ", " << current.point->y << ")\n";
+            std::cout << "Current Region: (" << current.region->centroid.x << ", " << current.region->centroid.y <<
+                    ")\n";
+            std::cout << "Size:" << openList.size() << std::endl;
+
+            // Here we want to evaluate the adjacent points.
+            // 1. Get the current region
+            // 2. Get the adjacent regions
+            // 3. For each adjacent region, get the vertices
+            // 4. For each vertex, create a new PathPoint and add it to the open list
+            // 5. Add the current point to the closed list
+            closedList.insert(current);
+
+            auto currentRegion = current.region;
+            if (visited.find(currentRegion) != visited.end()) {
+                continue;
+            }
+
+            visited.insert(currentRegion);
+
+            // Log current and end regions
+            std::cout << "Current Region: (" << currentRegion->centroid.x << ", " << currentRegion->centroid.y << ")\n";
+            std::cout << "End Region: (" << endRegion->centroid.x << ", " << endRegion->centroid.y << ")\n";
+
+            if (currentRegion == endRegion) {
+                std::cout << "We are in the end region" << std::endl;
+                auto path = reconstructPath(&current);
+
+                std::reverse(path.begin(), path.end());
+                // Replace last point with the end point
+                path[path.size() - 1] = endPoint;
+
+                //TODO: Possible memory leak here
+                for (auto &point: traversed) {
+                    delete point->point;
+                    delete point->parent;
+                }
+
+                // construct lines
+                std::vector<std::pair<Vector2, Vector2> > lines;
+                lines.reserve(path.size() - 1);
+                for (size_t i = 0; i < path.size() - 1; ++i) {
+                    lines.emplace_back(path[i], path[i + 1]);
+                }
+
+                const auto meshOutline = navMesh.getOutline();
+                for (auto line: meshOutline) {
+                    std::cout << "Outline: (" << line.first.x << ", " << line.first.y << ") to ("
+                            << line.second.x << ", " << line.second.y << ")\n";
+                }
+
+                for (auto line: lines) {
+                    for (auto outline: meshOutline) {
+                        Vector2 intersection;
+                        if (
+                            CheckCollisionLines(outline.first, outline.second, line.first, line.second, &intersection)
+                            && !Vector2Equals(outline.first, line.first) && !Vector2Equals(outline.second, line.second)
+                            && !Vector2Equals(outline.first, line.second) && !Vector2Equals(outline.second, line.first)
+                        ) {
+                            std::cout << "Intersection: (" << intersection.x << ", " << intersection.y << ")\n";
+                        }
+                    }
+                }
+
+                auto const cleanedPath = cleanPath(path, meshOutline);
+
+                return cleanedPath;
+            }
+
+            std::cout << "Neighbors: " << currentRegion->neighbors.size() << std::endl;
+
+            for (auto &neighbor: currentRegion->neighbors) {
+                for (auto &vertex: neighbor->vertices) {
+                    float tentativeGCost = current.gCost + Vector2Distance(*current.point, vertex);
+
+                    PathPoint navPoint(neighbor, &vertex, tentativeGCost,
+                                       tentativeGCost + heuristic(vertex, endPoint), &current);
+
+                    // Check if the point is in the closed list
+                    auto closedIt = std::find_if(closedList.begin(), closedList.end(),
+                                                 [&vertex](const PathPoint &p) {
+                                                     return Vector2Equals(*p.point, vertex);
+                                                 });
+
+                    if (closedIt != closedList.end()) {
+                        if (navPoint.fCost() < closedIt->fCost()) {
+                            closedList.erase(closedIt);
+                        } else {
+                            continue; // Skip this neighbor as we've found a better path before
+                        }
+                    }
+
+                    // Check if the point is in the open list and update if necessary
+                    bool updated = false;
+                    std::priority_queue<PathPoint, std::vector<PathPoint>, ComparePathPoint> tempQueue;
+                    while (!openList.empty()) {
+                        PathPoint current = openList.top();
+                        openList.pop();
+
+                        if (Vector2Equals(*current.point, vertex)) {
+                            if (navPoint.fCost() < current.fCost()) {
+                                tempQueue.push(navPoint);
+                                updated = true;
+                            } else {
+                                tempQueue.push(current);
+                            }
+                        } else {
+                            tempQueue.push(current);
+                        }
+                    }
+
+                    // If the point wasn't in the open list, add it
+                    if (!updated) {
+                        std::cout << "Adding point to open list: (" << vertex.x << ", " << vertex.y << ")\n";
+                        std::cout << "With parent (" << current.point->x << ", " << current.point->y << ")\n";
+                        tempQueue.push(navPoint);
+                    }
+
+                    // Replace the original queue with our temporary queue
+                    openList = std::move(tempQueue);
+                }
+            }
+        }
+
+        return {};
+
+        throw std::runtime_error("Not implemented.");
+    }
+
+    std::vector<Vector2> Pathfinding::cleanPath(const std::vector<Vector2> &path,
+                                                const std::vector<std::pair<Vector2, Vector2> > &meshOutline) {
+        std::vector<Vector2> pathCopy = {};
+        for (auto point: path) {
+            pathCopy.push_back(point);
+        }
+
+
+        // for each three points A, B, C in the path we want to construct a line AC, and check if it intersects with any of the lines in the mesh outline
+        // if it does not, we remove B from the path
+        // if it does, we keep B in the path
+        // we repeat this process until we have a clean path, where we can't remove any more points
+
+        bool changed;
+
+        do {
+            changed = false;
+            for (size_t i = 0; i < pathCopy.size() - 2; ++i) {
+                const Vector2 &a = pathCopy[i];
+                const Vector2 &b = pathCopy[i + 1];
+                const Vector2 &c = pathCopy[i + 2];
+
+                bool canRemoveB = true;
+                for (const auto &outline: meshOutline) {
+                    Vector2 intersection;
+                    if (
+                        CheckCollisionLines(a, c, outline.first, outline.second, &intersection)
+                        && !Vector2Equals(a, outline.first) && !Vector2Equals(c, outline.second)
+                        && !Vector2Equals(a, outline.second) && !Vector2Equals(c, outline.first)
+                        && !Vector2Equals(intersection, a) && !Vector2Equals(intersection, c)
+                        && !Vector2Equals(intersection, b)
+                    ) {
+                        canRemoveB = false;
+                        break;
+                    }
+                }
+
+                if (canRemoveB) {
+                    pathCopy.erase(pathCopy.begin() + i + 1);
+                    changed = true;
+                    break; // Restart the loop as we modified the path
+                }
+            }
+        } while (changed);
+
+        // return pathCopy;
+        return path;
+    }
+
+    std::vector<Vector2> Pathfinding::reconstructPath(PathPoint *current) {
+        std::vector<Vector2> path;
+        while (current != nullptr) {
+            path.push_back(*current->point);
+            current = current->parent;
+        }
+        return path;
+    }
+
     std::vector<Vector2> Pathfinding::pathfind(float startX, float startY,
                                                float endX, float endY,
                                                const NavMesh &navMesh) {

@@ -44,6 +44,7 @@ namespace blipcade::graphics {
     }
 
     bool Renderer::handleInput(runtime::Runtime * const runtime) {
+
         if (IsKeyPressed(KEY_ESCAPE)) {
 #ifndef EMSCRIPTEN
             if (devtool->isActive()) {
@@ -56,6 +57,14 @@ namespace blipcade::graphics {
 #endif
 
         }
+
+#ifndef EMSCRIPTEN
+        if (devtool->isActive()) {
+            return false;
+        }
+#else
+
+#endif
 
         if (IsKeyDown(KEY_LEFT)) {
             runtime->keyDown(runtime::Key::Left);
@@ -145,13 +154,19 @@ namespace blipcade::graphics {
             // UpdateAudioStream(runtime->getAudio()->musicStream);
 
             const auto fps = GetFPS();
+
+#ifndef EMSCRIPTEN
             devtool->setFPS(fps);
+#endif
+
 
             runtime->update();
+
             int windowWidth = GetScreenWidth();
             int windowHeight = GetScreenHeight();
 
             BeginTextureMode(renderTexture);
+
 
             runtime->draw(renderTexture);
 
@@ -195,27 +210,38 @@ namespace blipcade::graphics {
             Vector2 origin = {0.0f, 0.0f};
 
             const float rotation = 0.0f;
-
+#ifndef EMSCRIPTEN
             devtool->setCanvasOffset({offsetX, offsetY});
             devtool->setScale(scaleFactor);
+            devtool->setCanvasSize({static_cast<float>(canvasWidth), static_cast<float>(canvasHeight)});
+#endif
+
 
             // Mouse input
             const auto mouse_pos = GetMousePosition();
 
-            // Need to convert to canvas coordinates and account for position of canvas
-            runtime->mouseMove((mouse_pos.x - offsetX) / scaleFactor, (mouse_pos.y - offsetY) / scaleFactor); // TODO: Check if this is correct
+#ifndef EMSCRIPTEN
+            if (!devtool->isActive()) {
+#endif
 
-            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
-                runtime->mouseDown(runtime::MouseButton::Left);
-            } else {
-                runtime->mouseUp(runtime::MouseButton::Left);
-            }
+                // Need to convert to canvas coordinates and account for position of canvas
+                runtime->mouseMove((mouse_pos.x - offsetX) / scaleFactor, (mouse_pos.y - offsetY) / scaleFactor); // TODO: Check if this is correct
 
-            if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) {
-                runtime->mouseDown(runtime::MouseButton::Right);
-            } else {
-                runtime->mouseUp(runtime::MouseButton::Right);
+                if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
+                    runtime->mouseDown(runtime::MouseButton::Left);
+                } else {
+                    runtime->mouseUp(runtime::MouseButton::Left);
+                }
+
+                if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) {
+                    runtime->mouseDown(runtime::MouseButton::Right);
+                } else {
+                    runtime->mouseUp(runtime::MouseButton::Right);
+                }
+#ifndef EMSCRIPTEN
             }
+#endif
+
 
             BeginDrawing();
 #ifndef EMSCRIPTEN

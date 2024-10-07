@@ -2,24 +2,24 @@ import {RenderLayer} from "./systems/draw.system";
 
 export class Entities {
     constructor() {
-        const background = ECS.createEntity();
-        ECS.addComponent(background, "Sprite", {
-            position: {x: 0, y: 0},
-            spriteIndex: 0,
-            spriteSheet: 1,
-            flipX: false,
-            origin: {x: 0, y: 0},
-            size: {width: 320, height: 200},
-        });
+        // const background = ECS.createEntity();
+        // ECS.addComponent(background, "Sprite", {
+        //     position: {x: 0, y: 0},
+        //     spriteIndex: 0,
+        //     spriteSheet: 1,
+        //     flipX: false,
+        //     origin: {x: 0, y: 0},
+        //     size: {width: 320, height: 200},
+        // });
+        //
+        // ECS.addComponent(background, "Render", {
+        //     layer: RenderLayer.Background
+        // });
 
-        ECS.addComponent(background, "Render", {
-            layer: RenderLayer.Background
-        });
-
-        ECS.addComponent(background, "Tag", "Background");
+        // ECS.addComponent(background, "Tag", "Background");
 
         const player = ECS.createEntity();
-        const playerCollider = Collision.getCollider(0);
+        // const playerCollider = Collision.getCollider(0);
 
         ECS.addComponent(player, "Tag", "Player");
 
@@ -29,7 +29,16 @@ export class Entities {
             acceleration: {x: 0, y: 0},
             path: [],
             currentPathIndex: 0,
+            navMeshIndex: 0,
         });
+
+        ECS.addComponent(player, "Persistent", {});
+
+        ECS.addComponent(player, "PlayerScale", {
+            min: 0.2,
+            max: 1,
+            quarterScreenMin: 1.5,
+        })
 
         const walkSoundHandle = Sound.loadSound('resources/footsteps.mp3');
 
@@ -72,31 +81,14 @@ export class Entities {
             frameDuration: 700,
         });
 
-        ECS.addComponent(player, "Collider", playerCollider);
-
-        for (let i = 1; i < 8; i++) {
-            const wall = ECS.createEntity();
-            const wallCollider = Collision.getCollider(i);
-            ECS.addComponent(wall, "Collider", wallCollider);
-            ECS.addComponent(wall, "Visible", false);
-        }
-
-        const bgOverlay = ECS.createEntity();
-
-        ECS.addComponent(bgOverlay, "Tag", "BackgroundOverlay");
-
-        ECS.addComponent(bgOverlay, "Sprite", {
-            position: {x: 100, y: 118},
-            spriteIndex: 0,
-            spriteSheet: 4,
-            flipX: false,
-            origin: {x: 0, y: 0.75}, // 118 + 29 * 0.75 = 140
-            size: {width: 100500, height: 29},
-        });
-
-        ECS.addComponent(bgOverlay, "Render", {
-            layer: RenderLayer.Entities
-        });
+        // ECS.addComponent(player, "Collider", playerCollider);
+        //
+        // for (let i = 1; i < 8; i++) {
+        //     const wall = ECS.createEntity();
+        //     const wallCollider = Collision.getCollider(i);
+        //     ECS.addComponent(wall, "Collider", wallCollider);
+        //     ECS.addComponent(wall, "Visible", false);
+        // }
     }
 
     update(deltaTime) {

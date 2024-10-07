@@ -20,7 +20,9 @@ namespace blipcade::graphics {
         VirtualPalette virtual_palette;
 
         // Methods
-        static uint8_t color_to_index(uint8_t r, uint8_t g, uint8_t b) ;
+        static uint8_t color_to_index(uint8_t r, uint8_t g, uint8_t b);
+
+        static uint8_t find_closest_color_685(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 
         // to_image will be defined later
 

@@ -1,10 +1,5 @@
 class SoundSystem {
     init() {
-
-        const musicEntity = ECS.createEntity();
-        ECS.addComponent(musicEntity, 'Music', {
-            musicId: Sound.loadSound('resources/music-1.mp3')
-        });
     }
     update(deltaTime) {
         ECS.forEachEntity(['Sound'], (entity, soundComponent) => {

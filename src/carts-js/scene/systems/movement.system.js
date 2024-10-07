@@ -1,4 +1,5 @@
 import {state} from "../state/state";
+import {levelSystem} from "./level.system";
 const PLAYER_SPEED = 30; // pixels per second
 const WIDTH = 320;
 const HEIGHT = 240;
@@ -50,7 +51,8 @@ class MoveSystem {
             const coords = Input.getMousePos();
             log(`Mouse clicked at ${coords.x}, ${coords.y}`);
 
-            ECS.forEachEntity(["Player", "Sprite"], (playerEntity, player) => {
+            ECS.forEachEntity(["Player"], (playerEntity, player) => {
+                log(`Player clicked at ${player.position.x}, ${player.position.y}`);
                 if (playerEntity) {
                     const currentPosition = player.position;
 
@@ -60,18 +62,20 @@ class MoveSystem {
                         Math.round(currentPosition.y),
                         Math.round(coords.x),
                         Math.round(coords.y),
-                        0 // Assuming '0' is a parameter for the pathfinding algorithm
+                        player.navMeshIndex // Assuming '0' is a parameter for the pathfinding algorithm
                     );
 
                     if (path.length > 0) {
                         player.path = path; // Store the path in the player's component
                         player.currentPathIndex = 0; // Reset the current path index
+                    } else {
+                        log(`No path found from ${currentPosition.x}, ${currentPosition.y} to ${coords.x}, ${coords.y}`);
                     }
                 }
             });
         }
 
-        ECS.forEachEntity(["Player", "Sprite", "Animation", "Collider", "Sound"], (playerEntity, player, sprite, animation, playerCollider, sound) => {
+        ECS.forEachEntity(["Player", "Sprite", "Animation", "Sound", "PlayerScale"], (playerEntity, player, sprite, animation, sound, playerScale) => {
             if (player.path && player.currentPathIndex < player.path.length) {
                 const targetPoint = player.path[player.currentPathIndex];
 
@@ -80,7 +84,7 @@ class MoveSystem {
                 const normalizedDirection = normalize(direction);
 
                 // Calculate the distance the player can move this frame
-                const distanceThisFrame = PLAYER_SPEED * (deltaTime / 1000);
+                const distanceThisFrame = PLAYER_SPEED * getScale(player.position.y, playerScale.min, playerScale.max, playerScale.quarterScreenMin) * (deltaTime / 1000);
 
                 if (distanceThisFrame >= distanceToTarget) {
                     // Move directly to the target point
@@ -265,7 +269,7 @@ class MoveSystem {
 //     }
 // }
 
-export function getScale(y) {
+export function getScale(y, min = 0.2, max = 1, quarterScreenMin = 1.0) {
     const quarterScreenY = Screen.height * 0.65;
     const maxScale = 2;
 
@@ -284,10 +288,10 @@ export function getScale(y) {
         // Ease-In Sine Function
         const easeInSin = 1 - Math.cos((Math.PI / 2) * t);
 
-        scale = 0.2 + 0.8 * easeInSin;
+        scale = min + (max - min) * easeInSin;
     } else {
         // Scale increases linearly from 1.0 to maxScale as y increases from quarterScreenY to Screen.height
-        scale = 1.0 + ((clampedY - quarterScreenY) / (Screen.height - quarterScreenY)) * (maxScale - 1.0);
+        scale = quarterScreenMin + ((clampedY - quarterScreenY) / (Screen.height - quarterScreenY)) * (maxScale - 1.0);
     }
 
     return Math.max(0.2, Math.min(scale, maxScale));

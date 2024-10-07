@@ -54,6 +54,23 @@ namespace blipcade::graphics {
                                         uint16_t>(b));
     }
 
+    uint8_t Palette685::find_closest_color_685(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+        if (a == 0) {
+            return 0xFF; // Transparent
+        }
+
+        const uint8_t r_val = static_cast<uint8_t>(std::round(r / 51.0));
+        const uint8_t g_val = static_cast<uint8_t>(std::round(g / 36.0));
+        const uint8_t b_val = static_cast<uint8_t>(std::round(b / 63.0));
+
+        const uint8_t ro = std::min(r_val, static_cast<uint8_t>(5));
+        const uint8_t go= std::min(g_val, static_cast<uint8_t>(7));
+        const uint8_t bo = std::min(b_val, static_cast<uint8_t>(4));
+
+        return color_to_index(ro, go, bo);
+    }
+
+
     uint8_t Palette685::get_size() {
         return 255; // Represents 256 colors (0 to 255)
     }

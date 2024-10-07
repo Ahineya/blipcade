@@ -71,6 +71,11 @@ namespace ImGui
         style.Colors[ImGuiCol_PlotHistogramHovered]  = ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
         style.Colors[ImGuiCol_TextSelectedBg]        = ImVec4(0.26f, 0.59f, 0.98f, 0.35f);
 //        style.Colors[ImGuiCol_ModalWindowDarkening]  = ImVec4(0.20f, 0.20f, 0.20f, 0.35f);
+        // Tables
+        style.Colors[ImGuiCol_TableHeaderBg]         = ImVec4(0.26f, 0.59f, 0.98f, 0.40f);
+        style.Colors[ImGuiCol_TableBorderStrong]     = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+        style.Colors[ImGuiCol_TableBorderLight]      = ImVec4(0.26f, 0.59f, 0.98f, 0.60f);
+        style.Colors[ImGuiCol_TableRowBg]            = ImVec4(1.00f, 1.00f, 1.00f, 0.20f);
 
         if( bStyleDark_ )
         {

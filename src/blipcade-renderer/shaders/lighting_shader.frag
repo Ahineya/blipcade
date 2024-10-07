@@ -23,11 +23,7 @@ void main()
     vec4 baseColor = texture(baseTexture, fragTexCoord);
     float mask = texture(maskTexture, fragTexCoord).r; // Assuming mask is grayscale
 
-    // Apply tint based on mask and opacity
-//    vec3 tintedColor = mix(baseColor.rgb, tintColor.rgb, mask * opacity);
-
     vec3 tintedColor = blendOverlay(baseColor.rgb, tintColor.rgb, mask * opacity);
 
-    // Preserve the original alpha
     finalColor = vec4(tintedColor, baseColor.a);
 }

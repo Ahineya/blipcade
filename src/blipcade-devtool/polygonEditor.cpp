@@ -30,6 +30,12 @@ namespace blipcade::devtool {
         return active;
     }
 
+    void PolygonEditor::RemovePolygon(int index) {
+        if (index < 0 || index >= polygons.size()) return;
+
+        polygons.erase(polygons.begin() + index);
+    }
+
     void PolygonEditor::Draw() {
         if (!active) return;
 
@@ -86,12 +92,20 @@ namespace blipcade::devtool {
         ImGui::TextWrapped(
             "Left-click to add vertices.\nPress 'C' or click close to a starting point to close the polygon.");
         // Add button to generate navmesh if the polygon is selected
+        // if (selectedPolygon != -1) {
+        //     if (ImGui::Button("Generate Navmesh")) {
+        //         // Generate navmesh
+        //         GenerateNavmesh(polygons[selectedPolygon]);
+        //     }
+        // }
+
         if (selectedPolygon != -1) {
-            if (ImGui::Button("Generate Navmesh")) {
-                // Generate navmesh
-                GenerateNavmesh(polygons[selectedPolygon]);
+            if (ImGui::Button("Delete Polygon")) {
+                RemovePolygon(selectedPolygon);
+                selectedPolygon = -1;
             }
         }
+
         ImGui::EndGroup();
 
         ImGui::End();

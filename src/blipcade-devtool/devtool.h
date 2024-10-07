@@ -7,6 +7,7 @@
 #include <ECS.h>
 
 #include "polygonEditor.h"
+#include "spriteEditor.h"
 
 
 namespace blipcade::runtime {
@@ -33,9 +34,11 @@ namespace blipcade::devtool {
 
         void setScale(float scale);
         void setCanvasOffset(const Vector2 &offset);
+        void setCanvasSize(const Vector2 &size);
 
         [[nodiscard]] float getScale() const;
         [[nodiscard]] Vector2 getCanvasOffset() const;
+        [[nodiscard]] Vector2 getCanvasSize() const;
 
     private:
         bool active = false;
@@ -45,12 +48,14 @@ namespace blipcade::devtool {
         double FPS = 0;
 
         Vector2 canvasOffset = {0, 0};
+        Vector2 canvasSize = {0, 0};
         float scale = 1.0f;
 
         std::string tagFilter;
         char tagFilterBuffer[256];
 
         PolygonEditor polygonEditor;
+        SpriteEditor spriteEditor;
     };
 }
 

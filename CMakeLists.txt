@@ -19,6 +19,7 @@ include_directories(${CMAKE_SOURCE_DIR}/src/blipcade-collision)
 include_directories(${CMAKE_SOURCE_DIR}/src/blipcade-audio)
 include_directories(${CMAKE_SOURCE_DIR}/external/quickjs-patched)
 include_directories(${CMAKE_SOURCE_DIR}/external/earcut)
+include_directories(${CMAKE_SOURCE_DIR}/external/ImGuiFileDialog)
 
 
 FetchContent_Declare(
@@ -105,6 +106,8 @@ set(SOURCES
         src/blipcade-collision/triangulation.cpp
         src/blipcade-collision/navmesh.cpp
         src/blipcade-collision/pathfinding.cpp
+        external/ImGuiFileDialog/ImGuilFileDialog.cpp
+        src/blipcade-devtool/spriteEditor.cpp
 )
 
 # Path to the JSON file
@@ -273,12 +276,12 @@ target_link_libraries(blipcade_cmake quickjs raylib imgui_rl rlImGui ${OPENGL_LI
 # Detect if building with Emscripten
 if (DEFINED EMSCRIPTEN)
     set(USE_WAYLAND_DISPLAY OFF CACHE BOOL "" FORCE)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Os")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Oz")
     list(REMOVE_ITEM example_sources ${CMAKE_CURRENT_SOURCE_DIR}/others/rlgl_standalone.c)
 
     set_target_properties(blipcade_cmake
             PROPERTIES SUFFIX ".html"
-            LINK_FLAGS " --bind -s WASM=1 -s ASYNCIFY -s ALLOW_MEMORY_GROWTH=1 -sFULL_ES3 --preload-file ${CMAKE_SOURCE_DIR}/src/resources@/resources"
+            LINK_FLAGS " --bind -s WASM=2 -s ASYNCIFY -s ALLOW_MEMORY_GROWTH=1 -sSTACK_SIZE=1048576 -sFULL_ES3 --preload-file ${CMAKE_SOURCE_DIR}/src/resources@/resources"
             )
     string(REPLACE "-rdynamic" "" CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "${CMAKE_SHARED_LIBRARY_LINK_C_FLAGS}")
 

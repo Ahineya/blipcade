@@ -10,9 +10,11 @@
 
 #include "imgui-style.h"
 
+#include <ImGuiFileDialog.h>
+
 namespace blipcade::devtool {
     Devtool::Devtool(runtime::Runtime &runtime)
-        : active(false), runtime(runtime), tagFilter(""), polygonEditor(*this) {
+        : active(false), runtime(runtime), tagFilter(""), polygonEditor(*this), spriteEditor(*this) {
         // Initialize the buffer with the empty string
         std::strncpy(tagFilterBuffer, tagFilter.c_str(), sizeof(tagFilterBuffer));
         // Ensure null-termination
@@ -42,12 +44,20 @@ namespace blipcade::devtool {
         this->canvasOffset = offset;
     }
 
+    void Devtool::setCanvasSize(const Vector2 &size) {
+        this->canvasSize = size;
+    }
+
     float Devtool::getScale() const {
         return scale;
     }
 
     Vector2 Devtool::getCanvasOffset() const {
         return canvasOffset;
+    }
+
+    Vector2 Devtool::getCanvasSize() const {
+        return canvasSize;
     }
 
     static bool show_demo_window = false;
@@ -67,11 +77,14 @@ namespace blipcade::devtool {
         ImGui::PushFont(ImGui::font1);
 
         if (ImGui::BeginMenuBar()) {
-            if (ImGui::MenuItem("Show demo UI", "")) { show_demo_window = true; }
+            if (ImGui::MenuItem("Sprite Editor", "")) { spriteEditor.SetActive(true); }
             if (ImGui::MenuItem("Polygon Editor", "")) { polygonEditor.SetActive(true); }
             if (ImGui::MenuItem("Close", "Ctrl+W")) { active = false; }
             ImGui::EndMenuBar();
         }
+
+
+
 
 
         ImGui::Text("FPS: %f", FPS);
@@ -92,6 +105,10 @@ namespace blipcade::devtool {
 
         if (polygonEditor.IsActive()) {
             polygonEditor.Draw();
+        }
+
+        if (spriteEditor.IsActive()) {
+            spriteEditor.Draw();
         }
 
         ImGui::PopFont();

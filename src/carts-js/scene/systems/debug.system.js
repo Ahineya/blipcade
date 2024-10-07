@@ -3,25 +3,25 @@ import {state} from "../state/state";
 import {PICO8_COLORS} from "../../celeste/colors";
 
 class DebugSystem {
-  constructor() {
-    this.name = 'DebugSystem';
-  }
+    constructor() {
+        this.name = 'DebugSystem';
+    }
 
-  draw() {
-    drawColliders();
-    drawFPSCounter();
-  }
+    draw() {
+        drawColliders();
+        drawFPSCounter();
+    }
 }
 
 export const debugSystem = new DebugSystem();
 
 function drawFPSCounter() {
     const fpsText = `fps: ${state.currentFPS}`;
-    text(fpsText,1, 2,  PICO8_COLORS[0]);
-    text(fpsText, 3, 2,  PICO8_COLORS[0]);
-    text(fpsText,2, 3,  PICO8_COLORS[0]);
-    text(fpsText,2, 1,  PICO8_COLORS[0]);
-    text(fpsText,2, 2,  PICO8_COLORS[7]);
+    text(fpsText, 1, 2, PICO8_COLORS[0]);
+    text(fpsText, 3, 2, PICO8_COLORS[0]);
+    text(fpsText, 2, 3, PICO8_COLORS[0]);
+    text(fpsText, 2, 1, PICO8_COLORS[0]);
+    text(fpsText, 2, 2, PICO8_COLORS[7]);
 }
 
 function drawColliders() {
@@ -51,7 +51,18 @@ function drawColliders() {
         }
     });
 
+    ECS.forEachEntity(["Sprite"], (entity, sprite) => {
+        const originX = Math.round(sprite.position.x);
 
+        let originY = Math.round(sprite.position.y);
+        const player = ECS.getComponent(entity, "Player");
+        if (player) {
+            const playerScale = ECS.getComponent(entity, "PlayerScale");
+            originY = Math.round(sprite.position.y);
+        }
+
+        // Graphics.drawFilledCircle(originX, originY, 2, 0xfe);
+    });
 
     ECS.forEachEntity(["Collider", "Visible"], (entity, collider, visible) => {
         if (ECS.getComponent(entity, "Player")) {
@@ -72,21 +83,21 @@ function drawColliders() {
         }
     });
 
-    const navMesh = Pathfinding.getNavMesh(0); // array of polygons, [{vertices: [{x, y}, {x, y}, ...]}, ...]
-
-    for (let i = 0; i < navMesh.length; i++) {
-        const polygon = navMesh[i];
-        const vertices = polygon.vertices;
-
-        for (let j = 0; j < vertices.length; j++) {
-            const start = vertices[j];
-            const end = vertices[(j + 1) % vertices.length];
-
-            // Graphics.drawLine(start.x, start.y, end.x, end.y, 35);
-        }
-    }
-
     ECS.forEachEntity(["Player"], (_, player) => {
+        const navMesh = Pathfinding.getNavMesh(player.navMeshIndex); // array of polygons, [{vertices: [{x, y}, {x, y}, ...]}, ...]
+
+        for (let i = 0; i < navMesh.length; i++) {
+            const polygon = navMesh[i];
+            const vertices = polygon.vertices;
+
+            for (let j = 0; j < vertices.length; j++) {
+                const start = vertices[j];
+                const end = vertices[(j + 1) % vertices.length];
+
+                // Graphics.drawLine(start.x, start.y, end.x, end.y, 35);
+            }
+        }
+
         const path = player.path;
 
         if (path.length > 0) {

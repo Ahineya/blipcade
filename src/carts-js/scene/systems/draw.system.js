@@ -18,8 +18,6 @@ class DrawSystem {
 
         // We want a y-sorting layer-based rendering system.
 
-        const renderQueue = [];
-
         const renderLayers = {
             [RenderLayer.Background]: [],
             [RenderLayer.Entities]: [],
@@ -37,7 +35,10 @@ class DrawSystem {
                     return;
                 }
 
-                const scale = ECS.getComponent(entity, "Player") ? getScale(y) : 1;
+                const player = ECS.getComponent(entity, "Player");
+                const playerScale = ECS.getComponent(entity, "PlayerScale");
+
+                const scale = player ? getScale(y, playerScale.min, playerScale.max, playerScale.quarterScreenMin) : 1;
 
                 const o = {
                     entity,
@@ -70,8 +71,7 @@ class DrawSystem {
 
         // Sort entities by origin Y
         renderLayers[RenderLayer.Entities].sort((a, b) => {
-            return (a.properties.y - a.properties.height * a.properties.oy)
-                - (b.properties.y - b.properties.height * b.properties.oy);
+            return (a.properties.y) - (b.properties.y);
         });
 
         // Render entities and player with y-sorting
@@ -101,7 +101,8 @@ class DrawSystem {
                 });
             } else {
                 const {x, y, spriteIndex, spriteSheet, flipX, ox, oy} = properties;
-                Graphics.drawSprite(x, y, spriteIndex, spriteSheet, flipX);
+                // Graphics.drawSprite(x, y, spriteIndex, spriteSheet, flipX);
+                Graphics.drawSpriteEx(x, y, spriteIndex, spriteSheet, flipX, false, 1, ox, oy);
             }
         });
 

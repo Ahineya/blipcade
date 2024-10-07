@@ -87,10 +87,6 @@ namespace blipcade::collision {
             auto current = openList.top();
             openList.pop();
 
-            std::cout << "Current Point: (" << current.point->x << ", " << current.point->y << ")\n";
-            std::cout << "Current Region: (" << current.region->centroid.x << ", " << current.region->centroid.y << ")\n";
-            std::cout << "Size:" << openList.size() << std::endl;
-
             closedList.insert(current);
 
             auto currentRegion = current.region;
@@ -101,11 +97,8 @@ namespace blipcade::collision {
             visited.insert(currentRegion);
 
             // Log current and end regions
-            std::cout << "Current Region: (" << currentRegion->centroid.x << ", " << currentRegion->centroid.y << ")\n";
-            std::cout << "End Region: (" << endRegion->centroid.x << ", " << endRegion->centroid.y << ")\n";
 
             if (currentRegion == endRegion) {
-                std::cout << "We are in the end region" << std::endl;
                 auto path = reconstructPath(&current);
 
                 std::reverse(path.begin(), path.end());
@@ -124,7 +117,6 @@ namespace blipcade::collision {
                 return cleanedPath;
             }
 
-            std::cout << "Neighbors: " << currentRegion->neighbors.size() << std::endl;
             for (auto& neighbor : currentRegion->neighbors) {
                 // Add centroid
                 PathPoint navPoint(neighbor, &neighbor->centroid, current.gCost + Vector2Distance(*current.point, neighbor->centroid),
@@ -139,8 +131,6 @@ namespace blipcade::collision {
                 }
 
                 if (!found) {
-                    std::cout << "Adding point to open list: (" << neighbor->centroid.x << ", " << neighbor->centroid.y << ")\n";
-                    std::cout << "With parent" << current.point->x << ", " << current.point->y << std::endl;
                     openList.push(PathPoint(navPoint));
                 }
             }

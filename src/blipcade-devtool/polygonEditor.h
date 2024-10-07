@@ -34,6 +34,8 @@ namespace blipcade::devtool {
         void SetActive(bool active);
         bool IsActive() const;
 
+        void RemovePolygon(int index);
+
     private:
         Devtool& devtool;
         bool active;

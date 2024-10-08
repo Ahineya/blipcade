@@ -22,6 +22,10 @@ namespace blipcade {
 
             void bindTextFunction(quickjs::value& global);
 
+            void bindBlipFunctions(quickjs::value &global);
+
+            void bindLoadSpritesheet(quickjs::value &global);
+
             void bindGraphicsGlobalObject(quickjs::value &global);
 
             void bindFillScreen(quickjs::value &global);

@@ -16,14 +16,14 @@ const levels = [
             {
                 type: "background",
                 spriteSheet: 1,
-                spriteIndex: 0,
+                spriteIndex: "res://spritesheets/level1-bg.json",
                 position: { x: 0, y: 0 },
                 size: { width: 320, height: 200 },
                 origin: {x: 0, y: 0}
             },
             {
                 type: "sprite",
-                spriteSheet: 4,
+                spriteSheet: "res://spritesheets/level1-bg-overlay.json",
                 spriteIndex: 0,
                 origin: {x: 0.5, y: 0.75},
                 size: {width: 112, height: 29},
@@ -64,7 +64,7 @@ const levels = [
         objects: [
             {
                 type: "background",
-                spriteSheet: 5,
+                spriteSheet: "res://spritesheets/level2-bg.json",
                 spriteIndex: 0,
                 position: { x: 0, y: 0 },
                 size: { width: 320, height: 200 },
@@ -72,7 +72,7 @@ const levels = [
             },
             {
                 type: "sprite",
-                spriteSheet: 6,
+                spriteSheet: "res://spritesheets/level2-bg-overlay.json",
                 spriteIndex: 0,
                 origin: {x: 0.5, y: 0.85},
                 size: {width: 159, height: 118},

@@ -14,6 +14,9 @@ public:
     explicit Project(std::string directory);
     ~Project() = default;
 
+
+    std::filesystem::path getDirectory() const { return m_directory; }
+
     std::string getEntryPoint() const { return entrypoint.lexically_normal(); }
 private:
     std::filesystem::path m_directory;

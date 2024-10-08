@@ -11,12 +11,10 @@ import {particlesSystem} from "./systems/particles.system.js";
 import {messageSystem} from "./systems/messageSystem.js";
 import {interactiveObjectsSystem} from "./systems/interactive-objects.system.js";
 
+const CURSOR_SPRITESHEET = "res://spritesheets/cursor.json";
+
 export function init() {
     Graphics.setTransparentColor(255);
-
-    state.SPRITES = {
-        CURSOR: 0
-    }
 
     state.frameCount = 0;
     state.lastFPSUpdate = Date.now();
@@ -41,9 +39,13 @@ export function init() {
         debugSystem
     ];
 
+    state.SPRITES = {
+        CURSOR: 0
+    }
+
     state.systems.forEach(s => {
         s.init && s.init();
-    })
+    });
 }
 
 export function update() {
@@ -80,16 +82,12 @@ export function draw() {
 
     state.systems.forEach(s => {
         s.draw && s.draw(state.FRAME_TIME);
-    })
+    });
 
     const mousePos = Input.getMousePos();
 
-    Graphics.drawSprite(mousePos.x, mousePos.y, state.SPRITES.CURSOR, false, false);
+    Graphics.drawSprite(mousePos.x, mousePos.y, state.SPRITES.CURSOR, CURSOR_SPRITESHEET);
 }
-
-// globalThis.draw = draw;
-// globalThis.update = update;
-// globalThis.init = init;
 
 function updateKeyStates() {
     Object.keys(state.keyStates).forEach(key => {

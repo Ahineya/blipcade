@@ -1,0 +1,17 @@
+{
+  "texture": {
+    "width": 13,
+    "height": 13,
+    "data": "00 FF FF FF FF FF FF FF FF FF FF FF FF 00 00 FF FF FF FF FF FF FF FF FF FF FF 00 EF 00 FF FF FF FF FF FF FF FF FF FF 00 EF EF 00 FF FF FF FF FF FF FF FF FF 00 EF EF EF 00 FF FF FF FF FF FF FF FF 00 EF EF EF EF 00 FF FF FF FF FF FF FF 00 EF EF EF EF EF 00 FF FF FF FF FF FF 00 EF EF EF EF EF EF 00 FF FF FF FF FF 00 EF EF EF EF 00 00 00 FF FF FF FF FF 00 EF 00 EF EF 00 FF FF FF FF FF FF FF 00 00 FF 00 EF EF 00 FF FF FF FF FF FF FF FF FF 00 EF EF 00 FF FF FF FF FF FF FF FF FF FF 00 00 FF FF FF FF FF FF FF",
+    "image": "cursor.png"
+  },
+  "sprites": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 8,
+      "height": 13,
+      "flags": 0
+    }
+  ]
+}

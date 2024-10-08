@@ -4,8 +4,13 @@
 
 #include "spritesheet.h"
 
+#include <converters.h>
+#include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <nlohmann/adl_serializer.hpp>
+#include <nlohmann/json.hpp>
+#include <__filesystem/filesystem_error.h>
 
 
 namespace blipcade::graphics {
@@ -40,6 +45,59 @@ namespace blipcade::graphics {
         return spritesheet;
     }
 
+    Spritesheet Spritesheet::fromResource(const std::string &resourcePath, const std::string &projectDir) {
+        std::cout << "Loading spritesheet from resource: " << resourcePath << "\n";
+
+        const auto path = resourcePath.substr(6);
+
+        std::filesystem::path fullPath = std::filesystem::path(projectDir) / path;
+        nlohmann::json spritesheetJson;
+
+        std::ifstream spritesheetStream(fullPath.lexically_normal());
+        spritesheetStream >> spritesheetJson;
+
+        const auto textureJson = spritesheetJson["texture"];
+
+        unsigned width = 0;
+        unsigned height = 0;
+        std::vector<uint8_t> parsedBytes;
+
+        // Check if "image" is present in the texture
+        if (textureJson.contains("image")) {
+            // Here we want to load an image, and convert it to a spritesheet
+            const auto imagePath = textureJson["image"].get<std::string>();
+
+            // image path is relative to the resource file, so we need to get the directory of the resource file
+            const auto resourceDir = fullPath.parent_path();
+            const auto imageFullPath = resourceDir / imagePath;
+
+            Image img = LoadImage(imageFullPath.c_str());
+            width = img.width;
+            height = img.height;
+            parsedBytes = api::imageToBytes(img);
+        } else {
+            width = textureJson["width"].get<uint32_t>();
+            height = textureJson["height"].get<uint32_t>();
+            const auto data = textureJson["data"].get<std::string>();
+
+            const auto parsedData = api::split(data, ' ');
+            parsedBytes = api::convertToBytes(parsedData);
+        }
+
+        std::vector<uint32_t> spriteData;
+        for (const auto &spriteJson : spritesheetJson["sprites"]) {
+            spriteData.push_back(spriteJson["x"].get<uint32_t>());
+            spriteData.push_back(spriteJson["y"].get<uint32_t>());
+            spriteData.push_back(spriteJson["width"].get<uint32_t>());
+            spriteData.push_back(spriteJson["height"].get<uint32_t>());
+            spriteData.push_back(spriteJson["flags"].get<uint32_t>());
+        }
+
+        std::cout << "Spritesheet loaded: width: " << width << ", height: " << height << "\n";
+
+        return fromData(parsedBytes, spriteData, width, height);
+    }
+
     void Spritesheet::createTexture() {
         Image image;
         image.data = pixelBuffer.data();
@@ -66,7 +124,8 @@ namespace blipcade::graphics {
         }
 
         std::cerr << "Invalid sprite index: " << index << "\n";
-        return sprites[0];
+
+        throw std::runtime_error("Invalid sprite index");
     }
 
     std::vector<uint8_t> Spritesheet::getSpriteData(const size_t index) const {

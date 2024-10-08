@@ -11,6 +11,7 @@
 #include <iostream>
 #include <navmesh.h>
 #include <pathfinding.h>
+#include <project.h>
 
 #include "runtime.h"
 
@@ -21,6 +22,9 @@ namespace blipcade::runtime {
     void JSBindings::registerAll(quickjs::value &global, ecs::ECS &ecs) {
         bindLogFunction(global);
         bindTextFunction(global);
+
+        // Blip functions
+        bindBlipFunctions(global);
 
         // Graphics
         bindGraphicsGlobalObject(global);
@@ -115,6 +119,47 @@ namespace blipcade::runtime {
     }
 
     /**
+     * @namespace Blip
+     * @description Provides engine functionalities.
+     */
+    void JSBindings::bindBlipFunctions(quickjs::value &global) {
+        createNamespace(global, "Blip");
+
+        bindLoadSpritesheet(global);
+    }
+
+    /**
+     * @function loadSpritesheet
+     * @param {string} path - The path to the spritesheet.
+     * @description Loads a spritesheet from a file.
+     *
+     * @example Blip.loadSpritesheet("res://assets/spritesheet.png");
+     */
+    void JSBindings::bindLoadSpritesheet(quickjs::value &global) {
+        auto blip = global.get_property("Blip");
+
+        blip.set_property("loadSpritesheet", [this](const quickjs::args &a) {
+            auto argsCount = a.size();
+
+            if (argsCount < 1) {
+                throw std::runtime_error("loadSpritesheet: Missing argument.");
+            }
+
+            std::string path = a[0].as_cstring().c_str();
+
+            auto spritesheets = m_runtime.getSpritesheets();
+
+            if (spritesheets->find(path) != spritesheets->end()) {
+                return;
+            }
+
+            auto spritesheet = graphics::Spritesheet::fromResource(path, m_runtime.getProject()->getDirectory());
+
+            spritesheets->insert({path, spritesheet});
+        });
+    }
+
+    /**
      * @namespace Graphics
      * @description Provides graphics-related functionalities.
      */
@@ -171,7 +216,7 @@ namespace blipcade::runtime {
      * @param {number} y - The y-coordinate of the sprite.
      * @param {number} spriteIndex - The index of the sprite to draw.
      *
-     * @param {number} [spriteSheetIndex=0] - The index of the sprite sheet to use.
+     * @param {string} [spriteSheet=""] - The path of the sprite sheet to use.
      * @param {boolean} [flipX=false] - Whether to flip the sprite horizontally.
      * @param {boolean} [flipY=false] - Whether to flip the sprite vertically.
      *
@@ -187,23 +232,25 @@ namespace blipcade::runtime {
             auto argsCount = a.size();
 
             int32_t x = 0, y = 0, spriteIndex = 0;
-            uint32_t spriteSheetIndex = 0;
+            std::string spriteSheetIndex = "0";
             bool flipX = false, flipY = false;
 
             if (argsCount >= 1) x = a[0].as_int32();
             if (argsCount >= 2) y = a[1].as_int32();
             if (argsCount >= 3) spriteIndex = a[2].as_int32();
-            if (argsCount >= 4) spriteSheetIndex = a[3].as_int32();
+            if (argsCount >= 4) spriteSheetIndex = a[3].as_cstring().c_str();
             if (argsCount >= 5) flipX = a[4].as_int32();
             if (argsCount >= 6) flipY = a[5].as_int32();
 
             const auto spritesheets = m_runtime.getSpritesheets();
 
-            if (spriteSheetIndex >= spritesheets->size()) {
-                throw std::runtime_error("drawSprite: Invalid sprite sheet index."); // TODO: Throw js error, li
+            if (spritesheets->find(spriteSheetIndex) == spritesheets->end()) {
+                std::cout << "drawSprite: Loading spritesheet from resource: " << spriteSheetIndex << std::endl;
+                auto spritesht = graphics::Spritesheet::fromResource(spriteSheetIndex, m_runtime.getProject()->getDirectory());
+                m_runtime.getSpritesheets()->insert({spriteSheetIndex, spritesht});
             }
 
-            const auto spritesheet = spritesheets->at(std::to_string(spriteSheetIndex));
+            const auto spritesheet = spritesheets->at(spriteSheetIndex);
 
             m_runtime.getCanvas()->drawSprite(x, y, flipX, flipY, spritesheet, spriteIndex);
         });
@@ -242,14 +289,14 @@ namespace blipcade::runtime {
             auto argsCount = a.size();
 
             int32_t x = 0, y = 0, spriteIndex = 0;
-            uint32_t spriteSheetIndex = 0;
+            std::string spriteSheetIndex = "";
             bool flipX = false, flipY = false;
             float scale = 1.0, originX = 0.5, originY = 0.5;
 
             if (argsCount >= 1) x = a[0].as_int32();
             if (argsCount >= 2) y = a[1].as_int32();
             if (argsCount >= 3) spriteIndex = a[2].as_int32();
-            if (argsCount >= 4) spriteSheetIndex = a[3].as_int32();
+            if (argsCount >= 4) spriteSheetIndex = a[3].as_cstring().c_str();
             if (argsCount >= 5) flipX = a[4].as_int32();
             if (argsCount >= 6) flipY = a[5].as_int32();
             if (argsCount >= 7) scale = a[6].as_double();
@@ -258,11 +305,13 @@ namespace blipcade::runtime {
 
             const auto spritesheets = m_runtime.getSpritesheets();
 
-            if (spriteSheetIndex >= spritesheets->size()) {
-                throw std::runtime_error("drawSprite: Invalid sprite sheet index."); // TODO: Throw js error, li
+            if (spritesheets->find(spriteSheetIndex) == spritesheets->end()) {
+                std::cout << "drawSprite: Loading spritesheet from resource: " << spriteSheetIndex << std::endl;
+                auto spritesht = graphics::Spritesheet::fromResource(spriteSheetIndex, m_runtime.getProject()->getDirectory());
+                m_runtime.getSpritesheets()->insert({spriteSheetIndex, spritesht});
             }
 
-            const auto spritesheet = spritesheets->at(std::to_string(spriteSheetIndex));
+            const auto spritesheet = spritesheets->at(spriteSheetIndex);
 
             m_runtime.getCanvas()->drawSpriteEx(x, y, flipX, flipY, scale, originX, originY, spritesheet, spriteIndex);
         });

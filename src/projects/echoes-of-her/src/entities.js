@@ -72,8 +72,8 @@ export class Entities {
                 walk: [0, 1],
             },
             spritesheets: {
-                idle: 2,
-                walk: 3,
+                idle: "res://spritesheets/player-idle.json",
+                walk: "res://spritesheets/player-walk.json",
             },
             currentAnimation: "idle",
             currentFrame: 0,

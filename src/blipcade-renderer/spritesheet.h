@@ -24,6 +24,7 @@ namespace blipcade::graphics {
         ~Spritesheet();
 
         static Spritesheet fromData(const std::vector<uint8_t> &pixelBuffer, const std::vector<uint32_t> &spriteData, uint32_t width, uint32_t height);
+        static Spritesheet fromResource(const std::string &resourcePath, const std::string &projectDir);
 
         void addSprite(uint32_t x, uint32_t y, uint32_t width, uint32_t height, uint8_t flags);
 

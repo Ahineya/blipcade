@@ -14,6 +14,14 @@ declare global {
      */
     function text(text: string, x?: number, y?: number, color?: number): void;
 
+    namespace Blip {
+        /**
+         * Loads a spritesheet from a file.
+         */
+        function loadSpritesheet(path: string): void;
+
+    }
+
     namespace Graphics {
         /**
          * Sets the color to use as transparent when drawing.
@@ -28,7 +36,7 @@ declare global {
         /**
          * Draws a sprite on the canvas.
          */
-        function drawSprite(x: number, y: number, spriteIndex: number, spriteSheetIndex?: number, flipX?: boolean, flipY?: boolean): void;
+        function drawSprite(x: number, y: number, spriteIndex: number, spriteSheet?: string, flipX?: boolean, flipY?: boolean): void;
 
         /**
          * Draws a sprite on the canvas.

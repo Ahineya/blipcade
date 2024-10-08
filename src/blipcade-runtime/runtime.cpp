@@ -76,6 +76,9 @@ namespace blipcade::runtime {
         const auto cart = std::make_shared<Cartridge>(Cartridge::fromJson(json_cart_data));
         cartridge = cart;
 
+        const auto project = std::make_shared<loader::Project>("../src/projects/echoes-of-her");
+        setProject(project);
+
         const auto spritesheets = cart->getSpritesheets();
         for (const auto &spritesheet: spritesheets) {
             // this->spritesheets->push_back(spritesheet);
@@ -99,6 +102,11 @@ namespace blipcade::runtime {
     std::shared_ptr<graphics::Canvas> Runtime::getCanvas() const {
         return canvas;
     }
+
+    std::shared_ptr<loader::Project> Runtime::getProject() const {
+        return project;
+    }
+
 
     std::shared_ptr<graphics::Font> Runtime::getFont() const {
         return font;
@@ -131,6 +139,12 @@ namespace blipcade::runtime {
     void Runtime::setCartridge(std::shared_ptr<Cartridge> cart) {
         cartridge = std::move(cart);
     }
+
+    void Runtime::setProject(std::shared_ptr<loader::Project> project) {
+        this->project = std::move(project);
+    }
+
+
     static const char *c_ident_prefix = "qjsc_";
     static void get_c_name(char *buf, size_t buf_size, const char *file)
     {
@@ -253,7 +267,7 @@ namespace blipcade::runtime {
 
         JS_SetModuleLoaderFunc(&*js_runtime->rt_, nullptr, jsc_module_loader, nullptr);
 
-        auto project = new loader::Project("../src/projects/echoes-of-her");
+        auto project = this->project;
         auto entrypoint = project->getEntryPoint();
 
         std::string code = "import {init, update, draw} from \"" + entrypoint + "\"; globalThis.init = init; globalThis.update = update; globalThis.draw = draw;";

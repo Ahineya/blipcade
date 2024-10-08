@@ -65,7 +65,7 @@ class DrawSystem {
 
         // Render background
         renderLayers[RenderLayer.Background].forEach(({entity, properties: {x, y, spriteIndex, spriteSheet, flipX, ox, oy}}) => {
-            Graphics.drawSprite(x, y, spriteIndex, spriteSheet, flipX);
+            Graphics.drawSprite(x, y, spriteIndex, spriteSheet.toString(), flipX);
         });
 
         // Sort entities by origin Y
@@ -101,7 +101,7 @@ class DrawSystem {
             } else {
                 const {x, y, spriteIndex, spriteSheet, flipX, ox, oy} = properties;
                 // Graphics.drawSprite(x, y, spriteIndex, spriteSheet, flipX);
-                Graphics.drawSpriteEx(x, y, spriteIndex, spriteSheet, flipX, false, 1, ox, oy);
+                Graphics.drawSpriteEx(x, y, spriteIndex, spriteSheet.toString(), flipX, false, 1, ox, oy);
             }
         });
 

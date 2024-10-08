@@ -4,6 +4,8 @@
 
 #include "converters.h"
 
+#include <palette685.h>
+#include <raylib.h>
 #include <sstream>
 #include <vector>
 
@@ -50,6 +52,44 @@ namespace blipcade::api {
             bytes.push_back(byte);
         }
         return bytes;
+    }
+
+    std::vector<uint8_t> imageToBytes(const std::string &path) {
+        Image image = LoadImage(path.c_str());
+        // image.data // This is the image data in RGBA format
+        // image.width // The width of the image
+        // image.height // The height of the image
+
+        // So we now can go pixel by pixel and transform it into blipcart format
+        return imageToBytes(image);
+    }
+
+    std::vector<uint8_t> imageToBytes(Image & image) {
+        graphics::Palette685 palette;
+
+        std::vector<uint8_t> blipcartData;
+        blipcartData.reserve(image.width * image.height);
+
+        for (int y = 0; y < image.height; y++) {
+            for (int x = 0; x < image.width; x++) {
+                Color pixel = GetImageColor(image, x, y);
+
+                const auto index = palette.find_closest_color_685(pixel.r, pixel.g, pixel.b, pixel.a);
+                blipcartData.push_back(index);
+            }
+        }
+
+        // log the data to the console as a hex string
+        std::string hexString;
+        for (auto &pixel : blipcartData) {
+            hexString += std::format("{:02X}", pixel);
+            hexString += " ";
+        }
+
+        // Remove the last space
+        hexString.pop_back();
+
+        return convertToBytes(split(hexString, ' '));
     }
 } // api
 // blipcade

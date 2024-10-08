@@ -5,6 +5,8 @@
 - [Namespace: global](#namespace-global)
    - [Function: log](#function-log)
    - [Function: text](#function-text)
+- [Namespace: Blip](#namespace-blip)
+   - [Function: loadSpritesheet](#function-loadspritesheet)
 - [Namespace: Graphics](#namespace-graphics)
    - [Function: setTransparentColor](#function-settransparentcolor)
    - [Function: fillScreen](#function-fillscreen)
@@ -88,6 +90,28 @@ text("Hello, Blipcade!", 10, 20, 0xff);
 ```
 
 ---
+Namespace: `Blip`
+---
+### Provides engine functionalities.
+
+
+
+#### Function: `loadSpritesheet`
+**Description:** Loads a spritesheet from a file. 
+
+**Parameters (Required):**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `path` | `string` | The path to the spritesheet. |
+
+**Example:**
+
+```javascript
+Blip.loadSpritesheet("res://assets/spritesheet.png");
+```
+
+---
 Namespace: `Graphics`
 ---
 ### Provides graphics-related functionalities.
@@ -141,7 +165,7 @@ Graphics.fillScreen(0xff); // Fills the screen with white color.
 
 | Name | Type | Default | Description |
 |------|------|---------|-------------|
-| `spriteSheetIndex` | `number` | `0` | The index of the sprite sheet to use. |
+| `spriteSheet` | `string` | `""` | The path of the sprite sheet to use. |
 | `flipX` | `boolean` | `false` | Whether to flip the sprite horizontally. |
 | `flipY` | `boolean` | `false` | Whether to flip the sprite vertically. |
 

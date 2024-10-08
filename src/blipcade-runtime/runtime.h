@@ -15,6 +15,10 @@
 
 #include "ECS.h"
 
+namespace blipcade::loader {
+    class Project;
+}
+
 namespace blipcade {
     namespace audio {
         class Audio;
@@ -96,6 +100,8 @@ namespace blipcade::runtime {
 
         [[nodiscard]] std::shared_ptr<quickjs::context> getContext() const;
 
+        [[nodiscard]] std::shared_ptr<loader::Project> getProject() const;
+
         [[nodiscard]] std::shared_ptr<graphics::Canvas> getCanvas() const;
 
         [[nodiscard]] std::shared_ptr<graphics::Font> getFont() const;
@@ -111,12 +117,15 @@ namespace blipcade::runtime {
         [[nodiscard]] std::shared_ptr<ecs::ECS> getECS() const;
 
         void setCartridge(std::shared_ptr<Cartridge>);
+        void setProject(std::shared_ptr<loader::Project>);
 
     private:
         std::unique_ptr<quickjs::runtime> js_runtime;
         std::shared_ptr<quickjs::context> context;
 
         std::shared_ptr<Cartridge> cartridge;
+
+        std::shared_ptr<loader::Project> project;
 
         std::shared_ptr<graphics::Canvas> canvas;
         std::shared_ptr<std::unordered_map<std::string, graphics::Spritesheet>> spritesheets;

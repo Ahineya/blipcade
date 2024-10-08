@@ -59,7 +59,7 @@
             "x": 8.0,
             "y": 96.0
           },
-          "text": "A bookshelf filled with books",
+          "text": "",
           "tile": 86.0,
           "x": 20.0,
           "y": 20.0
@@ -95,10 +95,10 @@
           "currentAnimation": "idle",
           "currentFrame": 0.0,
           "frameDuration": 700.0,
-          "frameTime": 266.6666666666667,
+          "frameTime": 0.0,
           "spritesheets": {
-            "idle": 2.0,
-            "walk": 3.0
+            "idle": "res://spritesheets/player-idle.json",
+            "walk": "res://spritesheets/player-walk.json"
           }
         },
         "Persistent": {},
@@ -152,7 +152,7 @@
             "width": 26.0
           },
           "spriteIndex": 0.0,
-          "spriteSheet": 2.0
+          "spriteSheet": "res://spritesheets/player-idle.json"
         },
         "Tag": "Player"
       }
@@ -178,7 +178,7 @@
             "width": 320.0
           },
           "spriteIndex": 0.0,
-          "spriteSheet": 5.0
+          "spriteSheet": "res://spritesheets/level2-bg.json"
         },
         "Tag": "Background"
       }
@@ -204,7 +204,7 @@
             "width": 159.0
           },
           "spriteIndex": 0.0,
-          "spriteSheet": 6.0
+          "spriteSheet": "res://spritesheets/level2-bg-overlay.json"
         }
       }
     },
@@ -326,7 +326,7 @@
       "components": {
         "Light": {
           "color": 16119218.0,
-          "intensity": 0.48726045918358135,
+          "intensity": 0.45753577118823435,
           "name": "sunlight"
         }
       }

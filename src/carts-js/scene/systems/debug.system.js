@@ -8,8 +8,8 @@ class DebugSystem {
     }
 
     draw() {
-        drawColliders();
-        drawFPSCounter();
+        // drawColliders();
+        // drawFPSCounter();
     }
 }
 

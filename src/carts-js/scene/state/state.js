@@ -25,6 +25,8 @@ class State {
 
     particleManager = null;
 
+    message = null;
+
     constructor() {
     }
 }

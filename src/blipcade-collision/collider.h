@@ -23,6 +23,8 @@ namespace blipcade::collision {
         std::vector<Vector2> vertices;
         std::vector<Triangle> triangles{};
 
+        bool checkCollisionPoint(const Vector2& point) const;
+
     private:
         float computeSignedArea() const;
     };

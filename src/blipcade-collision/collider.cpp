@@ -59,7 +59,8 @@ namespace blipcade::collision {
 
             // Check winding order
             float signedArea = computeSignedArea();
-            if (signedArea > 0.0f) { // Positive area indicates CCW
+            if (signedArea > 0.0f) {
+                // Positive area indicates CCW
                 std::cout << "POLYGON IS CCW" << std::endl;
                 std::reverse(this->vertices.begin(), this->vertices.end());
             }
@@ -119,11 +120,36 @@ namespace blipcade::collision {
         float area = 0.0f;
         size_t n = vertices.size();
         for (size_t i = 0; i < n; ++i) {
-            const Vector2& current = vertices[i];
-            const Vector2& next = vertices[(i + 1) % n];
+            const Vector2 &current = vertices[i];
+            const Vector2 &next = vertices[(i + 1) % n];
             area += (current.x * next.y) - (next.x * current.y);
         }
         return 0.5f * area;
+    }
+
+    bool Collider::checkCollisionPoint(const Vector2 &point) const {
+        switch (type) {
+            case ColliderType::RECTANGLE:
+                return CheckCollisionPointRec(point, Rectangle{
+                                                  vertices[0].x, vertices[0].y, vertices[1].x, vertices[1].y
+                                              });
+            case ColliderType::CIRCLE:
+                return CheckCollisionPointCircle(point, Vector2{vertices[0].x, vertices[0].y}, vertices[1].x);
+            case ColliderType::CONVEX_POLYGON:
+            case ColliderType::CONCAVE_POLYGON:
+                return CheckCollisionPointPoly(point, vertices.data(), vertices.size());
+            case ColliderType::POINT:
+                return CheckCollisionPointRec(point, Rectangle{vertices[0].x, vertices[0].y, 1, 1});
+            case ColliderType::LINE:
+                return CheckCollisionPointLine(point, Vector2{vertices[0].x, vertices[0].y},
+                                               Vector2{vertices[1].x, vertices[1].y}, 1);
+            case ColliderType::RAY:
+                // return CheckCollisionPointRay(point, Vector2{vertices[0].x, vertices[0].y},
+                // Vector2{vertices[1].x, vertices[1].y});
+                return false;
+            default:
+                return false;
+        }
     }
 } // collision
 // blipcade

@@ -2,6 +2,7 @@
 #include <cassert>
 #include <iostream>
 #include <quickjs.hpp>
+#include <nlohmann/json.hpp>
 using namespace quickjs;
 
 namespace blipcade::ecs {
@@ -324,5 +325,82 @@ namespace blipcade::ecs {
             }
         }
         return true; // All required components are present in the entity
+    }
+
+    nlohmann::json ECS::serializeECS() {
+        nlohmann::json json;
+
+        // Serialize component type IDs
+        for (const auto &pair: componentTypeIDs) {
+            json["componentTypeIDs"][pair.first] = pair.second;
+        }
+
+        // Serialize entities
+        for (Entity entity: activeEntities) {
+            json["entities"][entity] = serializeEntity(entity);
+        }
+
+        return json;
+    }
+
+    nlohmann::json ECS::serializeEntity(Entity entity) {
+        nlohmann::json json;
+
+        const auto &entityData = entities[entity];
+
+        // Serialize component mask
+        json["componentMask"] = entityData.componentMask.to_string();
+
+        // Serialize components
+        for (const auto &pair: entityData.components) {
+            const std::string &typeName = getComponentName(pair.first);
+            auto serialized = quickjsValueToJson(pair.second);
+
+            std::cout << "Serialized: " << serialized.dump() << std::endl;
+            json["components"][typeName] = serialized;
+        }
+
+        return json;
+    }
+
+    nlohmann::json ECS::quickjsValueToJson(const quickjs::value &val) {
+        if (val.is_null() || val.is_undefined()) {
+            return nullptr;
+        } else if (val.is_bool()) {
+            return val.as_bool();
+        } else if (val.is_number()) {
+            return val.as_double();
+        } else if (val.is_string()) {
+            return val.as_cstring();
+        } else if (val.is_array()) {
+            nlohmann::json arr = nlohmann::json::array();
+            uint32_t length = val.get_property("length").as_uint32();
+            for (uint32_t i = 0; i < length; ++i) {
+                quickjs::value elem = val.get_property(i);
+                arr.push_back(quickjsValueToJson(elem));
+            }
+            return arr;
+        } else if (val.is_object()) {
+            nlohmann::json obj = nlohmann::json::object();
+            // Get property names
+            quickjs::value Object = val.get_context().get_global_object().get_property("Object");
+            quickjs::value keys = Object.call_member("keys", val);
+            if (!keys.is_array()) {
+                return obj;
+            }
+            uint32_t length = keys.get_property("length").as_uint32();
+            for (uint32_t i = 0; i < length; ++i) {
+                quickjs::value key = keys.get_property(i);
+                if (key.is_string()) {
+                    std::string keyStr = key.as_cstring();
+                    quickjs::value propValue = val.get_property(keyStr.c_str());
+                    obj[keyStr] = quickjsValueToJson(propValue);
+                }
+            }
+            return obj;
+        } else {
+            // Other types (e.g., functions, symbols) are not serializable to JSON
+            return nullptr;
+        }
     }
 }

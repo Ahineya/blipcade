@@ -10,6 +10,8 @@ import {soundSystem} from "./systems/sound.system";
 import {MiasmaParticle, Particle, ParticlesEmitter} from "./particles";
 import {levelSystem} from "./systems/level.system";
 import {particlesSystem} from "./systems/particles.system";
+import {messageSystem, MessageSystem} from "./systems/messageSystem";
+import {interactiveObjectsSystem} from "./systems/interactive-objects.system";
 
 function init() {
     Graphics.setTransparentColor(255);
@@ -26,35 +28,17 @@ function init() {
     state.mouseButtonStates = {};
 
     state.entities = new Entities();
-    levelSystem.loadLevel("level1");
+    levelSystem.loadLevel("level2");
 
-    // TODO: This is not ideal. We should have a separate system for particle emitters
-    // const createMiasmaEmitter = (position) => {
-    //     return new ParticlesEmitter("Miasma Emitter", position, 5, 10, {x: 0, y: 2}, 2, MiasmaParticle);
-    // }
-
-    // particlesSystem.addEmitter(createMiasmaEmitter({x: 261, y: 164}));
-    // particlesSystem.addEmitter(createMiasmaEmitter({x: 302, y: 171}));
-    // particlesSystem.addEmitter(createMiasmaEmitter({x: 239, y: 202}));
-    // particlesSystem.addEmitter(createMiasmaEmitter({x: 66, y: 155}));
-    // particlesSystem.addEmitter(createMiasmaEmitter({x: 91, y: 201}));
-    // particlesSystem.addEmitter(createMiasmaEmitter({x: 66, y: 215}));
-    // particlesSystem.addEmitter(createMiasmaEmitter({x: 16, y: 145}));
-    // particlesSystem.addEmitter(createMiasmaEmitter({x: 320 / 2, y: 200}));
-    // particlesSystem.addEmitter(
-    //     new ParticlesEmitter("Left fire", {
-    //         x: 60,
-    //         y: 60
-    //     }, 50, 2, {x: 1, y: 5}, 0, Particle)
-    // );
 
     state.systems = [
         levelSystem,
         drawSystem,
         movementSystem,
         animationSystem,
-
         particlesSystem,
+        messageSystem,
+        interactiveObjectsSystem,
         lightingSystem,
         soundSystem,
         debugSystem
@@ -171,7 +155,4 @@ function handleMouseClicks() {
             state.mouseButtonStates[button] = 'released';
         }
     }
-
-    // If the left mouse button was just pressed, set the destination
-
 }

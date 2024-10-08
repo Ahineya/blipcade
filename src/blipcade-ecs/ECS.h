@@ -4,6 +4,7 @@
 #include <vector>
 #include <unordered_map>
 #include <cassert>
+#include <nlohmann/json_fwd.hpp>
 
 namespace blipcade::ecs {
     using Entity = std::uint32_t;
@@ -40,6 +41,11 @@ namespace blipcade::ecs {
                            bool reverse);
 
         bool isSubsetOf(const ComponentMask &requiredMask, const ComponentMask &entityMask);
+
+        nlohmann::json serializeECS();
+        nlohmann::json serializeEntity(Entity entity);
+
+        nlohmann::json quickjsValueToJson(const quickjs::value &val);
 
         // Devtool methods
         const std::vector<Entity> &getActiveEntities() const;

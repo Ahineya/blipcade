@@ -65,7 +65,6 @@ namespace blipcade::devtool {
     void Devtool::init() {
         // embraceTheDarkness();
         ImGui::SetupImGuiStyle(true, 0.9);
-
     }
 
     void Devtool::draw() {
@@ -82,9 +81,6 @@ namespace blipcade::devtool {
             if (ImGui::MenuItem("Close", "Ctrl+W")) { active = false; }
             ImGui::EndMenuBar();
         }
-
-
-
 
 
         ImGui::Text("FPS: %f", FPS);
@@ -149,112 +145,122 @@ namespace blipcade::devtool {
         return properties;
     }
 
-void Devtool::RenderECSInspector() const {
-    auto const ecs = runtime.getECS();
-    auto const ctx = runtime.getContext();
-    auto entities = ecs->getActiveEntities();
+    void Devtool::RenderECSInspector() const {
+        auto const ecs = runtime.getECS();
+        auto const ctx = runtime.getContext();
+        auto entities = ecs->getActiveEntities();
 
-    ImGui::Text("Entities: %d", static_cast<int>(entities.size()));
-    ImGui::Separator();
-
-    for (auto entity: entities) {
-        // Retrieve the Tag component
-        auto const tag = ecs->getComponent(entity, "Tag");
-
-        // Check if the entity has a Tag component
-        if (!tag.is_undefined()) {
-            std::string entityTag = tag.as_cstring().c_str();
-
-            // If a filter is set, check if the entity's tag contains the filter string
-            if (!tagFilter.empty()) {
-                // Case-insensitive search
-                std::string lowerEntityTag = entityTag;
-                std::string lowerFilter = tagFilter;
-                std::transform(lowerEntityTag.begin(), lowerEntityTag.end(), lowerEntityTag.begin(), ::tolower);
-                std::transform(lowerFilter.begin(), lowerFilter.end(), lowerFilter.begin(), ::tolower);
-
-                if (lowerEntityTag.find(lowerFilter) == std::string::npos) {
-                    continue; // Skip entities that don't match the filter
-                }
-            }
-
-            ImGui::PushID(entity); // Assuming 'entity' is unique
-            ImGui::Text("Entity: %s", entityTag.c_str());
-        } else {
-            // If no Tag component, handle based on whether a filter is active
-            if (!tagFilter.empty()) {
-                continue; // Skip entities without a Tag if a filter is applied
-            }
-
-            ImGui::PushID(entity); // Assuming 'entity' is unique
-            ImGui::Text("Entity: %d", entity);
+        ImGui::Text("Entities: %d", static_cast<int>(entities.size()));
+        if (ImGui::Button("Serialize")) {
+            auto const serialized = ecs->serializeECS();
+            std::cout << serialized.dump(2) << std::endl;
         }
+        ImGui::Separator();
 
-        ImGui::Indent();
+        for (auto entity: entities) {
+            // Retrieve the Tag component
+            auto const tag = ecs->getComponent(entity, "Tag");
 
-        if (ImGui::TreeNode("Components")) {
-            std::unordered_map<ecs::ComponentTypeID, quickjs::value> components = ecs->getComponents(entity);
-            for (auto [typeID, component]: components) {
-                // Push a unique ID for each component within the entity scope
-                ImGui::PushID(typeID); // Assuming 'typeID' is unique within the entity
+            // Check if the entity has a Tag component
+            if (!tag.is_undefined()) {
+                std::string entityTag = tag.as_cstring().c_str();
 
-                auto const componentName = ecs->getComponentName(typeID);
-                ImGui::Text("Component: %s", componentName.c_str());
+                // If a filter is set, check if the entity's tag contains the filter string
+                if (!tagFilter.empty()) {
+                    // Case-insensitive search
+                    std::string lowerEntityTag = entityTag;
+                    std::string lowerFilter = tagFilter;
+                    std::transform(lowerEntityTag.begin(), lowerEntityTag.end(), lowerEntityTag.begin(), ::tolower);
+                    std::transform(lowerFilter.begin(), lowerFilter.end(), lowerFilter.begin(), ::tolower);
 
-                ImGui::Indent();
-
-                // Retrieve properties using Object.keys
-                std::vector<PropertyPair> properties = getObjectProperties(*ctx, component);
-
-                if (!component.is_object()) {
-                    ImGui::Text("%s", component.as_cstring().c_str());
-                    ImGui::Unindent();
-                    ImGui::PopID(); // Pop component ID
-                    continue;
-                }
-
-                for (const auto &[name, value]: properties) {
-                    if (value.is_object()) {
-                        if (ImGui::TreeNode(name.c_str())) {
-                            drawObjectRecursive(*ctx, name, value);
-                            ImGui::TreePop();
-                        }
-                    } else if (value.is_number()) {
-                        auto v = static_cast<float>(value.as_double());
-
-                        // We want DragFloat to have max width of 100
-                        ImGui::PushID((name + std::to_string(entity)).c_str());
-                        ImGui::Text("%s:", name.c_str());
-                        ImGui::SameLine();
-                        ImGui::PushItemWidth(100);
-                        ImGui::DragFloat("##xx", &v);
-                        ImGui::PopItemWidth();
-                        ImGui::PopID();
-                    } else {
-                        ImGui::Text("%s: %s", name.c_str(), value.as_cstring().c_str());
+                    if (lowerEntityTag.find(lowerFilter) == std::string::npos) {
+                        continue; // Skip entities that don't match the filter
                     }
                 }
 
-                ImGui::Unindent();
-                ImGui::PopID(); // Pop component ID
+                ImGui::PushID(entity); // Assuming 'entity' is unique
+                ImGui::Text("Entity: %s", entityTag.c_str());
+            } else {
+                // If no Tag component, handle based on whether a filter is active
+                if (!tagFilter.empty()) {
+                    continue; // Skip entities without a Tag if a filter is applied
+                }
+
+                ImGui::PushID(entity); // Assuming 'entity' is unique
+                ImGui::Text("Entity: %d", entity);
             }
 
-            ImGui::TreePop();
+            if (ImGui::Button("serialize")) {
+                auto serialized = ecs->serializeEntity(entity);
+                std::cout << serialized.dump(2) << std::endl;
+            }
+
+            ImGui::Indent();
+
+            if (ImGui::TreeNode("Components")) {
+                std::unordered_map<ecs::ComponentTypeID, quickjs::value> components = ecs->getComponents(entity);
+                for (auto [typeID, component]: components) {
+                    // Push a unique ID for each component within the entity scope
+                    ImGui::PushID(typeID); // Assuming 'typeID' is unique within the entity
+
+                    auto const componentName = ecs->getComponentName(typeID);
+                    ImGui::Text("Component: %s", componentName.c_str());
+
+                    ImGui::Indent();
+
+                    // Retrieve properties using Object.keys
+                    std::vector<PropertyPair> properties = getObjectProperties(*ctx, component);
+
+                    if (!component.is_object()) {
+                        ImGui::Text("%s", component.as_cstring().c_str());
+                        ImGui::Unindent();
+                        ImGui::PopID(); // Pop component ID
+                        continue;
+                    }
+
+                    for (const auto &[name, value]: properties) {
+                        if (value.is_object()) {
+                            if (ImGui::TreeNode(name.c_str())) {
+                                drawObjectRecursive(*ctx, name, value);
+                                ImGui::TreePop();
+                            }
+                        } else if (value.is_number()) {
+                            auto v = static_cast<float>(value.as_double());
+
+                            // We want DragFloat to have max width of 100
+                            ImGui::PushID((name + std::to_string(entity)).c_str());
+                            ImGui::Text("%s:", name.c_str());
+                            ImGui::SameLine();
+                            ImGui::PushItemWidth(100);
+                            ImGui::DragFloat("##xx", &v);
+                            ImGui::PopItemWidth();
+                            ImGui::PopID();
+                        } else {
+                            ImGui::Text("%s: %s", name.c_str(), value.as_cstring().c_str());
+                        }
+                    }
+
+                    ImGui::Unindent();
+                    ImGui::PopID(); // Pop component ID
+                }
+
+                ImGui::TreePop();
+            }
+
+            ImGui::Unindent();
+            ImGui::Separator();
+            ImGui::PopID(); // Pop entity ID
         }
-
-        ImGui::Unindent();
-        ImGui::Separator();
-        ImGui::PopID(); // Pop entity ID
     }
-}
 
-    void Devtool::drawObjectRecursive(quickjs::context& ctx, const std::string& prefix, const quickjs::value& object) const {
+    void Devtool::drawObjectRecursive(quickjs::context &ctx, const std::string &prefix,
+                                      const quickjs::value &object) const {
         // Push a unique ID based on the prefix
         ImGui::PushID(prefix.c_str());
 
         std::vector<PropertyPair> properties = getObjectProperties(ctx, object);
 
-        for (const auto& [name, value] : properties) {
+        for (const auto &[name, value]: properties) {
             std::string displayName = prefix.empty() ? name : prefix + "." + name;
 
             if (value.is_object()) {

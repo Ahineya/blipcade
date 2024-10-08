@@ -34,6 +34,8 @@ namespace blipcade {
 
             void bindDrawCircle(quickjs::value &global);
 
+            void bindDrawFilledRectangle(quickjs::value &global);
+
             void bindLightingGlobalObject(quickjs::value &global);
 
             void bindAddLightEffect(quickjs::value &global);
@@ -77,6 +79,8 @@ namespace blipcade {
             void bindCollisionDetectionMethods(quickjs::value &global);
 
             void bindGetCollider(quickjs::value &global);
+
+            void bindCheckCollisionPoint(quickjs::value &global);
 
             void bindPathfindingMethods(quickjs::value &global);
 

@@ -30,6 +30,7 @@ namespace blipcade::runtime {
         bindDrawLine(global);
         bindDrawCircle(global);
         bindDrawFilledCircle(global);
+        bindDrawFilledRectangle(global);
         bindDrawSprite(global);
         bindDrawSpriteEx(global);
 
@@ -355,6 +356,40 @@ namespace blipcade::runtime {
             if (argsCount >= 4) color = a[3].as_int32();
 
             m_runtime.getCanvas()->drawFilledCircle(center_x, center_y, radius, color);
+        });
+    }
+
+    /**
+     *
+     * @function drawFilledRect
+     *
+     * @param {number} x - The x-coordinate of the top-left corner of the rectangle.
+     * @param {number} y - The y-coordinate of the top-left corner of the rectangle.
+     * @param {number} width - The width of the rectangle.
+     * @param {number} height - The height of the rectangle.
+     *
+     * @param {number} color - The color of the rectangle.
+     *
+     * @description Draws a filled rectangle on the canvas.
+     *
+     * @example Graphics.drawFilledRect(100, 100, 50, 50, 0x50); // Draws a filled rectangle with a width and height of 50 at (100, 100) with color 0x50.
+     */
+    void JSBindings::bindDrawFilledRectangle(quickjs::value &global) {
+        auto graphics = global.get_property("Graphics");
+
+        graphics.set_property("drawFilledRect", [this](const quickjs::args &a) {
+            auto argsCount = a.size();
+
+            int32_t x = 0, y = 0, width = 0, height = 0;
+            uint8_t color = 0xfe;
+
+            if (argsCount >= 1) x = a[0].as_int32();
+            if (argsCount >= 2) y = a[1].as_int32();
+            if (argsCount >= 3) width = a[2].as_int32();
+            if (argsCount >= 4) height = a[3].as_int32();
+            if (argsCount >= 5) color = a[4].as_int32();
+
+            m_runtime.getCanvas()->drawFilledRectangleW(x, y, width, height, color);
         });
     }
 
@@ -973,7 +1008,7 @@ namespace blipcade::runtime {
 
         bindGetCollider(global);
         // bindCheckCollision(global);
-        // bindCheckCollisionPoint(global);
+        bindCheckCollisionPoint(global);
         // bindCheckCollisionCircle(global);
         // bindCheckCollisionCircleRec(global);
         // bindCheckCollisionRecs(global);
@@ -1037,6 +1072,45 @@ namespace blipcade::runtime {
             // obj.set_property("triangles", triangles);
 
             return obj;
+        });
+    }
+
+    /**
+     * @function checkCollisionPoint
+     *
+     * @param {number} x - The x-coordinate of the point to check.
+     * @param {number} y - The y-coordinate of the point to check.
+     * @param {number} colliderIndex - The index of the collider to check.
+     *
+     * @description Checks if a point collides with a collider.
+     *
+     * @returns {boolean} - `true` if the point collides with the collider, `false` otherwise.
+     *
+     * @example Collision.checkCollisionPoint(100, 100, 0); // Checks if the point (100, 100) collides with the collider at index 0.
+     */
+    void JSBindings::bindCheckCollisionPoint(quickjs::value &global) {
+        auto collision = global.get_property("Collision");
+
+        collision.set_property("checkCollisionPoint", [this](const quickjs::args &a) -> quickjs::value {
+            std::shared_ptr<quickjs::context> ctx = m_runtime.getContext();
+
+            auto argsCount = a.size();
+
+            if (argsCount < 3) {
+                throw std::runtime_error("checkCollisionPoint: Missing arguments.");
+            }
+
+            auto x = a[0].as_double();
+            auto y = a[1].as_double();
+            auto colliderIndex = a[2].as_int32();
+
+            auto colliders = m_runtime.getColliders();
+            auto collider = colliders->at(colliderIndex);
+
+            auto point = Vector2(x, y);
+            auto result = collider.checkCollisionPoint(point);
+
+            return quickjs::value(*ctx, result);
         });
     }
 

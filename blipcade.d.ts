@@ -51,6 +51,11 @@ declare global {
         function drawFilledCircle(center_x: number, center_y: number, radius: number, color: number): void;
 
         /**
+         * Draws a filled rectangle on the canvas.
+         */
+        function drawFilledRect(x: number, y: number, width: number, height: number, color: number): void;
+
+        /**
          * Draws a circle on the canvas.
          */
         function drawCircle(center_x: number, center_y: number, radius: number, color: number, params: object): void;
@@ -148,6 +153,11 @@ declare global {
          * Gets the collider object at the specified index. It has ['type', 'vertices', 'triangles'] properties.
          */
         function getCollider(index: number): object;
+
+        /**
+         * Checks if a point collides with a collider.
+         */
+        function checkCollisionPoint(x: number, y: number, colliderIndex: number): boolean;
 
     }
 

@@ -1,6 +1,8 @@
 import {RenderLayer} from "./draw.system";
 import {particlesSystem} from "./particles.system";
 import {MiasmaParticle, ParticlesEmitter} from "../particles";
+import {state} from "../state/state";
+import {messageSystem} from "./messageSystem";
 
 // This should not be here
 const createMiasmaEmitter = (position) => {
@@ -54,7 +56,8 @@ const levels = [
             min: 0.2,
             max: 1,
             quarterScreenMin: 1.0
-        }
+        },
+        message: "Am I wandering through a memory or a dream?#Every flower whispers a story I thought I'd forgotten."
     },
     {
         id: "level2",
@@ -79,6 +82,33 @@ const levels = [
                 type: "music",
                 musicId: Sound.loadSound('resources/music-2.wav'),
                 volume: 0.5
+            },
+            {
+                type: "interactive",
+                colliderId: 1,
+                description: "A bookshelf filled with books",
+                action: {
+                    type: "showMessage",
+                    text: "Many times I lost myself in these pages...#But today, they seem to be written in a language#I can't understand."
+                }
+            },
+            {
+                type: "interactive",
+                colliderId: 2,
+                description: "A picture of a man",
+                action: {
+                    type: "showMessage",
+                    text: "I painted Miguel two years ago.#Even though we're no longer together,#I can't bring myself to take his portrait down."
+                }
+            },
+            {
+                type: "interactive",
+                colliderId: 3,
+                description: "A plant",
+                action: {
+                    type: "showMessage",
+                    text: "I brought home this aloe to symbolize my#journey of healing.#Now, its leaves wither and fade."
+                }
             }
         ],
         playerStartPosition: { x: 38, y: 197 },
@@ -88,7 +118,8 @@ const levels = [
             min: 0.2,
             max: 1.5,
             quarterScreenMin: 1.5
-        }
+        },
+        message: "This has always been my sanctuary...#But today, it feels like it's shifting beneath my feet."
     }
 ]
 
@@ -118,7 +149,7 @@ class LevelSystem {
         this.unloadCurrentLevel();
 
         const levelController = ECS.getComponent(this.levelControllerEntity, "LevelController");
-        levelController.currentLevel = levelController.loadLevel;
+        levelController.currentLevel = levelId;
 
         // Here would be nice to have a transition effects
 
@@ -198,11 +229,24 @@ class LevelSystem {
                     });
                 }
             }
+
+            if (obj.type === "interactive") {
+                ECS.addComponent(entity, "InteractiveObject", {
+                    colliderId: obj.colliderId,
+                    description: obj.description,
+                    action: obj.action
+                });
+                ECS.addComponent(entity, "Collider", Collision.getCollider(obj.colliderId));
+                ECS.addComponent(entity, "Visible", true);
+            }
         });
+
+        messageSystem.setMessageText(level.message);
     }
 
     unloadCurrentLevel() {
         particlesSystem.clear();
+        messageSystem.clear();
 
         ECS.forEachEntity([], (entity) => {
             if (ECS.getComponent(entity, "Music")) {

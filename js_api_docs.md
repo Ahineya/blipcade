@@ -13,6 +13,7 @@
    - [Function: putPixel](#function-putpixel)
    - [Function: drawLine](#function-drawline)
    - [Function: drawFilledCircle](#function-drawfilledcircle)
+   - [Function: drawFilledRect](#function-drawfilledrect)
    - [Function: drawCircle](#function-drawcircle)
 - [Namespace: Lighting](#namespace-lighting)
    - [Function: addLightEffect](#function-addlighteffect)
@@ -33,6 +34,7 @@
    - [Function: forEachEntity](#function-foreachentity)
 - [Namespace: Collision](#namespace-collision)
    - [Function: getCollider](#function-getcollider)
+   - [Function: checkCollisionPoint](#function-checkcollisionpoint)
 - [Namespace: Pathfinding](#namespace-pathfinding)
    - [Function: findPath](#function-findpath)
    - [Function: getNavMesh](#function-getnavmesh)
@@ -233,6 +235,26 @@ Graphics.drawLine(0, 0, 100, 100, 0xfe); // Draws a line from (0, 0) to (100, 10
 
 ```javascript
 Graphics.drawFilledCircle(100, 100, 50, 0x50); // Draws a filled circle with a radius of 50 at (100, 100).
+```
+
+---
+#### Function: `drawFilledRect`
+**Description:**    Draws a filled rectangle on the canvas. 
+
+**Parameters (Required):**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `x` | `number` | The x-coordinate of the top-left corner of the rectangle. |
+| `y` | `number` | The y-coordinate of the top-left corner of the rectangle. |
+| `width` | `number` | The width of the rectangle. |
+| `height` | `number` | The height of the rectangle. |
+| `color` | `number` | The color of the rectangle. |
+
+**Example:**
+
+```javascript
+Graphics.drawFilledRect(100, 100, 50, 50, 0x50); // Draws a filled rectangle with a width and height of 50 at (100, 100) with color 0x50.
 ```
 
 ---
@@ -543,6 +565,26 @@ Namespace: `Collision`
 
 ```javascript
 const collider = Collision.getCollider(0); // Gets the collider object at index 0.
+```
+
+---
+#### Function: `checkCollisionPoint`
+**Description:**   Checks if a point collides with a collider.  
+
+**Parameters (Required):**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `x` | `number` | The x-coordinate of the point to check. |
+| `y` | `number` | The y-coordinate of the point to check. |
+| `colliderIndex` | `number` | The index of the collider to check. |
+
+**Returns:** {boolean} - `true` if the point collides with the collider, `false` otherwise.
+
+**Example:**
+
+```javascript
+Collision.checkCollisionPoint(100, 100, 0); // Checks if the point (100, 100) collides with the collider at index 0.
 ```
 
 ---

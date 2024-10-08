@@ -80,18 +80,6 @@ export class Entities {
             frameTime: 0,
             frameDuration: 700,
         });
-
-        // ECS.addComponent(player, "Collider", playerCollider);
-        //
-        // for (let i = 1; i < 2; i++) {
-        //     const wall = ECS.createEntity();
-        //     const wallCollider = Collision.getCollider(i);
-        //     ECS.addComponent(wall, "Collider", wallCollider);
-        //     ECS.addComponent(wall, "Visible", true);
-        //     ECS.addComponent(wall, "Persistent", {});
-        // }
-
-
     }
 
     update(deltaTime) {

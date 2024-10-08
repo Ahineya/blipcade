@@ -1,5 +1,4 @@
 import {state} from "./state/state";
-import {PICO8_COLORS} from "../celeste/colors";
 import {Entities} from "./entities";
 import {movementSystem} from "./systems/movement.system";
 import {debugSystem} from "./systems/debug.system";
@@ -7,10 +6,9 @@ import {drawSystem} from "./systems/draw.system";
 import {animationSystem} from "./systems/animation.system";
 import {lightingSystem} from "./systems/lighting.system";
 import {soundSystem} from "./systems/sound.system";
-import {MiasmaParticle, Particle, ParticlesEmitter} from "./particles";
 import {levelSystem} from "./systems/level.system";
 import {particlesSystem} from "./systems/particles.system";
-import {messageSystem, MessageSystem} from "./systems/messageSystem";
+import {messageSystem} from "./systems/messageSystem";
 import {interactiveObjectsSystem} from "./systems/interactive-objects.system";
 
 function init() {
@@ -29,7 +27,6 @@ function init() {
 
     state.entities = new Entities();
     levelSystem.loadLevel("level2");
-
 
     state.systems = [
         levelSystem,
@@ -104,11 +101,12 @@ function updateKeyStates() {
     });
 
     // Example for updating a specific key (e.g., Left arrow key with key code 1)
-    updateSingleKeyState(1, Input.isKeyPressed(1));
-    updateSingleKeyState(2, Input.isKeyPressed(2));
-    updateSingleKeyState(4, Input.isKeyPressed(4));
-    updateSingleKeyState(8, Input.isKeyPressed(8));
-    updateSingleKeyState(32, Input.isKeyPressed(32)); // Space key
+    updateSingleKeyState(1 << 0, Input.isKeyPressed(1));
+    updateSingleKeyState(1 << 1, Input.isKeyPressed(2));
+    updateSingleKeyState(1 << 2, Input.isKeyPressed(4));
+    updateSingleKeyState(1 << 3, Input.isKeyPressed(8));
+    updateSingleKeyState(1 << 4, Input.isKeyPressed(16));
+    updateSingleKeyState(1 << 5, Input.isKeyPressed(32));
 }
 
 function updateSingleKeyState(keyCode, isPressed) {

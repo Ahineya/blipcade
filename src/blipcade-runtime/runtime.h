@@ -100,7 +100,7 @@ namespace blipcade::runtime {
 
         [[nodiscard]] std::shared_ptr<graphics::Font> getFont() const;
 
-        [[nodiscard]] std::shared_ptr<std::vector<graphics::Spritesheet>> getSpritesheets() const;
+        [[nodiscard]] std::shared_ptr<std::unordered_map<std::string, graphics::Spritesheet>> getSpritesheets() const;
 
         [[nodiscard]] std::shared_ptr<audio::Audio> getAudio() const;
 
@@ -119,7 +119,7 @@ namespace blipcade::runtime {
         std::shared_ptr<Cartridge> cartridge;
 
         std::shared_ptr<graphics::Canvas> canvas;
-        std::shared_ptr<std::vector<graphics::Spritesheet>> spritesheets;
+        std::shared_ptr<std::unordered_map<std::string, graphics::Spritesheet>> spritesheets;
         std::shared_ptr<std::vector<collision::Collider>> colliders;
         std::shared_ptr<std::vector<collision::NavMesh>> navmeshes;
         std::shared_ptr<std::string> code;

@@ -1,1 +1,335 @@
-{}
+{
+  "componentTypeIDs": {
+    "Animation": 9,
+    "Collider": 13,
+    "InteractiveObject": 12,
+    "LevelController": 4,
+    "Light": 11,
+    "Message": 0,
+    "Music": 10,
+    "ParticleEmitter": 15,
+    "Persistent": 3,
+    "Player": 5,
+    "PlayerScale": 6,
+    "Render": 8,
+    "Sound": 2,
+    "Sprite": 7,
+    "Tag": 1,
+    "Visible": 14
+  },
+  "entities": [
+    {
+      "componentMask": "1111",
+      "components": {
+        "Message": {
+          "display": "typed",
+          "index": 92.0,
+          "last": 92.0,
+          "off": {
+            "x": 8.0,
+            "y": 96.0
+          },
+          "text": "This has always been my sanctuary...#But today, it feels like it's shifting beneath my feet.",
+          "tile": 86.0,
+          "x": 20.0,
+          "y": 200.0
+        },
+        "Persistent": {},
+        "Sound": {
+          "sounds": {
+            "hit": {
+              "isPlaying": false,
+              "isStopping": false,
+              "soundId": 0.0,
+              "volume": 0.5
+            }
+          }
+        },
+        "Tag": "Message"
+      }
+    },
+    {
+      "componentMask": "1011",
+      "components": {
+        "Message": {
+          "display": "immediate",
+          "index": 0.0,
+          "last": 0.0,
+          "off": {
+            "x": 8.0,
+            "y": 96.0
+          },
+          "text": "A bookshelf filled with books",
+          "tile": 86.0,
+          "x": 20.0,
+          "y": 20.0
+        },
+        "Persistent": {},
+        "Tag": "Tooltip"
+      }
+    },
+    {
+      "componentMask": "11000",
+      "components": {
+        "LevelController": {
+          "currentLevel": "level2",
+          "loadLevel": null
+        },
+        "Persistent": {}
+      }
+    },
+    {
+      "componentMask": "1111101110",
+      "components": {
+        "Animation": {
+          "animations": {
+            "idle": [
+              0.0,
+              1.0
+            ],
+            "walk": [
+              0.0,
+              1.0
+            ]
+          },
+          "currentAnimation": "idle",
+          "currentFrame": 0.0,
+          "frameDuration": 700.0,
+          "frameTime": 266.6666666666667,
+          "spritesheets": {
+            "idle": 2.0,
+            "walk": 3.0
+          }
+        },
+        "Persistent": {},
+        "Player": {
+          "acceleration": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "currentPathIndex": 0.0,
+          "navMeshIndex": 1.0,
+          "path": [],
+          "position": {
+            "x": 38.0,
+            "y": 197.0
+          },
+          "velocity": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        },
+        "PlayerScale": {
+          "max": 1.5,
+          "min": 0.2,
+          "quarterScreenMin": 1.5
+        },
+        "Render": {
+          "layer": 2.0
+        },
+        "Sound": {
+          "sounds": {
+            "walk": {
+              "isPlaying": false,
+              "isStopping": false,
+              "soundId": 3.0,
+              "volume": 1.0
+            }
+          }
+        },
+        "Sprite": {
+          "flipX": false,
+          "origin": {
+            "x": 0.5,
+            "y": 0.8
+          },
+          "position": {
+            "x": 38.0,
+            "y": 197.0
+          },
+          "size": {
+            "height": 54.0,
+            "width": 26.0
+          },
+          "spriteIndex": 0.0,
+          "spriteSheet": 2.0
+        },
+        "Tag": "Player"
+      }
+    },
+    {
+      "componentMask": "110000010",
+      "components": {
+        "Render": {
+          "layer": 1.0
+        },
+        "Sprite": {
+          "flipX": false,
+          "origin": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "position": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "size": {
+            "height": 200.0,
+            "width": 320.0
+          },
+          "spriteIndex": 0.0,
+          "spriteSheet": 5.0
+        },
+        "Tag": "Background"
+      }
+    },
+    {
+      "componentMask": "110000000",
+      "components": {
+        "Render": {
+          "layer": 2.0
+        },
+        "Sprite": {
+          "flipX": false,
+          "origin": {
+            "x": 0.5,
+            "y": 0.85
+          },
+          "position": {
+            "x": 161.0,
+            "y": 206.0
+          },
+          "size": {
+            "height": 118.0,
+            "width": 159.0
+          },
+          "spriteIndex": 0.0,
+          "spriteSheet": 6.0
+        }
+      }
+    },
+    {
+      "componentMask": "10000000000",
+      "components": {
+        "Music": {
+          "musicId": 2.0
+        }
+      }
+    },
+    {
+      "componentMask": "111000000000000",
+      "components": {
+        "Collider": {
+          "type": 2.0,
+          "vertices": [
+            {
+              "x": 253.0,
+              "y": 80.0
+            },
+            {
+              "x": 254.0,
+              "y": 152.0
+            },
+            {
+              "x": 211.0,
+              "y": 152.0
+            },
+            {
+              "x": 210.0,
+              "y": 82.0
+            }
+          ]
+        },
+        "InteractiveObject": {
+          "action": {
+            "text": "Many times I lost myself in these pages...#But today, they seem to be written in a language#I can't understand.",
+            "type": "showMessage"
+          },
+          "colliderId": 1.0,
+          "description": "A bookshelf filled with books"
+        },
+        "Visible": true
+      }
+    },
+    {
+      "componentMask": "111000000000000",
+      "components": {
+        "Collider": {
+          "type": 2.0,
+          "vertices": [
+            {
+              "x": 100.0,
+              "y": 54.0
+            },
+            {
+              "x": 101.0,
+              "y": 121.0
+            },
+            {
+              "x": 68.0,
+              "y": 121.0
+            },
+            {
+              "x": 68.0,
+              "y": 54.0
+            }
+          ]
+        },
+        "InteractiveObject": {
+          "action": {
+            "text": "I painted Miguel two years ago.#Even though we're no longer together,#I can't bring myself to take his portrait down.",
+            "type": "showMessage"
+          },
+          "colliderId": 2.0,
+          "description": "A picture of a man"
+        },
+        "Visible": true
+      }
+    },
+    {
+      "componentMask": "111000000000000",
+      "components": {
+        "Collider": {
+          "type": 2.0,
+          "vertices": [
+            {
+              "x": 102.0,
+              "y": 128.0
+            },
+            {
+              "x": 103.0,
+              "y": 156.0
+            },
+            {
+              "x": 79.0,
+              "y": 156.0
+            },
+            {
+              "x": 78.0,
+              "y": 127.0
+            }
+          ]
+        },
+        "InteractiveObject": {
+          "action": {
+            "text": "I brought home this aloe to symbolize my#journey of healing.#Now, its leaves wither and fade.",
+            "type": "showMessage"
+          },
+          "colliderId": 3.0,
+          "description": "A plant"
+        },
+        "Visible": true
+      }
+    },
+    {
+      "componentMask": "100000000000",
+      "components": {
+        "Light": {
+          "color": 16119218.0,
+          "intensity": 0.48726045918358135,
+          "name": "sunlight"
+        }
+      }
+    }
+  ]
+}

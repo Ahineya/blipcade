@@ -34,7 +34,7 @@ namespace blipcade::runtime {
                                                        canvasWidth(width), canvasHeight(height), audio(nullptr),
                                                        navmeshes(nullptr) {
         canvas = std::make_shared<graphics::Canvas>(canvasWidth, canvasHeight); // TODO: make this configurable
-        spritesheets = std::make_shared<std::vector<graphics::Spritesheet> >();
+        spritesheets = std::make_shared<std::unordered_map<std::string, graphics::Spritesheet> >();
         colliders = std::make_shared<std::vector<collision::Collider> >();
         navmeshes = std::make_shared<std::vector<collision::NavMesh> >();
         audio = std::make_shared<audio::Audio>();
@@ -78,9 +78,9 @@ namespace blipcade::runtime {
 
         const auto spritesheets = cart->getSpritesheets();
         for (const auto &spritesheet: spritesheets) {
-            this->spritesheets->push_back(spritesheet);
+            // this->spritesheets->push_back(spritesheet);
+            this->spritesheets->insert(spritesheet);
         }
-
 
         const auto colliders = cart->getColliders();
         for (const auto &collider: colliders) {
@@ -108,7 +108,7 @@ namespace blipcade::runtime {
         return context;
     }
 
-    std::shared_ptr<std::vector<graphics::Spritesheet> > Runtime::getSpritesheets() const {
+    std::shared_ptr<std::unordered_map<std::string, graphics::Spritesheet> > Runtime::getSpritesheets() const {
         return spritesheets;
     }
 

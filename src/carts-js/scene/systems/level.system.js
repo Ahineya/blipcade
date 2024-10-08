@@ -151,8 +151,6 @@ class LevelSystem {
         const levelController = ECS.getComponent(this.levelControllerEntity, "LevelController");
         levelController.currentLevel = levelId;
 
-        // Here would be nice to have a transition effects
-
         this.loadLevelObjects(levelId);
     }
 

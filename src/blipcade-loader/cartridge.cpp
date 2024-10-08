@@ -9,10 +9,12 @@
 #include <spritesheet.h>
 #include <nlohmann/json.hpp>
 
+
+
 namespace blipcade {
     Cartridge::Cartridge(
     std::string code,
-    std::vector<graphics::Spritesheet> spritesheets,
+    std::unordered_map<std::string, graphics::Spritesheet> spritesheets,
     std::vector<collision::Collider> colliders,
     std::vector<collision::NavMesh> navmeshes
 )
@@ -29,7 +31,9 @@ namespace blipcade {
         nlohmann::json json = nlohmann::json::parse(cartJson);
 
         // Parse spritesheets
-        std::vector<graphics::Spritesheet> spritesheets;
+        std::unordered_map<std::string, graphics::Spritesheet> spritesheets;
+
+        auto int i = 0;
 
         // TODO: move this crap to Spritesheet::fromJson
         for (const auto &spritesheetJson : json["spritesheets"]) {
@@ -50,7 +54,9 @@ namespace blipcade {
                 spriteData.push_back(spriteJson["flags"].get<uint32_t>());
             }
 
-            spritesheets.push_back(graphics::Spritesheet::fromData(parsedBytes, spriteData, width, height));
+            // spritesheets.push_back(graphics::Spritesheet::fromData(parsedBytes, spriteData, width, height));
+            spritesheets.insert({std::to_string(i), graphics::Spritesheet::fromData(parsedBytes, spriteData, width, height)});
+            i++;
         }
 
         std::vector<collision::Collider> colliders;
@@ -75,7 +81,7 @@ namespace blipcade {
         return Cartridge(json["code"].get<std::string>(), spritesheets, colliders, navmeshes);
     }
 
-    const std::vector<graphics::Spritesheet> &Cartridge::getSpritesheets() {
+    const std::unordered_map<std::string, graphics::Spritesheet> &Cartridge::getSpritesheets() {
         return spritesheets;
     }
 
@@ -88,6 +94,7 @@ namespace blipcade {
     }
 
     graphics::Spritesheet &Cartridge::getSpritesheet(uint32_t index) {
-        return spritesheets[index];
+        // return spritesheets[std::to_string(index)];
+        return spritesheets.at(std::to_string(index));
     }
 } // blipcade

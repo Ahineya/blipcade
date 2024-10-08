@@ -6,6 +6,7 @@
 #define SPRITESHEET_H
 #include <cstdint>
 #include <raylib.h>
+#include <unordered_map>
 #include <vector>
 
 namespace blipcade::graphics {
@@ -33,6 +34,8 @@ namespace blipcade::graphics {
 
         std::vector<uint8_t> pixelBuffer{};
         std::vector<Sprite> sprites;
+
+        // std::unordered_map<std::string,
 
         friend std::ostream& operator<<(std::ostream& os, const Spritesheet& spritesheet);
 

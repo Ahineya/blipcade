@@ -16,7 +16,7 @@ namespace blipcade::graphics {
 namespace blipcade {
     class Cartridge {
     public:
-        Cartridge(std::string code, std::vector<graphics::Spritesheet> spritesheets,
+        Cartridge(std::string code, std::unordered_map<std::string, graphics::Spritesheet> spritesheets,
               std::vector<collision::Collider> colliders, std::vector<collision::NavMesh> navmeshes);
 
         // Delete copy constructor and copy assignment to prevent accidental copying
@@ -35,7 +35,7 @@ namespace blipcade {
             return code;
         }
 
-        [[nodiscard]] const std::vector<graphics::Spritesheet> &getSpritesheets();
+        [[nodiscard]] const std::unordered_map<std::string, graphics::Spritesheet> &getSpritesheets();
 
         const std::vector<collision::Collider> &getColliders();
 
@@ -45,7 +45,7 @@ namespace blipcade {
 
     private:
         std::string code;
-        std::vector<graphics::Spritesheet> spritesheets;
+        std::unordered_map<std::string, graphics::Spritesheet> spritesheets;
         std::vector<collision::Collider> colliders;
         std::vector<collision::NavMesh> navmeshes;
     };

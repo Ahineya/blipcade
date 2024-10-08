@@ -203,7 +203,7 @@ namespace blipcade::runtime {
                 throw std::runtime_error("drawSprite: Invalid sprite sheet index."); // TODO: Throw js error, li
             }
 
-            const auto spritesheet = spritesheets->at(spriteSheetIndex);
+            const auto spritesheet = spritesheets->at(std::to_string(spriteSheetIndex));
 
             m_runtime.getCanvas()->drawSprite(x, y, flipX, flipY, spritesheet, spriteIndex);
         });
@@ -262,7 +262,7 @@ namespace blipcade::runtime {
                 throw std::runtime_error("drawSprite: Invalid sprite sheet index."); // TODO: Throw js error, li
             }
 
-            const auto spritesheet = spritesheets->at(spriteSheetIndex);
+            const auto spritesheet = spritesheets->at(std::to_string(spriteSheetIndex));
 
             m_runtime.getCanvas()->drawSpriteEx(x, y, flipX, flipY, scale, originX, originY, spritesheet, spriteIndex);
         });

@@ -1766,7 +1766,6 @@ namespace quickjs
 			},
 			nullptr
 		};
-		std::unique_ptr<JSRuntime, decltype(&JS_FreeRuntime)> rt_;
 		detail::owner<context> contexts_;
 
 		struct inst_ref
@@ -1839,6 +1838,8 @@ namespace quickjs
 		}
 
 	public:
+		std::unique_ptr<JSRuntime, decltype(&JS_FreeRuntime)> rt_;
+
 		runtime(const runtime&) = delete;
 		runtime(runtime&&) = delete;
 		runtime& operator=(const runtime&) = delete;

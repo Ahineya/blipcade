@@ -1,4 +1,4 @@
-import {RenderLayer} from "./systems/draw.system";
+import {RenderLayer} from "./systems/draw.system.js";
 
 export class Entities {
     constructor() {

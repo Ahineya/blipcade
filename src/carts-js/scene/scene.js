@@ -1,17 +1,17 @@
-import {state} from "./state/state";
-import {Entities} from "./entities";
-import {movementSystem} from "./systems/movement.system";
-import {debugSystem} from "./systems/debug.system";
-import {drawSystem} from "./systems/draw.system";
-import {animationSystem} from "./systems/animation.system";
-import {lightingSystem} from "./systems/lighting.system";
-import {soundSystem} from "./systems/sound.system";
-import {levelSystem} from "./systems/level.system";
-import {particlesSystem} from "./systems/particles.system";
-import {messageSystem} from "./systems/messageSystem";
-import {interactiveObjectsSystem} from "./systems/interactive-objects.system";
+import {state} from "./state/state.js";
+import {Entities} from "./entities.js";
+import {movementSystem} from "./systems/movement.system.js";
+import {debugSystem} from "./systems/debug.system.js";
+import {drawSystem} from "./systems/draw.system.js";
+import {animationSystem} from "./systems/animation.system.js";
+import {lightingSystem} from "./systems/lighting.system.js";
+import {soundSystem} from "./systems/sound.system.js";
+import {levelSystem} from "./systems/level.system.js";
+import {particlesSystem} from "./systems/particles.system.js";
+import {messageSystem} from "./systems/messageSystem.js";
+import {interactiveObjectsSystem} from "./systems/interactive-objects.system.js";
 
-function init() {
+export function init() {
     Graphics.setTransparentColor(255);
 
     state.SPRITES = {
@@ -46,7 +46,7 @@ function init() {
     })
 }
 
-function update() {
+export function update() {
     const currentTime = Date.now();
     const elapsed = currentTime - state.lastUpdateTime;
 
@@ -68,7 +68,7 @@ function update() {
     })
 }
 
-function draw() {
+export function draw() {
     const currentTime = Date.now();
     const elapsed = currentTime - state.lastDrawTime;
     Graphics.fillScreen(0);
@@ -87,9 +87,9 @@ function draw() {
     Graphics.drawSprite(mousePos.x, mousePos.y, state.SPRITES.CURSOR, false, false);
 }
 
-globalThis.draw = draw;
-globalThis.update = update;
-globalThis.init = init;
+// globalThis.draw = draw;
+// globalThis.update = update;
+// globalThis.init = init;
 
 function updateKeyStates() {
     Object.keys(state.keyStates).forEach(key => {

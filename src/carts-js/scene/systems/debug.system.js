@@ -1,6 +1,6 @@
-import {getScale} from "./movement.system";
-import {state} from "../state/state";
-import {PICO8_COLORS} from "../../celeste/colors";
+import {getScale} from "./movement.system.js";
+import {state} from "../state/state.js";
+import {PICO8_COLORS} from "../../celeste/colors.js";
 
 class DebugSystem {
     constructor() {

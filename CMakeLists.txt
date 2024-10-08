@@ -132,7 +132,7 @@ add_custom_command(
 
 # Add a custom target that depends on the generated header
 add_custom_target(generate_data_header DEPENDS "${GENERATED_HEADER}")
-add_dependencies(generate_data_header build_carts)
+#add_dependencies(generate_data_header build_carts)
 
 # Add QuickJS source files
 set(QUICKJS_SOURCES
@@ -140,6 +140,8 @@ set(QUICKJS_SOURCES
         external/quickjs-patched/quickjs.c
         external/quickjs-patched/libregexp.c
         external/quickjs-patched/libunicode.c
+        external/quickjs-patched/cutils.c
+        external/quickjs-patched/quickjs-libc.c
         external/quickjs-patched/cutils.c
 )
 

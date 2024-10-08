@@ -1,5 +1,5 @@
-import {getScale} from "./movement.system";
-import {MiasmaParticle, Particle} from "../particles";
+import {getScale} from "./movement.system.js";
+import {MiasmaParticle, Particle} from "../particles.js";
 
 export const RenderLayer = {
     Background: 1,

@@ -1,5 +1,5 @@
-import {state} from "../state/state";
-import {messageSystem} from "./messageSystem";
+import {state} from "../state/state.js";
+import {messageSystem} from "./messageSystem.js";
 
 class InteractiveObjectsSystem {
     update() {

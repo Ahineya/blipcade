@@ -1,8 +1,8 @@
-import {RenderLayer} from "./draw.system";
-import {particlesSystem} from "./particles.system";
-import {MiasmaParticle, ParticlesEmitter} from "../particles";
-import {state} from "../state/state";
-import {messageSystem} from "./messageSystem";
+import {RenderLayer} from "./draw.system.js";
+import {particlesSystem} from "./particles.system.js";
+import {MiasmaParticle, ParticlesEmitter} from "../particles.js";
+import {state} from "../state/state.js";
+import {messageSystem} from "./messageSystem.js";
 
 // This should not be here
 const createMiasmaEmitter = (position) => {

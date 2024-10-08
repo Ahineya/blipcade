@@ -1,5 +1,5 @@
-import {state} from "../state/state";
-import {levelSystem} from "./level.system";
+import {state} from "../state/state.js";
+import {levelSystem} from "./level.system.js";
 const PLAYER_SPEED = 30; // pixels per second
 const WIDTH = 320;
 const HEIGHT = 240;

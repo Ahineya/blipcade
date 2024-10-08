@@ -44,6 +44,23 @@ namespace blipcade::graphics {
 }
 
 namespace blipcade::runtime {
+    typedef struct {
+        char *name;
+        char *short_name;
+        int flags;
+    } namelist_entry_t;
+
+    typedef struct namelist_t {
+        namelist_entry_t *array;
+        int count;
+        int size;
+    } namelist_t;
+
+    static void find_unique_cname(char *cname, size_t cname_size);
+    namelist_entry_t *namelist_find(namelist_t *lp, const char *name);
+    JSModuleDef *jsc_module_loader(JSContext *ctx,
+                                   const char *module_name, void *opaque);
+
     class JSBindings;
     class Keystate;
 

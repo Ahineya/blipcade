@@ -7,6 +7,7 @@
    - [Function: text](#function-text)
 - [Namespace: Blip](#namespace-blip)
    - [Function: loadSpritesheet](#function-loadspritesheet)
+   - [Function: loadNavmesh](#function-loadnavmesh)
 - [Namespace: Graphics](#namespace-graphics)
    - [Function: setTransparentColor](#function-settransparentcolor)
    - [Function: fillScreen](#function-fillscreen)
@@ -109,6 +110,22 @@ Namespace: `Blip`
 
 ```javascript
 Blip.loadSpritesheet("res://assets/spritesheet.png");
+```
+
+---
+#### Function: `loadNavmesh`
+**Description:** Loads a navmesh from a file. 
+
+**Parameters (Required):**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `path` | `string` | The path to the navmesh. |
+
+**Example:**
+
+```javascript
+Blip.loadNavmesh("res://assets/navmesh.json");
 ```
 
 ---

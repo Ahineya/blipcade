@@ -126,6 +126,7 @@ namespace blipcade::runtime {
         createNamespace(global, "Blip");
 
         bindLoadSpritesheet(global);
+        bindLoadNavmesh(global);
     }
 
     /**
@@ -156,6 +157,37 @@ namespace blipcade::runtime {
             auto spritesheet = graphics::Spritesheet::fromResource(path, m_runtime.getProject()->getDirectory());
 
             spritesheets->insert({path, spritesheet});
+        });
+    }
+
+    /**
+     * @function loadNavmesh
+     * @param {string} path - The path to the navmesh.
+     * @description Loads a navmesh from a file.
+     *
+     * @example Blip.loadNavmesh("res://assets/navmesh.json");
+     */
+    void JSBindings::bindLoadNavmesh(quickjs::value &global) {
+        auto blip = global.get_property("Blip");
+
+        blip.set_property("loadNavmesh", [this](const quickjs::args &a) {
+            auto argsCount = a.size();
+
+            if (argsCount < 1) {
+                throw std::runtime_error("loadNavmesh: Missing argument.");
+            }
+
+            std::string path = a[0].as_cstring().c_str();
+
+            auto navmeshes = m_runtime.getNavmeshes();
+
+            if (navmeshes->find(path) != navmeshes->end()) {
+                return;
+            }
+
+            auto navmesh = collision::NavMesh::fromResource(path, m_runtime.getProject()->getDirectory());
+
+            navmeshes->insert({path, navmesh});
         });
     }
 
@@ -1207,9 +1239,18 @@ namespace blipcade::runtime {
             auto startY = a[1].as_int32();
             auto endX = a[2].as_int32();
             auto endY = a[3].as_int32();
-            auto navigationMeshId = a[4].as_int32();
+            auto navigationMeshId = a[4].as_cstring().c_str();
 
-            auto navMesh = m_runtime.getNavmeshes()->at(navigationMeshId);
+            auto navmeshes = m_runtime.getNavmeshes();
+
+            if (navmeshes->find(navigationMeshId) == navmeshes->end()) {
+                // throw std::runtime_error("findPath: Navigation mesh not found.");
+                std::cout << "findPath: Loading navmesh from resource: " << navigationMeshId << std::endl;
+                auto nm = collision::NavMesh::fromResource(navigationMeshId, m_runtime.getProject()->getDirectory());
+                m_runtime.getNavmeshes()->insert({navigationMeshId, nm});
+            }
+
+            auto navMesh = navmeshes->at(navigationMeshId);
 
             auto path = collision::Pathfinding::pathfind(startX, startY, endX, endY, navMesh, true);
 
@@ -1251,7 +1292,7 @@ namespace blipcade::runtime {
             }
 
             auto navMeshes = m_runtime.getNavmeshes();
-            auto const navMeshId = a[0].as_int32();
+            auto const navMeshId = a[0].as_cstring();
             auto const navMesh = navMeshes->at(navMeshId);
 
             auto const regions = navMesh.regions;

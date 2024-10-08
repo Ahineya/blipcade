@@ -112,7 +112,7 @@ namespace blipcade::runtime {
 
         [[nodiscard]] std::shared_ptr<std::vector<collision::Collider>> getColliders() const;
 
-        [[nodiscard]] std::shared_ptr<std::vector<collision::NavMesh>> getNavmeshes() const;
+        [[nodiscard]] std::shared_ptr<std::unordered_map<std::string, collision::NavMesh>> getNavmeshes() const;
 
         [[nodiscard]] std::shared_ptr<ecs::ECS> getECS() const;
 
@@ -130,7 +130,7 @@ namespace blipcade::runtime {
         std::shared_ptr<graphics::Canvas> canvas;
         std::shared_ptr<std::unordered_map<std::string, graphics::Spritesheet>> spritesheets;
         std::shared_ptr<std::vector<collision::Collider>> colliders;
-        std::shared_ptr<std::vector<collision::NavMesh>> navmeshes;
+        std::shared_ptr<std::unordered_map<std::string, collision::NavMesh>> navmeshes;
         std::shared_ptr<std::string> code;
         std::shared_ptr<Keystate> key_flags;
         std::shared_ptr<Mousestate> mouse_state;

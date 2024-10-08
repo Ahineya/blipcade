@@ -79,6 +79,7 @@ namespace blipcade::collision {
 
 
         static NavMesh fromJson(const nlohmann::json &j);
+        static NavMesh fromResource(const std::string &resourcePath, const std::string &projectDir);
 
     private:
         std::vector<std::pair<Vector2, Vector2> > outline;

@@ -4,6 +4,7 @@
 
 #include "navmesh.h"
 
+#include <fstream>
 #include <raymath.h>
 #include <unordered_set>
 #include <nlohmann/json.hpp>
@@ -297,4 +298,19 @@ namespace blipcade::collision {
 
         return navMesh;
     }
+
+    NavMesh NavMesh::fromResource(const std::string &resourcePath, const std::string &projectDir) {
+        std::cout << "Loading navmesh from resource: " << resourcePath << "\n";
+
+        const auto path = resourcePath.substr(6);
+
+        std::filesystem::path fullPath = std::filesystem::path(projectDir) / path;
+        nlohmann::json navmeshJson;
+
+        std::ifstream navmeshStream(fullPath.lexically_normal());
+        navmeshStream >> navmeshJson;
+
+        return fromJson(navmeshJson);
+    }
+
 }

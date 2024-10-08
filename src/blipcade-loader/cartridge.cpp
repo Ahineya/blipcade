@@ -16,7 +16,7 @@ namespace blipcade {
     std::string code,
     std::unordered_map<std::string, graphics::Spritesheet> spritesheets,
     std::vector<collision::Collider> colliders,
-    std::vector<collision::NavMesh> navmeshes
+    std::unordered_map<std::string, collision::NavMesh> navmeshes
 )
     : code(std::move(code)),
       spritesheets(std::move(spritesheets)),
@@ -68,9 +68,13 @@ namespace blipcade {
         std::cout << "AFTER COLLIDERS" << std::endl;
 
         std::cout << "BEFORE NAVMESHES" << std::endl;
-        std::vector<collision::NavMesh> navmeshes; // Want to create navmeshes here
+        std::unordered_map<std::string, collision::NavMesh> navmeshes; // Want to create navmeshes here
+        i = 0;
+
         for (const auto& navmeshJson : json["navmeshes"]) {
-            navmeshes.push_back(collision::NavMesh::fromJson(navmeshJson));
+            // navmeshes.push_back(collision::NavMesh::fromJson(navmeshJson));
+            navmeshes.insert({std::to_string(i), collision::NavMesh::fromJson(navmeshJson)});
+            i++;
         }
 
         // Log how many navmeshes are in the cartridge
@@ -89,7 +93,7 @@ namespace blipcade {
         return colliders;
     }
 
-    const std::vector<collision::NavMesh> &Cartridge::getNavmeshes() {
+    const std::unordered_map<std::string, collision::NavMesh> &Cartridge::getNavmeshes() {
         return navmeshes;
     }
 

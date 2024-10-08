@@ -26,6 +26,8 @@ namespace blipcade {
 
             void bindLoadSpritesheet(quickjs::value &global);
 
+            void bindLoadNavmesh(quickjs::value &global);
+
             void bindGraphicsGlobalObject(quickjs::value &global);
 
             void bindFillScreen(quickjs::value &global);

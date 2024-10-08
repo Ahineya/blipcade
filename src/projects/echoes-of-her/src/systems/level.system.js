@@ -51,7 +51,7 @@ const levels = [
         ],
         playerStartPosition: { x: 112, y: 167 },
         playerFacing: "right",
-        playerNavMeshIndex: 0,
+        playerNavMeshIndex: "res://navmeshes/level1.json",
         playerScale: {
             min: 0.2,
             max: 1,
@@ -113,7 +113,7 @@ const levels = [
         ],
         playerStartPosition: { x: 38, y: 197 },
         playerFacing: "right",
-        playerNavMeshIndex: 1,
+        playerNavMeshIndex: "res://navmeshes/level2.json",
         playerScale: {
             min: 0.2,
             max: 1.5,

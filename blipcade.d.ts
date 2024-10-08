@@ -20,6 +20,11 @@ declare global {
          */
         function loadSpritesheet(path: string): void;
 
+        /**
+         * Loads a navmesh from a file.
+         */
+        function loadNavmesh(path: string): void;
+
     }
 
     namespace Graphics {

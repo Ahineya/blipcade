@@ -598,14 +598,14 @@ Namespace: `Collision`
 
 | Name | Type | Description |
 |------|------|-------------|
-| `index` | `number` | The index of the collider to get. |
+| `resourcePath` | `string` | The path of the resource of the collider to get. |
 
 **Returns:** {object} - The collider object. It has ['type', 'vertices', 'triangles'] properties.
 
 **Example:**
 
 ```javascript
-const collider = Collision.getCollider(0); // Gets the collider object at index 0.
+const collider = Collision.getCollider("res://colliders/collider.json"); // Gets the collider object at index 0.
 ```
 
 ---
@@ -618,7 +618,7 @@ const collider = Collision.getCollider(0); // Gets the collider object at index 
 |------|------|-------------|
 | `x` | `number` | The x-coordinate of the point to check. |
 | `y` | `number` | The y-coordinate of the point to check. |
-| `colliderIndex` | `number` | The index of the collider to check. |
+| `resourcePath` | `string` | The path of the resource of the collider to check. |
 
 **Returns:** {boolean} - `true` if the point collides with the collider, `false` otherwise.
 
@@ -646,14 +646,14 @@ Provides pathfinding-related functionalities.
 | `startY` | `number` | The y-coordinate of the starting point. |
 | `endX` | `number` | The x-coordinate of the ending point. |
 | `endY` | `number` | The y-coordinate of the ending point. |
-| `navigationMeshId` | `number` | The ID of the navigation mesh to use. |
+| `navigationMeshPath` | `string` | The path the navigation mesh resource to use. |
 
 **Returns:** {Array} - An array of points representing the path. Each point is an object with `x` and `y` properties.
 
 **Example:**
 
 ```javascript
-Pathfinding.findPath(0, 0, 100, 100, 0); // Finds a path from (0, 0) to (100, 100) using the navigation mesh with ID 0.
+Pathfinding.findPath(0, 0, 100, 100, "res://navmesh.json"); // Finds a path from (0, 0) to (100, 100) using the navigation mesh with ID 0.
 ```
 
 ---
@@ -664,14 +664,14 @@ Pathfinding.findPath(0, 0, 100, 100, 0); // Finds a path from (0, 0) to (100, 10
 
 | Name | Type | Description |
 |------|------|-------------|
-| `navMeshId` | `number` | The ID of the navigation mesh to get. |
+| `resourcePath` | `string` | The ID of the navigation mesh to get. |
 
 **Returns:** {Array} - An array of regions in the navigation mesh. Each region is an object with a `vertices` property containing an array of points.
 
 **Example:**
 
 ```javascript
-Pathfinding.getNavMesh(0); // Gets the navigation mesh with ID 0.
+Pathfinding.getNavMesh("res://navmesh/navmesh.json"); // Gets the navigation mesh with ID 0.
 ```
 
 ---

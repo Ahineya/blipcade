@@ -165,12 +165,12 @@ declare global {
         /**
          * Gets the collider object at the specified index. It has ['type', 'vertices', 'triangles'] properties.
          */
-        function getCollider(index: number): object;
+        function getCollider(resourcePath: string): object;
 
         /**
          * Checks if a point collides with a collider.
          */
-        function checkCollisionPoint(x: number, y: number, colliderIndex: number): boolean;
+        function checkCollisionPoint(x: number, y: number, resourcePath: string): boolean;
 
     }
 
@@ -178,12 +178,12 @@ declare global {
         /**
          * Finds a path from the starting point to the ending point using the specified navigation mesh.
          */
-        function findPath(startX: number, startY: number, endX: number, endY: number, navigationMeshId: number): any[];
+        function findPath(startX: number, startY: number, endX: number, endY: number, navigationMeshPath: string): any[];
 
         /**
          * Gets the navigation mesh with the specified ID.
          */
-        function getNavMesh(navMeshId: number): any[];
+        function getNavMesh(resourcePath: string): any[];
 
     }
 

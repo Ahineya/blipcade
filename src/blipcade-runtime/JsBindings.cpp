@@ -1098,13 +1098,13 @@ namespace blipcade::runtime {
     /**
      * @function getCollider
      *
-     * @param {number} index - The index of the collider to get.
+     * @param {string} resourcePath - The path of the resource of the collider to get.
      *
      * @description Gets the collider object at the specified index. It has ['type', 'vertices', 'triangles'] properties.
      *
      * @returns {object} - The collider object. It has ['type', 'vertices', 'triangles'] properties.
      *
-     * @example const collider = Collision.getCollider(0); // Gets the collider object at index 0.
+     * @example const collider = Collision.getCollider("res://colliders/collider.json"); // Gets the collider object at index 0.
      */
     void JSBindings::bindGetCollider(quickjs::value &global) {
         auto collision = global.get_property("Collision");
@@ -1174,7 +1174,7 @@ namespace blipcade::runtime {
      *
      * @param {number} x - The x-coordinate of the point to check.
      * @param {number} y - The y-coordinate of the point to check.
-     * @param {number} colliderIndex - The index of the collider to check.
+     * @param {string} resourcePath - The path of the resource of the collider to check.
      *
      * @description Checks if a point collides with a collider.
      *
@@ -1235,13 +1235,13 @@ namespace blipcade::runtime {
      * @param {number} startY - The y-coordinate of the starting point.
      * @param {number} endX - The x-coordinate of the ending point.
      * @param {number} endY - The y-coordinate of the ending point.
-     * @param {number} navigationMeshId - The ID of the navigation mesh to use.
+     * @param {string} navigationMeshPath - The path the navigation mesh resource to use.
      *
      * @description Finds a path from the starting point to the ending point using the specified navigation mesh.
      *
      * @returns {Array} - An array of points representing the path. Each point is an object with `x` and `y` properties.
      *
-     * @example Pathfinding.findPath(0, 0, 100, 100, 0); // Finds a path from (0, 0) to (100, 100) using the navigation mesh with ID 0.
+     * @example Pathfinding.findPath(0, 0, 100, 100, "res://navmesh.json"); // Finds a path from (0, 0) to (100, 100) using the navigation mesh with the specified path.
      */
     void JSBindings::bindFindPath(quickjs::value &global) {
         auto pathfinding = global.get_property("Pathfinding");
@@ -1294,13 +1294,13 @@ namespace blipcade::runtime {
     /**
      * @function getNavMesh
      *
-     * @param {number} navMeshId - The ID of the navigation mesh to get.
+     * @param {string} resourcePath - The ID of the navigation mesh to get.
      *
-     * @description Gets the navigation mesh with the specified ID.
+     * @description Gets the navigation mesh with the specified path.
      *
      * @returns {Array} - An array of regions in the navigation mesh. Each region is an object with a `vertices` property containing an array of points.
      *
-     * @example Pathfinding.getNavMesh(0); // Gets the navigation mesh with ID 0.
+     * @example Pathfinding.getNavMesh("res://navmesh/navmesh.json"); // Gets the navigation mesh with the specified path.
      */
     void JSBindings::bindGetNavMesh(quickjs::value &global) {
         auto pathfinding = global.get_property("Pathfinding");

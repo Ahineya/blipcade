@@ -10,6 +10,7 @@
 #include <string>
 #include <nlohmann/json_fwd.hpp>
 #include <earcut.hpp>
+#include <fstream>
 #include <iostream>
 
 namespace blipcade::collision {
@@ -115,6 +116,21 @@ namespace blipcade::collision {
 
         return {type, vertices};
     }
+
+    Collider Collider::fromResource(const std::string &resourcePath, const std::string &projectDir) {
+        std::cout << "Loading spritesheet from resource: " << resourcePath << "\n";
+
+        const auto path = resourcePath.substr(6);
+
+        std::filesystem::path fullPath = std::filesystem::path(projectDir) / path;
+        nlohmann::json colliderJson;
+
+        std::ifstream colliderStream(fullPath.lexically_normal());
+        colliderStream >> colliderJson;
+
+        return fromJson(colliderJson);
+    }
+
 
     float Collider::computeSignedArea() const {
         float area = 0.0f;

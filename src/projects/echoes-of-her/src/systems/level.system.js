@@ -85,7 +85,7 @@ const levels = [
             },
             {
                 type: "interactive",
-                colliderId: 1,
+                colliderId: "res://colliders/bookshelf.json",
                 description: "A bookshelf filled with books",
                 action: {
                     type: "showMessage",
@@ -94,7 +94,7 @@ const levels = [
             },
             {
                 type: "interactive",
-                colliderId: 2,
+                colliderId: "res://colliders/painting.json",
                 description: "A picture of a man",
                 action: {
                     type: "showMessage",
@@ -103,7 +103,7 @@ const levels = [
             },
             {
                 type: "interactive",
-                colliderId: 3,
+                colliderId: "res://colliders/plant.json",
                 description: "A plant",
                 action: {
                     type: "showMessage",

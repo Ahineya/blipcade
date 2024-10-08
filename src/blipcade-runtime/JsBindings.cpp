@@ -1119,10 +1119,23 @@ namespace blipcade::runtime {
 
             const auto colliders = m_runtime.getColliders();
 
-            auto colliderIndex = 0;
+            if (a.size() < 1) {
+                throw std::runtime_error("getCollider: Missing argument.");
+            }
+
+            auto colliderIndex = "0";
 
             if (a.size() >= 1) {
-                colliderIndex = a[0].as_int32();
+                colliderIndex = a[0].as_cstring().c_str();
+            }
+
+            if (colliders->find(colliderIndex) == colliders->end()) {
+                // throw std::runtime_error("checkCollisionPoint: Collider not found.");
+                std::cout << "checkCollisionPoint: Loading collider from resource: " << colliderIndex << std::endl;
+                auto collider = collision::Collider::fromResource(colliderIndex, m_runtime.getProject()->getDirectory());
+                std::cout << "Loaded collider from resource: " << colliderIndex << std::endl;
+                m_runtime.getColliders()->insert({colliderIndex, collider});
+                std::cout << "Inserted collider: " << colliderIndex << std::endl;
             }
 
             auto collider = colliders->at(colliderIndex);
@@ -1183,9 +1196,17 @@ namespace blipcade::runtime {
 
             auto x = a[0].as_double();
             auto y = a[1].as_double();
-            auto colliderIndex = a[2].as_int32();
+            auto colliderIndex = a[2].as_cstring().c_str();
 
             auto colliders = m_runtime.getColliders();
+
+            if (colliders->find(colliderIndex) == colliders->end()) {
+                // throw std::runtime_error("checkCollisionPoint: Collider not found.");
+                std::cout << "checkCollisionPoint: Loading collider from resource: " << colliderIndex << std::endl;
+                auto collider = collision::Collider::fromResource(colliderIndex, m_runtime.getProject()->getDirectory());
+                m_runtime.getColliders()->insert({colliderIndex, collider});
+            }
+
             auto collider = colliders->at(colliderIndex);
 
             auto point = Vector2(x, y);

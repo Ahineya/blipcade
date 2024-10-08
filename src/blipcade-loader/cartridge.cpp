@@ -15,7 +15,7 @@ namespace blipcade {
     Cartridge::Cartridge(
     std::string code,
     std::unordered_map<std::string, graphics::Spritesheet> spritesheets,
-    std::vector<collision::Collider> colliders,
+    std::unordered_map<std::string, collision::Collider> colliders,
     std::unordered_map<std::string, collision::NavMesh> navmeshes
 )
     : code(std::move(code)),
@@ -59,20 +59,21 @@ namespace blipcade {
             i++;
         }
 
-        std::vector<collision::Collider> colliders;
-
+        std::unordered_map<std::string, collision::Collider> colliders;
+        i = 0;
         std::cout << "BEFORE COLLIDERS" << std::endl;
         for (const auto& colliderJson : json["colliders"]) {
-            colliders.push_back(collision::Collider::fromJson(colliderJson));
+            // colliders.push_back(collision::Collider::fromJson(colliderJson));
+            colliders.insert({std::to_string(i), collision::Collider::fromJson(colliderJson)});
+            i++;
         }
         std::cout << "AFTER COLLIDERS" << std::endl;
 
         std::cout << "BEFORE NAVMESHES" << std::endl;
-        std::unordered_map<std::string, collision::NavMesh> navmeshes; // Want to create navmeshes here
+        std::unordered_map<std::string, collision::NavMesh> navmeshes;
         i = 0;
 
         for (const auto& navmeshJson : json["navmeshes"]) {
-            // navmeshes.push_back(collision::NavMesh::fromJson(navmeshJson));
             navmeshes.insert({std::to_string(i), collision::NavMesh::fromJson(navmeshJson)});
             i++;
         }
@@ -89,16 +90,11 @@ namespace blipcade {
         return spritesheets;
     }
 
-    const std::vector<collision::Collider> &Cartridge::getColliders() {
+    const std::unordered_map<std::string, collision::Collider> &Cartridge::getColliders() {
         return colliders;
     }
 
     const std::unordered_map<std::string, collision::NavMesh> &Cartridge::getNavmeshes() {
         return navmeshes;
-    }
-
-    graphics::Spritesheet &Cartridge::getSpritesheet(uint32_t index) {
-        // return spritesheets[std::to_string(index)];
-        return spritesheets.at(std::to_string(index));
     }
 } // blipcade

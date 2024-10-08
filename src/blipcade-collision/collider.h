@@ -18,6 +18,7 @@ namespace blipcade::collision {
         ~Collider() = default;
 
         static Collider fromJson(const nlohmann::json &colliderJson);
+        static Collider fromResource(const std::string &resourcePath, const std::string &projectDir);
 
         const ColliderType type;
         std::vector<Vector2> vertices;

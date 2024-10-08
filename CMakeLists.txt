@@ -108,6 +108,7 @@ set(SOURCES
         src/blipcade-collision/pathfinding.cpp
         external/ImGuiFileDialog/ImGuilFileDialog.cpp
         src/blipcade-devtool/spriteEditor.cpp
+        src/blipcade-loader/project.cpp
 )
 
 # Path to the JSON file

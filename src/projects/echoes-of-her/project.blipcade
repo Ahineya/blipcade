@@ -1,0 +1,5 @@
+{
+    "name": "Echoes of Her",
+    "entrypoint": "./src/scene.js",
+    "mainScene": "./main.scene.json"
+}

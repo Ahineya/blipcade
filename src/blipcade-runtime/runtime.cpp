@@ -6,6 +6,8 @@
 
 #include <canvas.h>
 #include <converters.h>
+#include <project.h>
+
 extern "C" {
     #include <cutils.h>
 }
@@ -199,6 +201,7 @@ namespace blipcade::runtime {
         pstrcpy(cname, cname_size, cname1);
     }
 
+    // TODO: This is crap and should not be here
     JSModuleDef *jsc_module_loader(JSContext *ctx,
                                    const char *module_name, void *opaque) {
         JSModuleDef *m;
@@ -250,7 +253,10 @@ namespace blipcade::runtime {
 
         JS_SetModuleLoaderFunc(&*js_runtime->rt_, nullptr, jsc_module_loader, nullptr);
 
-        std::string code = "import {init, update, draw} from \"../src/carts-js/scene/scene.js\"; globalThis.init = init; globalThis.update = update; globalThis.draw = draw;";
+        auto project = new loader::Project("../src/projects/echoes-of-her");
+        auto entrypoint = project->getEntryPoint();
+
+        std::string code = "import {init, update, draw} from \"" + entrypoint + "\"; globalThis.init = init; globalThis.update = update; globalThis.draw = draw;";
 
         // let's convert code to escaped string, so it will be possible to save it as a part of JSON:
         // auto code_escaped = nlohmann::json(code).dump();

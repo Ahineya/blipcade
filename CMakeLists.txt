@@ -284,7 +284,7 @@ if (DEFINED EMSCRIPTEN)
 
     set_target_properties(blipcade_cmake
             PROPERTIES SUFFIX ".html"
-            LINK_FLAGS " --bind -s WASM=2 -s ASYNCIFY -s ALLOW_MEMORY_GROWTH=1 -sSTACK_SIZE=1048576 -sFULL_ES3 --preload-file ${CMAKE_SOURCE_DIR}/src/resources@/resources"
+            LINK_FLAGS " --bind -s WASM=2 -sNO_DISABLE_EXCEPTION_CATCHING -s ASYNCIFY -s ALLOW_MEMORY_GROWTH=1 -sSTACK_SIZE=1048576 -sFULL_ES3 --preload-file ${CMAKE_SOURCE_DIR}/src/resources@/resources"
             )
     string(REPLACE "-rdynamic" "" CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "${CMAKE_SHARED_LIBRARY_LINK_C_FLAGS}")
 
@@ -317,7 +317,7 @@ add_custom_command(
         COMMENT "Extracting TypeScript definitions"
 )
 
-# Copy "resources" folder to build directory
+# Copy "resources" folder to build directory. Should happen every time the project is built, fix this
 file(COPY ${CMAKE_SOURCE_DIR}/src/resources DESTINATION ${CMAKE_BINARY_DIR})
 
 # Add a custom target for documentation generation

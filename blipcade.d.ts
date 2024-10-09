@@ -181,7 +181,7 @@ declare global {
         function findPath(startX: number, startY: number, endX: number, endY: number, navigationMeshPath: string): any[];
 
         /**
-         * Gets the navigation mesh with the specified ID.
+         * Gets the navigation mesh with the specified path.
          */
         function getNavMesh(resourcePath: string): any[];
 

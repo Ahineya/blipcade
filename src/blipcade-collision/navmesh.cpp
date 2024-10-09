@@ -98,10 +98,6 @@ namespace blipcade::collision {
                 }
             }
         }
-
-        for (size_t i = 0; i < regions.size(); ++i) {
-            std::cout << "Region " << i << " has " << regions[i]->neighbors.size() << " neighbors.\n";
-        }
     }
 
     nlohmann::json NavMesh::toJson() const {
@@ -285,12 +281,6 @@ namespace blipcade::collision {
                 }
             }
         }
-
-        // Optional: Validate connectivity by printing
-        for (size_t i = 0; i < navMesh.regions.size(); ++i) {
-            std::cout << "Region " << i << " has " << navMesh.regions[i]->neighbors.size() << " neighbors.\n";
-        }
-
 
         navMesh.calculateCentroids();
         navMesh.buildConnectivity();

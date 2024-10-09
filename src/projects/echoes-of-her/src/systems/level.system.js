@@ -1,7 +1,6 @@
 import {RenderLayer} from "./draw.system.js";
 import {particlesSystem} from "./particles.system.js";
 import {MiasmaParticle, ParticlesEmitter} from "../particles.js";
-import {state} from "../state/state.js";
 import {messageSystem} from "./messageSystem.js";
 
 // This should not be here
@@ -71,12 +70,25 @@ const levels = [
                 origin: {x: 0, y: 0}
             },
             {
-                type: "sprite",
-                spriteSheet: "res://spritesheets/level2-bg-overlay.json",
-                spriteIndex: 0,
-                origin: {x: 0.5, y: 0.85},
-                size: {width: 159, height: 118},
-                position: { x: 161, y: 206 }
+                type: "spriteGroup",
+                sprites: [
+                    {
+                        type: "sprite",
+                        spriteSheet: "res://spritesheets/level2-bg-overlay.json",
+                        spriteIndex: 0,
+                        origin: {x: 0.5, y: 0.85},
+                        size: {width: 159, height: 118},
+                        position: { x: 161, y: 206 }
+                    },
+                    {
+                        type: "sprite",
+                        spriteSheet: "res://spritesheets/teddy.json",
+                        spriteIndex: 0,
+                        origin: {x: 0.5, y: 0.5},
+                        size: {width: 23, height: 22},
+                        position: { x: 180, y: 160 }
+                    },
+                ]
             },
             {
                 type: "music",
@@ -108,6 +120,15 @@ const levels = [
                 action: {
                     type: "showMessage",
                     text: "I brought home this aloe to symbolize my#journey of healing.#Now, its leaves wither and fade."
+                }
+            },
+            {
+                type: "interactive",
+                colliderId: "res://colliders/teddy.json",
+                description: "A teddy bear",
+                action: {
+                    type: "showMessage",
+                    text: "This teddy bear was my companion#through many sleepless nights."
                 }
             }
         ],
@@ -209,8 +230,19 @@ class LevelSystem {
                 });
 
                 ECS.addComponent(entity, "Render", {
-                    layer: RenderLayer.Entities
+                    layer: obj.layer || RenderLayer.Entities,
+                    renderOrder: obj.renderOrder || 0
                 });
+            }
+
+            if (obj.type === "spriteGroup") {
+                ECS.addComponent(entity, "SpriteGroup", {
+                    sprites: obj.sprites
+                });
+
+                ECS.addComponent(entity, "Render", {
+                    layer: obj.layer || RenderLayer.Entities
+                })
             }
 
             if (obj.type === "music") {

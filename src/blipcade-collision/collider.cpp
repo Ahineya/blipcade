@@ -56,48 +56,14 @@ namespace blipcade::collision {
             }
 
             // Log how many vertices are in the polygon
-            std::cout << "VERTICES SIZE: " << this->vertices.size() << std::endl;
+            // std::cout << "VERTICES SIZE: " << this->vertices.size() << std::endl;
 
             // Check winding order
             float signedArea = computeSignedArea();
             if (signedArea > 0.0f) {
                 // Positive area indicates CCW
-                std::cout << "POLYGON IS CCW" << std::endl;
+                // std::cout << "POLYGON IS CCW" << std::endl;
                 std::reverse(this->vertices.begin(), this->vertices.end());
-            }
-
-            // Here we want to build navmesh from the polygon
-
-            std::cout << "PREPARE POLYGON" << std::endl;
-            const auto polygon = preparePolygon(this->vertices);
-            std::cout << "PREPARE POLYGON DONE" << std::endl;
-
-            // log how many points are in the polygon
-            std::cout << "POLYGON SIZE: " << polygon.size() << std::endl;
-            // log polygon
-            for (const auto &point: polygon) {
-                std::cout << "POINT: " << point[0][0] << ", " << point[0][1] << std::endl;
-            }
-
-            std::vector<N> indices = mapbox::earcut<N>(polygon);
-
-            std::cout << "INDICES SIZE: " << indices.size() << std::endl;
-
-            // Extract triangles
-            triangles.reserve(indices.size() / 3);
-            for (std::size_t i = 0; i < indices.size(); i += 3) {
-                Triangle tri = Triangle(Vector2{0, 0}, Vector2{0, 0}, Vector2{0, 0});
-                tri.v1 = this->vertices[indices[i]];
-                tri.v2 = this->vertices[indices[i + 1]];
-                tri.v3 = this->vertices[indices[i + 2]];
-                triangles.push_back(tri);
-            }
-
-            std::cout << "TRIANGLES SIZE: " << triangles.size() << std::endl;
-
-            // Print all triangles. They have a friend std::ostream &operator<<(std::ostream &os, const Triangle &triangle) function
-            for (const auto &tri: triangles) {
-                std::cout << tri << std::endl;
             }
 
             // Reverse the vertices back to ensure CCW winding order

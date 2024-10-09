@@ -25,7 +25,24 @@ class DrawSystem {
 
         ECS.forEachEntity(["Render"], (entity, render) => {
             const sprite = ECS.getComponent(entity, "Sprite");
-            if (sprite) {
+            const spriteGroup = ECS.getComponent(entity, "SpriteGroup");
+
+            if (spriteGroup) {
+                // Entities with a sprite group
+                const sprites = spriteGroup.sprites;
+
+                // Determine the sorting Y position for the entire group
+                const x = sprites[0].position.x;
+                const y = sprites[0].position.y;
+
+                const o = {
+                    entity,
+                    sprites,
+                    properties: {x, y, renderOrder: render.renderOrder || 0}
+                };
+
+                renderLayers[render.layer].push(o);
+            } else if (sprite) {
                 // Entities with sprite
                 const {position: {x, y}, spriteIndex, spriteSheet, size: {width, height}, flipX, origin: {x: ox, y: oy}} = sprite;
                 const layer = render.layer;
@@ -41,7 +58,7 @@ class DrawSystem {
 
                 const o = {
                     entity,
-                    properties: {x, y, width, height, spriteIndex, spriteSheet, flipX, ox, oy, scale}
+                    properties: {x, y, width, height, spriteIndex, spriteSheet, flipX, ox, oy, scale, renderOrder: render.renderOrder || 0}
                 };
 
                 renderLayers[layer].push(o);
@@ -73,8 +90,36 @@ class DrawSystem {
             return (a.properties.y) - (b.properties.y);
         });
 
+        // renderLayers[RenderLayer.Entities].sort((a, b) => {
+        //     const orderDiff = (a.properties.renderOrder || 0) - (b.properties.renderOrder || 0);
+        //     if (orderDiff !== 0) {
+        //         return orderDiff;
+        //     }
+        //     // If renderOrder is the same, sort by Y position (or bottom edge)
+        //     const aBottomY = a.properties.y + a.properties.height * (1 - a.properties.oy);
+        //     const bBottomY = b.properties.y + b.properties.height * (1 - b.properties.oy);
+        //     return aBottomY - bBottomY;
+        // });
+
         // Render entities and player with y-sorting
-        renderLayers[RenderLayer.Entities].forEach(({entity, properties}) => {
+        renderLayers[RenderLayer.Entities].forEach(({entity, sprites, properties}) => {
+
+            if (sprites) {
+                sprites.forEach(sprite => {
+                    const {
+                        position: { x, y },
+                        spriteIndex,
+                        spriteSheet,
+                        flipX,
+                        origin: { x: ox, y: oy },
+                    } = sprite;
+
+                    Graphics.drawSpriteEx(x, y, spriteIndex, spriteSheet.toString(), flipX, false, 1, ox, oy);
+                });
+
+                return;
+            }
+
             if (ECS.getComponent(entity, "Player")) {
                 const {x, y, spriteIndex, spriteSheet, flipX, ox, oy, scale} = properties;
                 Graphics.drawSpriteEx(x, y, spriteIndex, spriteSheet, flipX, false, scale, ox, oy);
@@ -107,7 +152,7 @@ class DrawSystem {
 
         // Render foreground
         renderLayers[RenderLayer.Foreground].forEach(({entity, properties: {x, y, spriteIndex, spriteSheet, flipX, ox, oy}}) => {
-            Graphics.drawSprite(x, y, spriteIndex, spriteSheet, flipX);
+            Graphics.drawSpriteEx(x, y, spriteIndex, spriteSheet, flipX, false, 1, ox, oy);
         });
     }
 }

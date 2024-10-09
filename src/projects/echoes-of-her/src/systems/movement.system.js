@@ -1,5 +1,4 @@
 import {state} from "../state/state.js";
-import {levelSystem} from "./level.system.js";
 const PLAYER_SPEED = 30; // pixels per second
 const WIDTH = 320;
 const HEIGHT = 240;
@@ -52,7 +51,6 @@ class MoveSystem {
             log(`Mouse clicked at ${coords.x}, ${coords.y}`);
 
             ECS.forEachEntity(["Player"], (playerEntity, player) => {
-                log(`Player clicked at ${player.position.x}, ${player.position.y}`);
                 if (playerEntity) {
                     const currentPosition = player.position;
 

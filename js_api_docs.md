@@ -653,12 +653,12 @@ Provides pathfinding-related functionalities.
 **Example:**
 
 ```javascript
-Pathfinding.findPath(0, 0, 100, 100, "res://navmesh.json"); // Finds a path from (0, 0) to (100, 100) using the navigation mesh with ID 0.
+Pathfinding.findPath(0, 0, 100, 100, "res://navmesh.json"); // Finds a path from (0, 0) to (100, 100) using the navigation mesh with the specified path.
 ```
 
 ---
 #### Function: `getNavMesh`
-**Description:**   Gets the navigation mesh with the specified ID.  
+**Description:**   Gets the navigation mesh with the specified path.  
 
 **Parameters (Required):**
 
@@ -671,7 +671,7 @@ Pathfinding.findPath(0, 0, 100, 100, "res://navmesh.json"); // Finds a path from
 **Example:**
 
 ```javascript
-Pathfinding.getNavMesh("res://navmesh/navmesh.json"); // Gets the navigation mesh with ID 0.
+Pathfinding.getNavMesh("res://navmesh/navmesh.json"); // Gets the navigation mesh with the specified path.
 ```
 
 ---

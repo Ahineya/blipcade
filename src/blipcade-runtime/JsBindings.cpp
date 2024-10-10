@@ -8,9 +8,11 @@
 #include <canvas.h>
 #include <codecvt>
 #include <collider.h>
+#include <fstream>
 #include <iostream>
 #include <navmesh.h>
 #include <pathfinding.h>
+#include <postprocessing.h>
 #include <project.h>
 
 #include "runtime.h"
@@ -28,15 +30,7 @@ namespace blipcade::runtime {
 
         // Graphics
         bindGraphicsGlobalObject(global);
-        bindSetTransparentColor(global);
-        bindFillScreen(global);
-        bindPutPixel(global);
-        bindDrawLine(global);
-        bindDrawCircle(global);
-        bindDrawFilledCircle(global);
-        bindDrawFilledRectangle(global);
-        bindDrawSprite(global);
-        bindDrawSpriteEx(global);
+
 
         // Lighting
         bindLightingGlobalObject(global);
@@ -197,6 +191,18 @@ namespace blipcade::runtime {
      */
     void JSBindings::bindGraphicsGlobalObject(quickjs::value &global) {
         createNamespace(global, "Graphics");
+
+        bindSetTransparentColor(global);
+        bindFillScreen(global);
+        bindPutPixel(global);
+        bindDrawLine(global);
+        bindDrawCircle(global);
+        bindDrawFilledCircle(global);
+        bindDrawFilledRectangle(global);
+        bindDrawSprite(global);
+        bindDrawSpriteEx(global);
+
+        bindSetPostprocessingShader(global);
     }
 
     /**
@@ -503,6 +509,45 @@ namespace blipcade::runtime {
             if (argsCount >= 4) color = a[3].as_int32();
 
             m_runtime.getCanvas()->drawCircle(center_x, center_y, radius, color);
+        });
+    }
+
+    /**
+     *
+     * @function setPostprocessingShader
+     *
+     * @param {string} shaderPath - The path to the postprocessing shader.
+     *
+     * @description Sets the postprocessing shader.
+     *
+     * @example Graphics.setPostprocessingShader("res://shaders/postprocessing.frag");
+     */
+    void JSBindings::bindSetPostprocessingShader(quickjs::value &global) const {
+        auto graphics = global.get_property("Graphics");
+
+        graphics.set_property("setPostprocessingShader", [this](const quickjs::args &a) {
+            auto argsCount = a.size();
+
+            if (argsCount < 1) {
+                throw std::runtime_error("setPostprocessingShader: Missing argument.");
+            }
+
+            std::string shaderPath = a[0].as_cstring().c_str();
+
+            const auto path = shaderPath.substr(6);
+
+            std::filesystem::path fullPath = std::filesystem::path(m_runtime.getProject()->getDirectory()) / path;
+
+            // load file
+            std::ifstream file(fullPath);
+            if (!file.is_open()) {
+                std::cerr << "Error: Failed to open file: " << fullPath << std::endl;
+                throw std::runtime_error("setPostprocessingShader: Failed to open file.");
+            }
+
+            std::string shaderCode((std::istreambuf_iterator(file)), std::istreambuf_iterator<char>());
+
+            m_runtime.getPostprocessing()->changeShader(shaderCode);
         });
     }
 
@@ -1356,6 +1401,7 @@ namespace blipcade::runtime {
         bindLoadSound(global);
         bindPlaySound(global);
         bindStopSound(global);
+        bindToggleSound(global);
 
         bindSetSoundVolume(global);
     }
@@ -1383,7 +1429,15 @@ namespace blipcade::runtime {
                 throw std::runtime_error("loadSound: Missing argument.");
             }
 
+
             std::string path = a[0].as_cstring().c_str();
+
+            // If path starts with 'res://', load from project directory
+            if (path.find("res://") == 0) {
+                path = m_runtime.getProject()->getDirectory() / path.substr(6);
+                std::cout << "Loading sound from project directory: " << path << std::endl;
+            }
+
             auto soundId = m_runtime.getAudio()->LoadSound(path);
 
             return {*ctx, static_cast<double>(soundId)};
@@ -1435,6 +1489,30 @@ namespace blipcade::runtime {
 
             auto soundId = a[0].as_uint32();
             m_runtime.getAudio()->StopSound(soundId);
+        });
+    }
+
+    /**
+     * @function toggleSound
+     *
+     * @param {number} soundId - The ID of the sound to toggle.
+     *
+     * @description Toggles a sound.
+     *
+     * @example Sound.toggleSound(soundId); // Toggles the sound with the given ID.
+     */
+    void JSBindings::bindToggleSound(quickjs::value &global) {
+        auto sound = global.get_property("Sound");
+
+        sound.set_property("toggleSound", [this](const quickjs::args &a) {
+            auto argsCount = a.size();
+
+            if (argsCount < 1) {
+                throw std::runtime_error("toggleSound: Missing argument.");
+            }
+
+            auto soundId = a[0].as_uint32();
+            m_runtime.getAudio()->ToggleSound(soundId);
         });
     }
 

@@ -14,6 +14,9 @@ import {interactiveObjectsSystem} from "./systems/interactive-objects.system.js"
 const CURSOR_SPRITESHEET = "res://spritesheets/cursor.json";
 
 export function init() {
+
+    Graphics.setPostprocessingShader("res://shaders/pp.frag");
+
     Graphics.setTransparentColor(255);
 
     state.frameCount = 0;
@@ -22,6 +25,7 @@ export function init() {
 
     state.keyStates = {};
     state.mouseButtonStates = {};
+    state.previousMouseButtonStates = {};
 
     state.entities = new Entities();
     levelSystem.loadLevel("level2");
@@ -122,7 +126,12 @@ function updateSingleKeyState(keyCode, isPressed) {
         const levelComponent = ECS.getComponent(levelSystem.levelControllerEntity, "LevelController");
         if (levelComponent.currentLevel === "level1") {
             levelComponent.loadLevel = "level2";
-        } else {
+        } else if (levelComponent.currentLevel === "level2") {
+            levelComponent.loadLevel = "level3";
+        } else if (levelComponent.currentLevel === "level3") {
+            levelComponent.loadLevel = "level4";
+        }
+        else {
             levelComponent.loadLevel = "level1";
         }
     }

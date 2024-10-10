@@ -22,6 +22,8 @@ namespace blipcade::audio {
 
         void PlaySound(SoundHandle sound) const;
 
+        void ToggleSound(SoundHandle sound) const;
+
         void StopSound(SoundHandle sound) const;
 
         void SetSoundVolume(SoundHandle sound, float volume) const;

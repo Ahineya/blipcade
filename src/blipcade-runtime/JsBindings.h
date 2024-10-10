@@ -40,6 +40,8 @@ namespace blipcade {
 
             void bindDrawCircle(quickjs::value &global);
 
+            void bindSetPostprocessingShader(quickjs::value &global) const;
+
             void bindDrawFilledRectangle(quickjs::value &global);
 
             void bindLightingGlobalObject(quickjs::value &global);
@@ -101,6 +103,8 @@ namespace blipcade {
             void bindPlaySound(quickjs::value &global);
 
             void bindStopSound(quickjs::value &global);
+
+            void bindToggleSound(quickjs::value &global);
 
             void bindSetSoundVolume(quickjs::value &global);
         };

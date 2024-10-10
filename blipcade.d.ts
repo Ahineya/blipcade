@@ -73,6 +73,11 @@ declare global {
          */
         function drawCircle(center_x: number, center_y: number, radius: number, color: number, params: object): void;
 
+        /**
+         * Sets the postprocessing shader.
+         */
+        function setPostprocessingShader(shaderPath: string): void;
+
     }
 
     namespace Lighting {
@@ -202,6 +207,11 @@ declare global {
          * Stops a sound.
          */
         function stopSound(soundId: number): void;
+
+        /**
+         * Toggles a sound.
+         */
+        function toggleSound(soundId: number): void;
 
         /**
          * Sets the volume of a sound.

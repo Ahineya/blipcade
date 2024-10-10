@@ -109,6 +109,7 @@ set(SOURCES
         external/ImGuiFileDialog/ImGuilFileDialog.cpp
         src/blipcade-devtool/spriteEditor.cpp
         src/blipcade-loader/project.cpp
+        src/blipcade-renderer/postprocessing.cpp
 )
 
 # Path to the JSON file
@@ -232,6 +233,15 @@ add_custom_command(
         COMMENT "Generating lighting fragment shader header"
 )
 
+add_custom_command(
+        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/postprocessing_shader.h
+        COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/src/blipcade-renderer/shaders/convert_shaders.py
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/blipcade-renderer/shaders/postprocessing_shader.frag
+        ${CMAKE_CURRENT_BINARY_DIR}/postprocessing_shader.h
+        DEPENDS src/blipcade-renderer/shaders/postprocessing_shader.frag
+        COMMENT "Generating postprocessing fragment shader header"
+)
+
 # Add the generated headers to your target's sources
 target_sources(blipcade_cmake PRIVATE
         ${CMAKE_CURRENT_BINARY_DIR}/shader_vert.h
@@ -239,6 +249,7 @@ target_sources(blipcade_cmake PRIVATE
         ${CMAKE_CURRENT_BINARY_DIR}/palette_shader.h
         ${CMAKE_CURRENT_BINARY_DIR}/lighting_shader.h
         ${CMAKE_CURRENT_BINARY_DIR}/lighting_shader_vert.h
+        ${CMAKE_CURRENT_BINARY_DIR}/postprocessing_shader.h
 )
 
 # Make sure the binary dir is in the include path

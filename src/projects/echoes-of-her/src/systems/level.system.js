@@ -44,7 +44,7 @@ const levels = [
                     {x: 91, y: 201},
                     {x: 66, y: 215},
                     {x: 16, y: 145},
-                    {x: 320 / 2, y: 200}
+                    // {x: 320 / 2, y: 200}
                 ]
             }
         ],
@@ -141,6 +141,56 @@ const levels = [
             quarterScreenMin: 1.5
         },
         message: "This has always been my sanctuary...#But today, it feels like it's shifting beneath my feet."
+    },
+    {
+        id: "level3",
+        objects: [
+            {
+                type: "background",
+                spriteSheet: "res://spritesheets/level3-bg.json",
+                spriteIndex: 0,
+                position: { x: 0, y: 0 },
+                size: { width: 320, height: 240 },
+                origin: {x: 0, y: 0}
+            },
+            {
+                type: "interactive",
+                colliderId: "res://colliders/radio.json",
+                description: "A vintage radio",
+                actions: [
+                    {
+                        type: "showMessage",
+                        text: "This radio played the soundtrack of my youth.#Sometimes, I turn it on hoping to hear a melody#that brings back forgotten joys."
+                    },
+                    {
+                        type: "playSound",
+                        soundId: Sound.loadSound('res://sounds/radio/searching-for-light-filtered.mp3'),
+                        volume: 0.5
+                    }
+                ]
+            }
+        ],
+        playerStartPosition: { x: 38, y: 197 },
+        playerFacing: "right",
+        playerNavMeshIndex: "res://navmeshes/level3.json",
+        playerScale: {
+            min: 0.2,
+            max: 1.4,
+            quarterScreenMin: 1.4
+        }
+    },
+    {
+        id: "level4",
+        objects: [
+            {
+                type: "background",
+                spriteSheet: "res://spritesheets/photoalbum.json",
+                spriteIndex: 0,
+                position: { x: 0, y: 0 },
+                size: { width: 320, height: 240 },
+                origin: {x: 0, y: 0}
+            }
+        ],
     }
 ]
 
@@ -266,7 +316,8 @@ class LevelSystem {
                 ECS.addComponent(entity, "InteractiveObject", {
                     colliderId: obj.colliderId,
                     description: obj.description,
-                    action: obj.action
+                    action: obj.action,
+                    actions: obj.actions
                 });
                 ECS.addComponent(entity, "Collider", Collision.getCollider(obj.colliderId));
                 ECS.addComponent(entity, "Visible", true);
@@ -295,9 +346,13 @@ class LevelSystem {
                 }
             }
 
+            if (ECS.getComponent(entity, "ToggleSound")) {
+                const toggleSoundComponent = ECS.getComponent(entity, "ToggleSound");
+                Sound.stopSound(toggleSoundComponent.soundId);
+            }
+
             if (ECS.getComponent(entity, "Light")) {
-                // TODO: investigate why this is not working
-                // Lighting.removeLightEffect(ECS.getComponent(entity, "Light").name);
+                Lighting.removeLightEffect(ECS.getComponent(entity, "Light").name);
             }
 
             if (!ECS.getComponent(entity, "Persistent")) {

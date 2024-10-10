@@ -50,6 +50,10 @@ export class MessageSystem {
     update() {
         ECS.forEachEntity(["Message", "Sound"], (entity, message, sound) => {
             if (message.display === "typed") {
+                if (!message.text) {
+                    return;
+                }
+
                 if (message.index < message.text.length) {
                     message.index += 1; // Speed in letters per frame
                     if (message.index >= message.last + 1) {
@@ -126,6 +130,10 @@ export class MessageSystem {
             if (message.display === "typed") {
 
                 if (state.mouseButtonStates[0] === 'pressed') {
+                    if (!message.text) {
+                        return;
+                    }
+
                     if (message.index < message.text.length) {
                         message.index = message.text.length;
                     } else {

@@ -133,6 +133,14 @@ namespace blipcade::audio {
         }
     }
 
+    void Audio::ToggleSound(const SoundHandle sound) const {
+        if (::IsSoundPlaying(sounds.at(sound))) {
+            ::StopSound(sounds.at(sound));
+        } else {
+            ::PlaySound(sounds.at(sound));
+        }
+    }
+
     void Audio::StopSound(const SoundHandle sound) const {
         ::StopSound(sounds.at(sound));
     }

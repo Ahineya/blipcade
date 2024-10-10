@@ -18,18 +18,49 @@ class InteractiveObjectsSystem {
                 const isClicked = Collision.checkCollisionPoint(x, y, interactiveObject.colliderId);
                 if (isClicked) {
                     // stopPropagation for the poor:
-                    state.mouseButtonStates[0] = 'released';
+                    state.mouseButtonStates[0] = 'up';
 
-                    switch (interactiveObject.action.type) {
-                        case "showMessage":
-                            messageSystem.setMessageText(interactiveObject.action.text);
-                            break;
-                        default:
-                            log(`Action not implemented: ${interactiveObject.action}`);
+                    if (interactiveObject.action) {
+                        this.processAction(entity, interactiveObject.action);
+                    } else if (interactiveObject.actions) {
+                        for (const action of interactiveObject.actions) {
+                            this.processAction(entity, action);
+                        }
                     }
                 }
             }
         });
+    }
+
+    processAction(entity, action) {
+        switch (action.type) {
+            case "showMessage":
+                messageSystem.setMessageText(action.text);
+                break;
+            case "playSound": {
+                let found = false;
+                ECS.forEachEntity(["ToggleSound"], (entity, toggleSoundComponent) => {
+                    if (toggleSoundComponent.soundId === action.soundId) {
+                        toggleSoundComponent.shouldToggle = true;
+                        found = true;
+                    }
+                });
+
+                if (!found) {
+                    const sound = ECS.createEntity();
+                    ECS.addComponent(sound, "ToggleSound", {
+                        soundId: action.soundId,
+                        volume: action.volume || 1.0,
+                        isPlaying: false,
+                        shouldToggle: true,
+                    });
+                }
+
+                break;
+            }
+            default:
+                log(`Action not implemented: ${action.type}`);
+        }
     }
 
 }

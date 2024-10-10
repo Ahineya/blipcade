@@ -128,11 +128,11 @@ namespace blipcade::graphics {
         const auto runtime = new runtime::Runtime(canvasWidth, canvasHeight);
         setRuntime(*runtime);
 
-        const RenderTexture2D renderTexture = LoadRenderTexture(canvasWidth, canvasHeight);
+        const RenderTexture2D runtimeRenderTexture = LoadRenderTexture(canvasWidth, canvasHeight);
         const RenderTexture2D postProcessTexture = LoadRenderTexture(canvasWidth, canvasHeight);
         const RenderTexture2D lightingTexture = LoadRenderTexture(canvasWidth, canvasHeight);
 
-        BeginTextureMode(renderTexture);
+        BeginTextureMode(runtimeRenderTexture);
         runtime->init();
         EndTextureMode();
 
@@ -165,10 +165,10 @@ namespace blipcade::graphics {
             int windowWidth = GetScreenWidth();
             int windowHeight = GetScreenHeight();
 
-            BeginTextureMode(renderTexture);
+            BeginTextureMode(runtimeRenderTexture);
 
 
-            runtime->draw(renderTexture);
+            runtime->draw(runtimeRenderTexture);
 
             EndTextureMode();
 
@@ -203,8 +203,8 @@ namespace blipcade::graphics {
             Rectangle srcRect = {
                 0.0f,
                 0.0f,
-                static_cast<float>(renderTexture.texture.width),
-                static_cast<float>(-renderTexture.texture.height)
+                static_cast<float>(runtimeRenderTexture.texture.width),
+                static_cast<float>(runtimeRenderTexture.texture.height)
             };
 
             Vector2 origin = {0.0f, 0.0f};
@@ -257,20 +257,10 @@ namespace blipcade::graphics {
             // clear
             ClearBackground(BLACK);
 
-            // We want to render this BS to another texture so we can apply post processing
-            BeginTextureMode(postProcessTexture);
-                DrawTexture(
-                    renderTexture.texture,
-                    0,
-                    0,
-                    WHITE
-                );
-            EndTextureMode();
-
-            runtime->postProcess(postProcessTexture, lightingTexture, srcRect, destRect, origin, rotation, {255, 255, 255, 255});
+            runtime->postProcess(runtimeRenderTexture, postProcessTexture, srcRect, destRect, origin, rotation, {255, 255, 255, 255});
 
             DrawTexturePro(
-                lightingTexture.texture,
+                postProcessTexture.texture,
                 srcRect,
                 destRect,
                 origin,

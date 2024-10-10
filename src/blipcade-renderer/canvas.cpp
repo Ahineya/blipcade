@@ -42,7 +42,6 @@ lightEffects()  {
         int mvpLoc = GetShaderLocation(lightingShader, "mvp");
         SetShaderValueMatrix(lightingShader, mvpLoc, mvp);
 
-        // In Canvas constructor after loading lightingShader
         tintColorLoc = GetShaderLocation(lightingShader, "tintColor");
         opacityLoc = GetShaderLocation(lightingShader, "opacity");
         baseTextureLoc = GetShaderLocation(lightingShader, "baseTexture");
@@ -335,6 +334,12 @@ lightEffects()  {
 
             DrawTextureEx(renderTexture.texture, (Vector2){0, 0}, 0.0f, 1.0f, WHITE);
         }
+
+        // If there are no light effects, just draw the base texture
+        if (lightEffects.empty()) {
+            DrawTextureEx(baseTexture.texture, (Vector2){0, 0}, 0.0f, 1.0f, WHITE);
+        }
+
         EndShaderMode();
         EndTextureMode();
     }

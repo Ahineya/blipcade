@@ -15,6 +15,10 @@
 
 #include "ECS.h"
 
+namespace blipcade::renderer {
+    class Postprocessing;
+}
+
 namespace blipcade::loader {
     class Project;
 }
@@ -92,7 +96,7 @@ namespace blipcade::runtime {
         void mouseMove(int x, int y);
 
         void init();
-        void update() const;
+        void update();
         void draw(const RenderTexture2D &renderTexture) const;
 
         void postProcess(const RenderTexture2D &postProcessTexture, const RenderTexture2D &renderTexture, const Rectangle &srcRect,
@@ -116,6 +120,8 @@ namespace blipcade::runtime {
 
         [[nodiscard]] std::shared_ptr<ecs::ECS> getECS() const;
 
+        [[nodiscard]] std::shared_ptr<renderer::Postprocessing> getPostprocessing() const;
+
         void setCartridge(std::shared_ptr<Cartridge>);
         void setProject(std::shared_ptr<loader::Project>);
 
@@ -137,6 +143,8 @@ namespace blipcade::runtime {
         std::shared_ptr<graphics::Font> font;
         std::shared_ptr<audio::Audio> audio;
 
+        std::shared_ptr<renderer::Postprocessing> postprocessing;
+
         std::shared_ptr<ecs::ECS> ecs;
 
         std::unique_ptr<JSBindings> js_bindings;
@@ -149,6 +157,9 @@ namespace blipcade::runtime {
 
         uint32_t canvasWidth;
         uint32_t canvasHeight;
+
+        float globalTime = 0;
+        std::chrono::steady_clock::time_point lastTime;
     };
 
 } // runtime

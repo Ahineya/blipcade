@@ -13,7 +13,7 @@ class LightingSystem {
         Lighting.addLightEffect(name, {
             tintColor: 0xF5F5B2, // Warm yellow
             opacity: 0.5,
-            maskImagePath: "resources/trapezoid.png"
+            maskImagePath: "resources/trapezoid.png" // TODO: move to res://
         });
     }
 

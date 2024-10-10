@@ -6,6 +6,7 @@
 
 #include <canvas.h>
 #include <converters.h>
+#include <postprocessing.h>
 #include <project.h>
 
 extern "C" {
@@ -38,6 +39,7 @@ namespace blipcade::runtime {
         colliders = std::make_shared<std::unordered_map<std::string, collision::Collider> >();
         navmeshes = std::make_shared<std::unordered_map<std::string, collision::NavMesh> >();
         audio = std::make_shared<audio::Audio>();
+        postprocessing = std::make_shared<renderer::Postprocessing>();
 
         // std::string fontHeader = "40 24 04 06";
         // std::string fontData =
@@ -136,6 +138,11 @@ namespace blipcade::runtime {
         return audio;
     }
 
+    std::shared_ptr<renderer::Postprocessing> Runtime::getPostprocessing() const {
+        return postprocessing;
+    }
+
+
     void Runtime::setCartridge(std::shared_ptr<Cartridge> cart) {
         cartridge = std::move(cart);
     }
@@ -143,7 +150,6 @@ namespace blipcade::runtime {
     void Runtime::setProject(std::shared_ptr<loader::Project> project) {
         this->project = std::move(project);
     }
-
 
     static const char *c_ident_prefix = "qjsc_";
     static void get_c_name(char *buf, size_t buf_size, const char *file)
@@ -276,11 +282,22 @@ namespace blipcade::runtime {
         // auto code_escaped = nlohmann::json(code).dump();
         // std::cout << code_escaped << std::endl;
 
+        lastTime = std::chrono::steady_clock::now();
+        globalTime = 0.0f;
+
         evalWithStacktrace(code.c_str());
         evalWithStacktrace("init()");
     }
 
-    void Runtime::update() const {
+    void Runtime::update() {
+        auto currentTime = std::chrono::steady_clock::now();
+        const std::chrono::duration<float> deltaTime = currentTime - lastTime;
+        lastTime = currentTime;
+
+        // Update globalTime with the elapsed time
+        globalTime += deltaTime.count();
+
+
         evalWithStacktrace("update()");
     }
 
@@ -293,6 +310,8 @@ namespace blipcade::runtime {
                               const Vector2 &origin, float rotation, const Color &tint) const {
         // I don't like that this is happening here. Need to rethink the pipeline.
         getCanvas()->applyLighting(postProcessTexture, renderTexture);
+
+        postprocessing->postprocess(postProcessTexture, renderTexture, globalTime, canvasWidth, canvasHeight);
     }
 
     // TODO: I am not sure this works correctly in all the cases. Perhaps it would be better to handle it with C api directly.

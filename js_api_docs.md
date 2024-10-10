@@ -18,6 +18,7 @@
    - [Function: drawFilledCircle](#function-drawfilledcircle)
    - [Function: drawFilledRect](#function-drawfilledrect)
    - [Function: drawCircle](#function-drawcircle)
+   - [Function: setPostprocessingShader](#function-setpostprocessingshader)
 - [Namespace: Lighting](#namespace-lighting)
    - [Function: addLightEffect](#function-addlighteffect)
    - [Function: removeLightEffect](#function-removelighteffect)
@@ -45,6 +46,7 @@
    - [Function: loadSound](#function-loadsound)
    - [Function: playSound](#function-playsound)
    - [Function: stopSound](#function-stopsound)
+   - [Function: toggleSound](#function-togglesound)
    - [Function: setSoundVolume](#function-setsoundvolume)
 
 ---
@@ -316,6 +318,22 @@ Graphics.drawFilledRect(100, 100, 50, 50, 0x50); // Draws a filled rectangle wit
 
 ```javascript
 Graphics.drawCircle(100, 100, 50, 0x50); // Draws a filled circle with a radius of 50 at (100, 100).
+```
+
+---
+#### Function: `setPostprocessingShader`
+**Description:**   Sets the postprocessing shader. 
+
+**Parameters (Required):**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `shaderPath` | `string` | The path to the postprocessing shader. |
+
+**Example:**
+
+```javascript
+Graphics.setPostprocessingShader("res://shaders/postprocessing.frag");
 ```
 
 ---
@@ -728,6 +746,22 @@ Sound.playSound(soundId); // Plays the sound with the given ID.
 
 ```javascript
 Sound.stopSound(soundId); // Stops the sound with the given ID.
+```
+
+---
+#### Function: `toggleSound`
+**Description:**   Toggles a sound. 
+
+**Parameters (Required):**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `soundId` | `number` | The ID of the sound to toggle. |
+
+**Example:**
+
+```javascript
+Sound.toggleSound(soundId); // Toggles the sound with the given ID.
 ```
 
 ---

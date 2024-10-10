@@ -1,0 +1,14 @@
+{
+  "texture": {
+    "image": "photoalbum.png"
+  },
+  "sprites": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 320,
+      "height": 240,
+      "flags": 0
+    }
+  ]
+}

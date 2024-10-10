@@ -114,24 +114,22 @@ class MoveSystem {
     handleMouseEvent(event) {
         if (event.type === "mouseDown") {
             const coords = Input.getMousePos();
-            log(`Mouse clicked at ${coords.x}, ${coords.y}`);
 
             ECS.forEachEntity(["Player"], (playerEntity, player) => {
                 if (playerEntity) {
                     const currentPosition = player.position;
 
-                    // Calculate the path from current position to clicked position
                     const path = Pathfinding.findPath(
                         Math.round(currentPosition.x),
                         Math.round(currentPosition.y),
                         Math.round(coords.x),
                         Math.round(coords.y),
-                        player.navMeshIndex // Assuming '0' is a parameter for the pathfinding algorithm
+                        player.navMeshIndex
                     );
 
                     if (path.length > 0) {
-                        player.path = path; // Store the path in the player's component
-                        player.currentPathIndex = 0; // Reset the current path index
+                        player.path = path;
+                        player.currentPathIndex = 0;
                     } else {
                         log(`No path found from ${currentPosition.x}, ${currentPosition.y} to ${coords.x}, ${coords.y}`);
                     }

@@ -166,8 +166,34 @@ const levels = [
                         type: "playSound",
                         soundId: Sound.loadSound('res://sounds/radio/searching-for-light-filtered.mp3'),
                         volume: 0.5
+                    },
+                    {
+                        type: "nextAnimation"
                     }
-                ]
+                ],
+                sprite: {
+                    type: "sprite",
+                    spriteSheet: "res://spritesheets/radio.json",
+                    spriteIndex: 0,
+                    origin: {x: 0.5, y: 0.5},
+                    size: {width: 35, height: 18},
+                    position: { x: 191, y: 159 }
+                },
+                animation: {
+                    type: "animation",
+                    animations: {
+                        idle: [0],
+                        playing: [1, 2, 3, 4, 5, 6, 7, 8]
+                    },
+                    currentAnimation: "idle",
+                    spritesheets: {
+                        idle: "res://spritesheets/radio.json",
+                        playing: "res://spritesheets/radio.json"
+                    },
+                    currentFrame: 0,
+                    frameTime: 0,
+                    frameDuration: 700,
+                }
             }
         ],
         playerStartPosition: { x: 38, y: 197 },
@@ -321,6 +347,18 @@ class LevelSystem {
                 });
                 ECS.addComponent(entity, "Collider", Collision.getCollider(obj.colliderId));
                 ECS.addComponent(entity, "Visible", true);
+
+                if (obj.sprite) {
+                    ECS.addComponent(entity, "Sprite", obj.sprite);
+
+                    ECS.addComponent(entity, "Render", {
+                        layer: RenderLayer.Entities
+                    });
+                }
+
+                if (obj.animation) {
+                    ECS.addComponent(entity, "Animation", obj.animation);
+                }
             }
         });
 

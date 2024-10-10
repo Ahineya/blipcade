@@ -2,15 +2,15 @@ import {state} from "../state/state.js";
 import {messageSystem} from "./messageSystem.js";
 
 class InteractiveObjectsSystem {
-    update() {
-        ECS.forEachEntity(["InteractiveObject", "Collider"], (entity, interactiveObject, collider) => {
-            const {x, y} = Input.getMousePos();
-            const isHovered = Collision.checkCollisionPoint(x, y, interactiveObject.colliderId);
-            if (isHovered) {
-                messageSystem.setTooltipText(interactiveObject.description, entity);
-            } else {
-                messageSystem.clearTooltipText(entity);
-            }
+    // update() {
+    //     ECS.forEachEntity(["InteractiveObject", "Collider"], (entity, interactiveObject, collider) => {
+    //         const {x, y} = Input.getMousePos();
+    //         const isHovered = Collision.checkCollisionPoint(x, y, interactiveObject.colliderId);
+    //         if (isHovered) {
+    //             messageSystem.setTooltipText(interactiveObject.description, entity);
+    //         } else {
+    //             messageSystem.clearTooltipText(entity);
+    //         }
 
             // Check mouse click
             // if (state.mouseButtonStates[0] === 'pressed') {
@@ -29,8 +29,8 @@ class InteractiveObjectsSystem {
             //         }
             //     }
             // }
-        });
-    }
+        // });
+    // }
 
     handleMouseEvent(event) {
         if (event.type === "mouseDown") {
@@ -54,6 +54,17 @@ class InteractiveObjectsSystem {
             });
 
             return processed;
+        } else if (event.type === "mouseMove") {
+            const {x, y} = event.position;
+
+            ECS.forEachEntity(["InteractiveObject", "Collider"], (entity, interactiveObject, collider) => {
+                const isHovered = Collision.checkCollisionPoint(x, y, interactiveObject.colliderId);
+                if (isHovered) {
+                    messageSystem.setTooltipText(interactiveObject.description, entity);
+                } else {
+                    messageSystem.clearTooltipText(entity);
+                }
+            });
         }
     }
 
@@ -80,6 +91,16 @@ class InteractiveObjectsSystem {
                         shouldToggle: true,
                     });
                 }
+
+                break;
+            }
+            case "nextAnimation": {
+                const animation = ECS.getComponent(entity, "Animation");
+
+                const animations = Object.keys(animation.animations);
+                const currentAnimationIndex = animations.indexOf(animation.currentAnimation);
+                const nextAnimationIndex = (currentAnimationIndex + 1) % animations.length;
+                animation.currentAnimation = animations[nextAnimationIndex];
 
                 break;
             }

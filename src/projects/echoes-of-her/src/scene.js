@@ -53,7 +53,7 @@ export function init() {
         CURSOR: 0
     }
 
-    state.systems.forEach(s => {
+    Object.values(state.systems).forEach(s => {
         s.init && s.init();
     });
 }
@@ -174,8 +174,11 @@ function captureMouseEvents() {
         const currentState = state.mouseButtonStates[button];
         if (currentState === 'pressed') {
             mouseEventQueue.push({ type: 'mouseDown', button, position: Input.getMousePos() });
+            log(`Mouse event: mouseDown button ${button} at ${Input.getMousePos().x}, ${Input.getMousePos().y}`);
         } else if (currentState === 'released') {
             mouseEventQueue.push({ type: 'mouseUp', button, position: Input.getMousePos() });
+        } else {
+            mouseEventQueue.push({ type: 'mouseMove', button, position: Input.getMousePos() });
         }
     });
 }
@@ -214,10 +217,9 @@ function dispatchMouseEvents() {
         const event = mouseEventQueue.shift();
         let eventHandled = false;
 
-        log(`Mouse event: ${event.type} button ${event.button} at ${event.position.x}, ${event.position.y}`);
-
+        // log(`Mouse event: ${event.type} button ${event.button} at ${event.position.x}, ${event.position.y}`);
         for (const [name, system] of Object.entries(state.systems)) {
-            log(`Dispatching event to system: ${name}`);
+            // log(`Dispatching event to system: ${name}`);
             if (system.handleMouseEvent) {
                 if (system.handleMouseEvent(event)) {
                     eventHandled = true;

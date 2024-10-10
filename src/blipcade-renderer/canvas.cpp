@@ -248,6 +248,10 @@ lightEffects()  {
         Rectangle destRect = {position.x, position.y, sourceRec.width * scale, sourceRec.height * scale};
         Vector2 origin = {abs(originX * destRect.width), abs(originY * destRect.height)};
 
+        // round origin to the nearest pixel
+        origin.x = round(origin.x);
+        origin.y = round(origin.y);
+
         // Logging.
         // std::cout << "x: " << x << ", y: " << y << ", offsetX: " << offsetX << ", offsetY: " << offsetY << std::endl;
         // std::cout << "sourceRec: " << sourceRec.x << ", " << sourceRec.y << ", " << sourceRec.width << ", " << sourceRec.height << std::endl;

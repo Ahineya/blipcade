@@ -210,7 +210,7 @@ Graphics.drawSprite(100, 100, 0); // Draws the first sprite from the first sprit
 
 | Name | Type | Default | Description |
 |------|------|---------|-------------|
-| `spriteSheetIndex` | `number` | `0` | The index of the sprite sheet to use. |
+| `spriteSheet` | `string` | `""` | The path of the sprite sheet to use. |
 | `flipX` | `boolean` | `false` | Whether to flip the sprite horizontally. |
 | `flipY` | `boolean` | `false` | Whether to flip the sprite vertically. |
 | `scale` | `number` | `1.0` | The scale of the sprite. |

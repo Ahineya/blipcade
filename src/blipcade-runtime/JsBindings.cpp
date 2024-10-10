@@ -306,7 +306,7 @@ namespace blipcade::runtime {
      * @param {number} y - The y-coordinate of the sprite.
      * @param {number} spriteIndex - The index of the sprite to draw.
      *
-     * @param {number} [spriteSheetIndex=0] - The index of the sprite sheet to use.
+     * @param {string} [spriteSheet=""] - The path of the sprite sheet to use.
      * @param {boolean} [flipX=false] - Whether to flip the sprite horizontally.
      * @param {boolean} [flipY=false] - Whether to flip the sprite vertically.
      *

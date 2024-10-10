@@ -1,0 +1,70 @@
+{
+  "texture": {
+    "image": "radio.png"
+  },
+  "sprites": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 35,
+      "height": 18,
+      "flags": 0
+    },
+    {
+      "x": 35,
+      "y": 0,
+      "width": 35,
+      "height": 18,
+      "flags": 0
+    },
+    {
+      "x": 70,
+      "y": 0,
+      "width": 35,
+      "height": 18,
+      "flags": 0
+    },
+    {
+      "x": 105,
+      "y": 0,
+      "width": 35,
+      "height": 18,
+      "flags": 0
+    },
+    {
+      "x": 140,
+      "y": 0,
+      "width": 35,
+      "height": 18,
+      "flags": 0
+    },
+    {
+      "x": 175,
+      "y": 0,
+      "width": 35,
+      "height": 18,
+      "flags": 0
+    },
+    {
+      "x": 210,
+      "y": 0,
+      "width": 35,
+      "height": 18,
+      "flags": 0
+    },
+    {
+      "x": 245,
+      "y": 0,
+      "width": 35,
+      "height": 18,
+      "flags": 0
+    },
+    {
+      "x": 280,
+      "y": 0,
+      "width": 35,
+      "height": 18,
+      "flags": 0
+    }
+  ]
+}

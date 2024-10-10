@@ -46,7 +46,7 @@ declare global {
         /**
          * Draws a sprite on the canvas.
          */
-        function drawSpriteEx(x: number, y: number, spriteIndex: number, spriteSheetIndex?: number, flipX?: boolean, flipY?: boolean, scale?: number, originX?: number, originY?: number): void;
+        function drawSpriteEx(x: number, y: number, spriteIndex: number, spriteSheet?: string, flipX?: boolean, flipY?: boolean, scale?: number, originX?: number, originY?: number): void;
 
         /**
          * Puts a pixel on the canvas.

@@ -13,13 +13,34 @@ class InteractiveObjectsSystem {
             }
 
             // Check mouse click
-            if (state.mouseButtonStates[0] === 'pressed') {
-                // const isClicked = Collision.pointInPolygon(mousePosition, collider.vertices); // TODO: implement
+            // if (state.mouseButtonStates[0] === 'pressed') {
+            //     // const isClicked = Collision.pointInPolygon(mousePosition, collider.vertices); // TODO: implement
+            //     const isClicked = Collision.checkCollisionPoint(x, y, interactiveObject.colliderId);
+            //     if (isClicked) {
+            //         // stopPropagation for the poor:
+            //         state.mouseButtonStates[0] = 'up';
+            //
+            //         if (interactiveObject.action) {
+            //             this.processAction(entity, interactiveObject.action);
+            //         } else if (interactiveObject.actions) {
+            //             for (const action of interactiveObject.actions) {
+            //                 this.processAction(entity, action);
+            //             }
+            //         }
+            //     }
+            // }
+        });
+    }
+
+    handleMouseEvent(event) {
+        if (event.type === "mouseDown") {
+            const {x, y} = event.position;
+
+            let processed = false;
+
+            ECS.forEachEntity(["InteractiveObject", "Collider"], (entity, interactiveObject, collider) => {
                 const isClicked = Collision.checkCollisionPoint(x, y, interactiveObject.colliderId);
                 if (isClicked) {
-                    // stopPropagation for the poor:
-                    state.mouseButtonStates[0] = 'up';
-
                     if (interactiveObject.action) {
                         this.processAction(entity, interactiveObject.action);
                     } else if (interactiveObject.actions) {
@@ -27,9 +48,13 @@ class InteractiveObjectsSystem {
                             this.processAction(entity, action);
                         }
                     }
+
+                    processed = true;
                 }
-            }
-        });
+            });
+
+            return processed;
+        }
     }
 
     processAction(entity, action) {

@@ -129,19 +129,6 @@ export class MessageSystem {
 
             if (message.display === "typed") {
 
-                if (state.mouseButtonStates[0] === 'pressed') {
-                    if (!message.text) {
-                        return;
-                    }
-
-                    if (message.index < message.text.length) {
-                        message.index = message.text.length;
-                    } else {
-                        message.text = "";
-                        this.reset();
-                    }
-                }
-
                 for (let i = 0; i < Math.floor(message.index); i++) {
                     if (off.x === message.x) {
                         Graphics.drawFilledRect(off.x - 5, off.y - 1, 5, 9, 0x2e);
@@ -169,6 +156,28 @@ export class MessageSystem {
                 });
             }
         });
+    }
+
+    handleMouseEvent(event) {
+        if (event.type === "mouseDown") {
+            ECS.forEachEntity(["Message"], (entity, message) => {
+                if (message.display === "typed") {
+
+                    if (state.mouseButtonStates[0] === 'pressed') {
+                        if (!message.text) {
+                            return;
+                        }
+
+                        if (message.index < message.text.length) {
+                            message.index = message.text.length;
+                        } else {
+                            message.text = "";
+                            this.reset();
+                        }
+                    }
+                }
+            });
+        }
     }
 }
 

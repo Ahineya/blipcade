@@ -1,4 +1,5 @@
 import {state} from "../state/state.js";
+
 const PLAYER_SPEED = 30; // pixels per second
 const WIDTH = 320;
 const HEIGHT = 240;
@@ -41,38 +42,11 @@ const Geometry = {
 
 const normalize = (vector) => {
     const length = Math.sqrt(vector.x * vector.x + vector.y * vector.y);
-    return { x: vector.x / length, y: vector.y / length };
+    return {x: vector.x / length, y: vector.y / length};
 }
 
 class MoveSystem {
     update(deltaTime) {
-        if (state.mouseButtonStates[0] === 'pressed') {
-            const coords = Input.getMousePos();
-            log(`Mouse clicked at ${coords.x}, ${coords.y}`);
-
-            ECS.forEachEntity(["Player"], (playerEntity, player) => {
-                if (playerEntity) {
-                    const currentPosition = player.position;
-
-                    // Calculate the path from current position to clicked position
-                    const path = Pathfinding.findPath(
-                        Math.round(currentPosition.x),
-                        Math.round(currentPosition.y),
-                        Math.round(coords.x),
-                        Math.round(coords.y),
-                        player.navMeshIndex // Assuming '0' is a parameter for the pathfinding algorithm
-                    );
-
-                    if (path.length > 0) {
-                        player.path = path; // Store the path in the player's component
-                        player.currentPathIndex = 0; // Reset the current path index
-                    } else {
-                        log(`No path found from ${currentPosition.x}, ${currentPosition.y} to ${coords.x}, ${coords.y}`);
-                    }
-                }
-            });
-        }
-
         ECS.forEachEntity(["Player", "Sprite", "Animation", "Sound", "PlayerScale"], (playerEntity, player, sprite, animation, sound, playerScale) => {
             if (player.path && player.currentPathIndex < player.path.length) {
                 const targetPoint = player.path[player.currentPathIndex];
@@ -135,6 +109,35 @@ class MoveSystem {
                 sound.sounds.walk.isStopping = true;
             }
         });
+    }
+
+    handleMouseEvent(event) {
+        if (event.type === "mouseDown") {
+            const coords = Input.getMousePos();
+            log(`Mouse clicked at ${coords.x}, ${coords.y}`);
+
+            ECS.forEachEntity(["Player"], (playerEntity, player) => {
+                if (playerEntity) {
+                    const currentPosition = player.position;
+
+                    // Calculate the path from current position to clicked position
+                    const path = Pathfinding.findPath(
+                        Math.round(currentPosition.x),
+                        Math.round(currentPosition.y),
+                        Math.round(coords.x),
+                        Math.round(coords.y),
+                        player.navMeshIndex // Assuming '0' is a parameter for the pathfinding algorithm
+                    );
+
+                    if (path.length > 0) {
+                        player.path = path; // Store the path in the player's component
+                        player.currentPathIndex = 0; // Reset the current path index
+                    } else {
+                        log(`No path found from ${currentPosition.x}, ${currentPosition.y} to ${coords.x}, ${coords.y}`);
+                    }
+                }
+            });
+        }
     }
 }
 

@@ -1,4 +1,5 @@
 import {state} from "../state/state.js";
+import {levelSystem} from "./level.system.js";
 
 const PLAYER_SPEED = 30; // pixels per second
 const WIDTH = 320;
@@ -113,6 +114,10 @@ class MoveSystem {
 
     handleMouseEvent(event) {
         if (event.type === "mouseDown") {
+            if (levelSystem.isInScene()) {
+                return;
+            }
+
             const coords = Input.getMousePos();
 
             ECS.forEachEntity(["Player"], (playerEntity, player) => {

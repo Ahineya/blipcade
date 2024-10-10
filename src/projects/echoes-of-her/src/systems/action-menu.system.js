@@ -6,11 +6,6 @@ const ACTION_TO_SPRITE = {
 }
 
 class ActionMenuSystem {
-    update() {
-        ECS.forEachEntity(["ActionMenu"], (entity, actionMenu) => {
-
-        });
-    }
     draw() {
         ECS.forEachEntity(["ActionMenu"], (entity, actionMenu) => {
             if (!actionMenu.visible) {
@@ -22,11 +17,10 @@ class ActionMenuSystem {
             Graphics.drawFilledRect(x, y - 10, 1, 9, 0xfe);
             text(title, x + 1 + 5, y - 9, 0xfe);
 
-            //Graphics.drawFilledRect(x, y, 20, 20, 0x2e);
             this.drawButtons(entity, actionMenu);
 
             if (this.hoveredAction) {
-                const {x, y, actions} = actionMenu;
+                const {x, y} = actionMenu;
 
                 const textX = x + 5;
                 const textY = y - 10 - 8;

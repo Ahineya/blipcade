@@ -10,7 +10,7 @@ const createMiasmaEmitter = (position) => {
     return new ParticlesEmitter("Miasma Emitter", position, 5, 10, {x: 0, y: 2}, 2, MiasmaParticle);
 }
 
-const levels = [
+const scenes = [
     {
         id: "level1",
         objects: [
@@ -188,10 +188,24 @@ const levels = [
                 type: "interactive",
                 colliderId: "res://colliders/photoalbum.json",
                 description: "A photo album",
-                actions: [
+                hoverActions: [
                     {
-                        type: "showMessage",
-                        text: "This photo album holds memories of#people and places that no longer exist.#I'm afraid to open it."
+                        type: "Look at",
+                        actions: [
+                            {
+                                type: "showMessage",
+                                text: "This photo album holds memories of#people and places that no longer exist.#I'm afraid to open it."
+                            }
+                        ]
+                    },
+                    {
+                        type: "Use",
+                        actions: [
+                            {
+                                type: "showOverlayScene",
+                                sceneId: "photoalbum scene"
+                            },
+                        ]
                     }
                 ],
             },
@@ -269,6 +283,29 @@ const levels = [
                 origin: {x: 0, y: 0}
             }
         ],
+    },
+    {
+        id: "photoalbum scene",
+        objects: [
+            {
+                type: "background",
+                spriteSheet: "res://spritesheets/photoalbum.json",
+                spriteIndex: 0,
+                position: {x: 0, y: 0},
+                size: {width: 320, height: 240},
+                origin: {x: 0, y: 0}
+            },
+            {
+                type: "button",
+                position: {x: 160, y: 20},
+                text: "Close",
+                actions: [
+                    {
+                        type: "closeOverlayScene",
+                    }
+                ]
+            }
+        ]
     }
 ]
 
@@ -292,6 +329,38 @@ class LevelSystem {
         }
     }
 
+    showOverlayScene(sceneId) {
+        // Load scene json
+        // Create a scene entity with a Scene component {sceneId: sceneId}
+        // Load scene the same way as levels, but for each object, add a Scene component {sceneId: sceneId}. And ignore player related components
+        // draw system should draw the scene on top of the current scene
+
+        const scene = ECS.createEntity();
+        ECS.addComponent(scene, "Scene", {
+            sceneId
+        });
+
+        this.loadLevelObjects(sceneId, sceneId);
+        const levelController = ECS.getComponent(this.levelControllerEntity, "LevelController");
+        levelController.isInScene = true;
+
+        interactiveObjectsSystem.clear();
+    }
+
+    hideOverlayScene() {
+        ECS.forEachEntity(["Scene"], (entity, sceneComponent) => {
+            ECS.destroyEntity(entity);
+        });
+
+        const levelController = ECS.getComponent(this.levelControllerEntity, "LevelController");
+        levelController.isInScene = false;
+    }
+
+    isInScene() {
+        const levelController = ECS.getComponent(this.levelControllerEntity, "LevelController");
+        return levelController.isInScene;
+    }
+
     loadLevel(levelId) {
         log(`Loading level ${levelId}`);
 
@@ -305,27 +374,29 @@ class LevelSystem {
         this.loadLevelObjects(levelId);
     }
 
-    loadLevelObjects(levelId) {
-        const level = levels.find(l => l.id === levelId);
+    loadLevelObjects(levelId, sceneId = null) {
+        const level = scenes.find(l => l.id === levelId);
         if (!level) {
             log(`Level ${levelId} not found`);
             return;
         }
 
-        ECS.forEachEntity(["Player", "Sprite", "Animation", "PlayerScale"], (entity, player, sprite, animation, playerScale) => {
-            player.position = {...level.playerStartPosition};
-            sprite.position = {...level.playerStartPosition};
-            player.velocity = {x: 0, y: 0};
-            player.path = [];
-            player.currentPathIndex = 0;
-            animation.currentAnimation = "idle";
-            player.navMeshIndex = level.playerNavMeshIndex;
-            playerScale.min = level.playerScale.min;
-            playerScale.max = level.playerScale.max;
-            playerScale.quarterScreenMin = level.playerScale.quarterScreenMin;
+        if (!sceneId) {
+            ECS.forEachEntity(["Player", "Sprite", "Animation", "PlayerScale"], (entity, player, sprite, animation, playerScale) => {
+                player.position = {...level.playerStartPosition};
+                sprite.position = {...level.playerStartPosition};
+                player.velocity = {x: 0, y: 0};
+                player.path = [];
+                player.currentPathIndex = 0;
+                animation.currentAnimation = "idle";
+                player.navMeshIndex = level.playerNavMeshIndex;
+                playerScale.min = level.playerScale.min;
+                playerScale.max = level.playerScale.max;
+                playerScale.quarterScreenMin = level.playerScale.quarterScreenMin;
 
-            sprite.flipX = level.playerFacing === "left";
-        });
+                sprite.flipX = level.playerFacing === "left";
+            });
+        }
 
         level.objects.forEach(obj => {
             const entity = ECS.createEntity();
@@ -417,6 +488,20 @@ class LevelSystem {
                         actions: obj.hoverActions
                     });
                 }
+            }
+
+            if (obj.type === "button") {
+                ECS.addComponent(entity, "Button", {
+                    position: obj.position,
+                    text: obj.text,
+                    actions: obj.actions
+                });
+            }
+
+            if (sceneId) {
+                ECS.addComponent(entity, "Scene", {
+                    sceneId
+                });
             }
         });
 

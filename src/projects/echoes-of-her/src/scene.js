@@ -11,6 +11,7 @@ import {particlesSystem} from "./systems/particles.system.js";
 import {messageSystem} from "./systems/messageSystem.js";
 import {interactiveObjectsSystem} from "./systems/interactive-objects.system.js";
 import {actionMenuSystem} from "./systems/action-menu.system.js";
+import {buttonSystem} from "./systems/button.system.js";
 
 const CURSOR_SPRITESHEET = "res://spritesheets/cursor.json";
 
@@ -40,6 +41,7 @@ export function init() {
     state.systems = {
         levelSystem,
         drawSystem,
+        buttonSystem,
         actionMenuSystem,
         movementSystem,
         animationSystem,

@@ -1,4 +1,5 @@
 import {messageSystem} from "./messageSystem.js";
+import {levelSystem} from "./level.system.js";
 
 class InteractiveObjectsSystem {
     hoverEntity = null;
@@ -21,10 +22,27 @@ class InteractiveObjectsSystem {
     }
 
     handleMouseEvent(event) {
-        if (event.type === "mouseMove") {
+
+        const componentTypes = ["InteractiveObject", "Collider"];
+        if (levelSystem.isInScene()) {
+            componentTypes.push("Scene");
+        }
+
+        if (event.type === "mouseDown") {
+            const {x, y} = event.position;
+            ECS.forEachEntity(componentTypes, (entity, interactiveObject, collider) => {
+                const isMouseDown = Collision.checkCollisionPoint(x, y, interactiveObject.colliderId);
+
+                if (isMouseDown && interactiveObject.actions) {
+                    this.processActions(entity, interactiveObject.actions);
+                } else {
+
+                }
+            });
+        } else if (event.type === "mouseMove") {
             const {x, y} = event.position;
 
-            ECS.forEachEntity(["InteractiveObject", "Collider"], (entity, interactiveObject, collider) => {
+            ECS.forEachEntity(componentTypes, (entity, interactiveObject, collider) => {
                 const isHovered = Collision.checkCollisionPoint(x, y, interactiveObject.colliderId);
                 if (isHovered) {
                     this.showHoverActions(entity, interactiveObject, {x, y});
@@ -110,6 +128,14 @@ class InteractiveObjectsSystem {
                 const nextAnimationIndex = (currentAnimationIndex + 1) % animations.length;
                 animation.currentAnimation = animations[nextAnimationIndex];
 
+                break;
+            }
+            case "showOverlayScene": {
+                levelSystem.showOverlayScene(action.sceneId);
+                break;
+            }
+            case "closeOverlayScene": {
+                levelSystem.hideOverlayScene();
                 break;
             }
             default:

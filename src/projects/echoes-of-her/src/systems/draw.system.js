@@ -8,22 +8,38 @@ export const RenderLayer = {
 }
 
 class DrawSystem {
+    renderLayers = {};
+
     constructor() {
+        this.initRenderLayers();
     }
 
     init() {
     }
 
-    draw() {
-        // We want a y-sorting layer-based rendering system.
-
-        const renderLayers = {
+    initRenderLayers() {
+        this.renderLayers = {
             [RenderLayer.Background]: [],
             [RenderLayer.Entities]: [],
             [RenderLayer.Foreground]: []
         }
+    }
 
-        ECS.forEachEntity(["Render"], (entity, render) => {
+    update() {
+        this.initRenderLayers();
+
+        // Let's check if we have a scene
+        let scene = false;
+        ECS.forEachEntity(["Scene"], (entity, sceneComponent) => {
+            scene = sceneComponent;
+        });
+
+        const componentTypes = ["Render"];
+        if (scene) {
+            componentTypes.push("Scene");
+        }
+
+        ECS.forEachEntity(componentTypes, (entity, render) => {
             const sprite = ECS.getComponent(entity, "Sprite");
             const spriteGroup = ECS.getComponent(entity, "SpriteGroup");
 
@@ -41,7 +57,7 @@ class DrawSystem {
                     properties: {x, y, renderOrder: render.renderOrder || 0}
                 };
 
-                renderLayers[render.layer].push(o);
+                this.renderLayers[render.layer].push(o);
             } else if (sprite) {
                 // Entities with sprite
                 const {position: {x, y}, spriteIndex, spriteSheet, size: {width, height}, flipX, origin: {x: ox, y: oy}} = sprite;
@@ -61,7 +77,7 @@ class DrawSystem {
                     properties: {x, y, width, height, spriteIndex, spriteSheet, flipX, ox, oy, scale, renderOrder: render.renderOrder || 0}
                 };
 
-                renderLayers[layer].push(o);
+                this.renderLayers[layer].push(o);
             } else {
                 // Entities without sprite
                 const emitter = ECS.getComponent(entity, "ParticleEmitter");
@@ -76,33 +92,27 @@ class DrawSystem {
                     properties: {x: emitter.position.x, y: emitter.position.y, width: 1, height: 100, ox: 0.5 , oy: 0.5, id: emitter.id}
                 };
 
-                renderLayers[layer].push(o);
+                this.renderLayers[layer].push(o);
             }
         });
 
+        // Sort entities by origin Y
+        this.renderLayers[RenderLayer.Entities].sort((a, b) => {
+            return (a.properties.y) - (b.properties.y);
+        });
+    }
+
+    draw() {
+
+
+
         // Render background
-        renderLayers[RenderLayer.Background].forEach(({entity, properties: {x, y, spriteIndex, spriteSheet, flipX, ox, oy}}) => {
+        this.renderLayers[RenderLayer.Background].forEach(({entity, properties: {x, y, spriteIndex, spriteSheet, flipX, ox, oy}}) => {
             Graphics.drawSprite(x, y, spriteIndex, spriteSheet.toString(), flipX);
         });
 
-        // Sort entities by origin Y
-        renderLayers[RenderLayer.Entities].sort((a, b) => {
-            return (a.properties.y) - (b.properties.y);
-        });
-
-        // renderLayers[RenderLayer.Entities].sort((a, b) => {
-        //     const orderDiff = (a.properties.renderOrder || 0) - (b.properties.renderOrder || 0);
-        //     if (orderDiff !== 0) {
-        //         return orderDiff;
-        //     }
-        //     // If renderOrder is the same, sort by Y position (or bottom edge)
-        //     const aBottomY = a.properties.y + a.properties.height * (1 - a.properties.oy);
-        //     const bBottomY = b.properties.y + b.properties.height * (1 - b.properties.oy);
-        //     return aBottomY - bBottomY;
-        // });
-
         // Render entities and player with y-sorting
-        renderLayers[RenderLayer.Entities].forEach(({entity, sprites, properties}) => {
+        this.renderLayers[RenderLayer.Entities].forEach(({entity, sprites, properties}) => {
 
             if (sprites) {
                 sprites.forEach(sprite => {
@@ -151,7 +161,7 @@ class DrawSystem {
         });
 
         // Render foreground
-        renderLayers[RenderLayer.Foreground].forEach(({entity, properties: {x, y, spriteIndex, spriteSheet, flipX, ox, oy}}) => {
+        this.renderLayers[RenderLayer.Foreground].forEach(({entity, properties: {x, y, spriteIndex, spriteSheet, flipX, ox, oy}}) => {
             Graphics.drawSpriteEx(x, y, spriteIndex, spriteSheet, flipX, false, 1, ox, oy);
         });
     }

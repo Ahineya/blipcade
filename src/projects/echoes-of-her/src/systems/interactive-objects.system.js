@@ -1,36 +1,24 @@
-import {state} from "../state/state.js";
 import {messageSystem} from "./messageSystem.js";
 
 class InteractiveObjectsSystem {
-    // update() {
-    //     ECS.forEachEntity(["InteractiveObject", "Collider"], (entity, interactiveObject, collider) => {
-    //         const {x, y} = Input.getMousePos();
-    //         const isHovered = Collision.checkCollisionPoint(x, y, interactiveObject.colliderId);
-    //         if (isHovered) {
-    //             messageSystem.setTooltipText(interactiveObject.description, entity);
-    //         } else {
-    //             messageSystem.clearTooltipText(entity);
-    //         }
+    hoverEntity = null;
 
-            // Check mouse click
-            // if (state.mouseButtonStates[0] === 'pressed') {
-            //     // const isClicked = Collision.pointInPolygon(mousePosition, collider.vertices); // TODO: implement
-            //     const isClicked = Collision.checkCollisionPoint(x, y, interactiveObject.colliderId);
-            //     if (isClicked) {
-            //         // stopPropagation for the poor:
-            //         state.mouseButtonStates[0] = 'up';
-            //
-            //         if (interactiveObject.action) {
-            //             this.processAction(entity, interactiveObject.action);
-            //         } else if (interactiveObject.actions) {
-            //             for (const action of interactiveObject.actions) {
-            //                 this.processAction(entity, action);
-            //             }
-            //         }
-            //     }
-            // }
-        // });
-    // }
+    constructor() {
+        const menu = ECS.createEntity();
+        ECS.addComponent(menu, "ActionMenu", {
+            x: 0,
+            y: 0,
+            actions: [],
+            entity: null,
+            visible: false,
+            hovered: false,
+            title: ""
+        });
+
+        ECS.addComponent(menu, "Tag", "ActionMenu");
+        ECS.addComponent(menu, "Persistent", {});
+        this.menu = menu;
+    }
 
     handleMouseEvent(event) {
         if (event.type === "mouseDown") {
@@ -61,11 +49,59 @@ class InteractiveObjectsSystem {
                 const isHovered = Collision.checkCollisionPoint(x, y, interactiveObject.colliderId);
                 if (isHovered) {
                     messageSystem.setTooltipText(interactiveObject.description, entity);
+                    this.showHoverActions(entity, interactiveObject, {x, y});
+
                 } else {
                     messageSystem.clearTooltipText(entity);
+                    this.hideHoverActions(entity);
                 }
             });
         }
+    }
+
+    showHoverActions(entity, interactiveObject, {x, y}) {
+        const hoverActions = ECS.getComponent(entity, "HoverActions");
+        if (!hoverActions) {
+            return;
+        }
+
+        // Here we want to display a menu of actions that can be taken when hovering over an object
+        // log(`Hover actions: ${hoverActions.actions.map(action => action.type).join(", ")}`);
+
+        const actionMenu = ECS.getComponent(this.menu, "ActionMenu");
+        if (!actionMenu.visible) {
+            actionMenu.x = x;
+            actionMenu.y = y;
+            actionMenu.actions = hoverActions.actions;
+            actionMenu.entity = entity;
+            actionMenu.visible = true;
+            actionMenu.title = interactiveObject.description;
+        }
+
+        this.hoverEntity = entity;
+    }
+
+    hideHoverActions(entity) {
+        // log(`Hide hover actions for entity ${entity}, hoverEntity: ${this.hoverEntity}`);
+        if (this.hoverEntity !== entity) {
+            return;
+        }
+
+        const actionMenu = ECS.getComponent(this.menu, "ActionMenu");
+        if (!actionMenu.hovered) {
+            actionMenu.visible = false;
+        }
+
+        this.hoverEntity = null;
+
+
+        log("Hide hover actions");
+    }
+
+    processActions(entity, actions) {
+        actions.forEach(action => {
+            this.processAction(entity, action);
+        });
     }
 
     processAction(entity, action) {

@@ -155,8 +155,43 @@ const levels = [
             },
             {
                 type: "interactive",
+                colliderId: "res://colliders/photoalbum.json",
+                description: "A photo album",
+                actions: [
+                    {
+                        type: "showMessage",
+                        text: "This photo album holds memories of#people and places that no longer exist.#I'm afraid to open it."
+                    }
+                ],
+            },
+            {
+                type: "interactive",
                 colliderId: "res://colliders/radio.json",
                 description: "A vintage radio",
+                hoverActions: [
+                    {
+                        type: "look",
+                        actions: [
+                            {
+                                type: "showMessage",
+                                text: "This radio played the soundtrack of my youth.#Sometimes, I turn it on hoping to hear a melody#that brings back forgotten joys."
+                            }
+                        ]
+                    },
+                    {
+                        type: "use",
+                        actions: [
+                            {
+                                type: "playSound",
+                                soundId: Sound.loadSound('res://sounds/radio/searching-for-light-filtered.mp3'),
+                                volume: 0.5
+                            },
+                            {
+                                type: "nextAnimation"
+                            }
+                        ]
+                    }
+                ],
                 actions: [
                     {
                         type: "showMessage",
@@ -358,6 +393,12 @@ class LevelSystem {
 
                 if (obj.animation) {
                     ECS.addComponent(entity, "Animation", obj.animation);
+                }
+
+                if (obj.hoverActions) {
+                    ECS.addComponent(entity, "HoverActions", {
+                        actions: obj.hoverActions
+                    });
                 }
             }
         });

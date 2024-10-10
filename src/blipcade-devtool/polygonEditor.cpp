@@ -159,6 +159,25 @@ namespace blipcade::devtool {
             GenerateNavmesh(polygons[selectedPolygon]);
             currentEditingPolygon = -1; // Finish editing
         }
+
+        // When "left" is pressed, change offset
+        if (IsKeyDown(KEY_LEFT)) {
+            const auto offsetX = devtool.getOffset().x + 10;
+            const auto offset = Vector2{offsetX, devtool.getOffset().y};
+            devtool.setOffset(offset);
+        } else if (IsKeyDown(KEY_RIGHT)) {
+            const auto offsetX = devtool.getOffset().x - 10;
+            const auto offset = Vector2{offsetX, devtool.getOffset().y};
+            devtool.setOffset(offset);
+        } else if (IsKeyDown(KEY_UP)) {
+            const auto offsetY = devtool.getOffset().y - 10;
+            const auto offset = Vector2{devtool.getOffset().x, offsetY};
+            devtool.setOffset(offset);
+        } else if (IsKeyDown(KEY_DOWN)) {
+            const auto offsetY = devtool.getOffset().y + 10;
+            const auto offset = Vector2{devtool.getOffset().x, offsetY};
+            devtool.setOffset(offset);
+        }
     }
 
     void PolygonEditor::RenderPolygons() {
@@ -297,14 +316,14 @@ namespace blipcade::devtool {
     }
 
     Vector2 PolygonEditor::GameToScreen(const Vector2 &gamePos) const {
-        float x = gamePos.x * devtool.getScale() + devtool.getCanvasOffset().x;
-        float y = gamePos.y * devtool.getScale() + devtool.getCanvasOffset().y;
+        float x = (gamePos.x + devtool.getOffset().x) * devtool.getScale() + devtool.getCanvasOffset().x;
+        float y = (gamePos.y + devtool.getOffset().y) * devtool.getScale() + devtool.getCanvasOffset().y;
         return Vector2{x, y};
     }
 
     Vector2 PolygonEditor::ScreenToGame(const Vector2 &screenPos) const {
-        float x = (screenPos.x - devtool.getCanvasOffset().x) / devtool.getScale();
-        float y = (screenPos.y - devtool.getCanvasOffset().y) / devtool.getScale();
+        float x = (screenPos.x - devtool.getCanvasOffset().x) / devtool.getScale() - devtool.getOffset().x;
+        float y = (screenPos.y - devtool.getCanvasOffset().y) / devtool.getScale() - devtool.getOffset().y;
 
         // round to nearest integer
         x = std::round(x);

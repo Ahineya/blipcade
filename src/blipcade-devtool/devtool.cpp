@@ -60,6 +60,14 @@ namespace blipcade::devtool {
         return canvasSize;
     }
 
+    Vector2 Devtool::getOffset() const {
+        return runtime.getOffset();
+    }
+
+    void Devtool::setOffset(const Vector2 &offset) {
+        runtime.setOffset(offset.x, offset.y);
+    }
+
     static bool show_demo_window = false;
 
     void Devtool::init() {

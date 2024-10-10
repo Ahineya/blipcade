@@ -70,6 +70,9 @@ class MoveSystem {
                     player.position.y += normalizedDirection.y * distanceThisFrame;
                 }
 
+                // Calculate player velocity
+                player.velocity.x = -normalizedDirection.x;
+
                 // Update sprite position
                 sprite.position.x = Math.round(player.position.x);
                 sprite.position.y = Math.round(player.position.y);

@@ -19,7 +19,7 @@ const scenes = [
                 spriteSheet: 1,
                 spriteIndex: "res://spritesheets/level1-bg.json",
                 position: {x: 0, y: 0},
-                size: {width: 320, height: 200},
+                size: {width: 320, height: 240},
                 origin: {x: 0, y: 0}
             },
             {
@@ -279,18 +279,27 @@ const scenes = [
                 spriteSheet: "res://spritesheets/hub.json",
                 spriteIndex: 0,
                 position: {x: 0, y: 0},
-                size: {width: 320, height: 240},
+                size: {width: 320 * 3, height: 240},
                 origin: {x: 0, y: 0}
+            },
+            {
+                type: "sprite",
+                spriteSheet: "res://spritesheets/hub-middle-overlay.json",
+                spriteIndex: 0,
+                origin: {x: 0.5, y: 1.0},
+                size: {width: 254, height: 49},
+                position: {x: 320 + 160, y: 240}
             }
         ],
-        playerStartPosition: {x: 38, y: 197},
+        playerStartPosition: {x: 475, y: 187},
         playerFacing: "right",
         playerNavMeshIndex: "res://navmeshes/hub-1.json",
         playerScale: {
             min: 0.1,
             max: 2.5,
             quarterScreenMin: 0
-        }
+        },
+        camera: {x: -320, y: 0}
     },
     {
         id: "photoalbum scene",
@@ -412,6 +421,8 @@ class LevelSystem {
         // Here would be nice to have a transition effects
 
         this.loadLevelObjects(levelId);
+
+        // Graphics.setCamera(-320, 0);
     }
 
     loadLevelObjects(levelId, sceneId = null) {
@@ -420,6 +431,10 @@ class LevelSystem {
             log(`Level ${levelId} not found`);
             return;
         }
+
+        const levelController = ECS.getComponent(this.levelControllerEntity, "LevelController");
+        levelController.width = level.objects.find(obj => obj.type === "background").size.width;
+        levelController.height = level.objects.find(obj => obj.type === "background").size.height;
 
         if (!sceneId) {
             ECS.forEachEntity(["Player", "Sprite", "Animation", "PlayerScale"], (entity, player, sprite, animation, playerScale) => {
@@ -437,6 +452,13 @@ class LevelSystem {
                 sprite.flipX = level.playerFacing === "left";
             });
         }
+
+        const cameraOffset = level.camera || {x: 0, y: 0};
+
+        ECS.forEachEntity(["Camera"], (entity, camera) => {
+            camera.x = cameraOffset.x;
+            camera.y = cameraOffset.y;
+        });
 
         level.objects.forEach(obj => {
             const entity = ECS.createEntity();

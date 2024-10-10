@@ -1,0 +1,14 @@
+{
+  "texture": {
+    "image": "hub-middle-overlay.png"
+  },
+  "sprites": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 254,
+      "height": 49,
+      "flags": 0
+    }
+  ]
+}

@@ -240,12 +240,12 @@ namespace blipcade::runtime {
         graphics.set_property("setCamera", [this](const quickjs::args &a) {
             auto argsCount = a.size();
 
-            int32_t offsetX = 0, offsetY = 0;
+            double offsetX = 0, offsetY = 0;
 
-            if (argsCount >= 1) offsetX = a[0].as_int32();
-            if (argsCount >= 2) offsetY = a[1].as_int32();
+            if (argsCount >= 1) offsetX = a[0].as_double();
+            if (argsCount >= 2) offsetY = a[1].as_double();
 
-            m_runtime.getCanvas()->setCamera(offsetX, offsetY);
+            m_runtime.setOffset(offsetX, offsetY);
         });
     }
 

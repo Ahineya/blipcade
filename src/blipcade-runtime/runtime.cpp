@@ -101,6 +101,18 @@ namespace blipcade::runtime {
         std::cout << "Loaded " << colliders.size() << " colliders" << std::endl;
     }
 
+    Vector2 Runtime::getOffset() const {
+        return Vector2{offsetX, offsetY};
+    }
+
+    void Runtime::setOffset(float x, float y) {
+        offsetX = x;
+        offsetY = y;
+
+        canvas->setCamera(x, y);
+    }
+
+
     std::shared_ptr<graphics::Canvas> Runtime::getCanvas() const {
         return canvas;
     }
@@ -376,7 +388,7 @@ namespace blipcade::runtime {
     }
 
     void Runtime::mouseMove(int x, int y) {
-        mouse_state->setPos(x, y);
+        mouse_state->setPos(x - offsetX, y - offsetY);
     }
 
     // Vector2 getMousePos(int &x, int &y) const;

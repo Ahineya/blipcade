@@ -38,6 +38,10 @@ namespace blipcade::devtool {
 
         [[nodiscard]] float getScale() const;
         [[nodiscard]] Vector2 getCanvasOffset() const;
+        [[nodiscard]] Vector2 getOffset() const;
+
+        void setOffset(const Vector2 &offset);
+
         [[nodiscard]] Vector2 getCanvasSize() const;
 
     private:

@@ -65,7 +65,9 @@ namespace blipcade::runtime {
     } namelist_t;
 
     static void find_unique_cname(char *cname, size_t cname_size);
+
     namelist_entry_t *namelist_find(namelist_t *lp, const char *name);
+
     JSModuleDef *jsc_module_loader(JSContext *ctx,
                                    const char *module_name, void *opaque);
 
@@ -92,14 +94,19 @@ namespace blipcade::runtime {
         bool isButtonPressed(MouseButton button) const;
 
         void mouseDown(MouseButton button);
+
         void mouseUp(MouseButton button);
+
         void mouseMove(int x, int y);
 
         void init();
+
         void update();
+
         void draw(const RenderTexture2D &renderTexture) const;
 
-        void postProcess(const RenderTexture2D &postProcessTexture, const RenderTexture2D &renderTexture, const Rectangle &srcRect,
+        void postProcess(const RenderTexture2D &postProcessTexture, const RenderTexture2D &renderTexture,
+                         const Rectangle &srcRect,
                          const Rectangle &destRect, const Vector2 &origin, float rotation, const Color &tint) const;
 
         [[nodiscard]] std::shared_ptr<quickjs::context> getContext() const;
@@ -110,20 +117,24 @@ namespace blipcade::runtime {
 
         [[nodiscard]] std::shared_ptr<graphics::Font> getFont() const;
 
-        [[nodiscard]] std::shared_ptr<std::unordered_map<std::string, graphics::Spritesheet>> getSpritesheets() const;
+        [[nodiscard]] std::shared_ptr<std::unordered_map<std::string, graphics::Spritesheet> > getSpritesheets() const;
 
         [[nodiscard]] std::shared_ptr<audio::Audio> getAudio() const;
 
-        [[nodiscard]] std::shared_ptr<std::unordered_map<std::string, collision::Collider>> getColliders() const;
+        [[nodiscard]] std::shared_ptr<std::unordered_map<std::string, collision::Collider> > getColliders() const;
 
-        [[nodiscard]] std::shared_ptr<std::unordered_map<std::string, collision::NavMesh>> getNavmeshes() const;
+        [[nodiscard]] std::shared_ptr<std::unordered_map<std::string, collision::NavMesh> > getNavmeshes() const;
 
         [[nodiscard]] std::shared_ptr<ecs::ECS> getECS() const;
 
         [[nodiscard]] std::shared_ptr<renderer::Postprocessing> getPostprocessing() const;
 
         void setCartridge(std::shared_ptr<Cartridge>);
+
         void setProject(std::shared_ptr<loader::Project>);
+
+        Vector2 getOffset() const;
+        void setOffset(float x, float y);
 
     private:
         std::unique_ptr<quickjs::runtime> js_runtime;
@@ -134,9 +145,9 @@ namespace blipcade::runtime {
         std::shared_ptr<loader::Project> project;
 
         std::shared_ptr<graphics::Canvas> canvas;
-        std::shared_ptr<std::unordered_map<std::string, graphics::Spritesheet>> spritesheets;
-        std::shared_ptr<std::unordered_map<std::string, collision::Collider>> colliders;
-        std::shared_ptr<std::unordered_map<std::string, collision::NavMesh>> navmeshes;
+        std::shared_ptr<std::unordered_map<std::string, graphics::Spritesheet> > spritesheets;
+        std::shared_ptr<std::unordered_map<std::string, collision::Collider> > colliders;
+        std::shared_ptr<std::unordered_map<std::string, collision::NavMesh> > navmeshes;
         std::shared_ptr<std::string> code;
         std::shared_ptr<Keystate> key_flags;
         std::shared_ptr<Mousestate> mouse_state;
@@ -151,7 +162,7 @@ namespace blipcade::runtime {
 
         std::string cart_to_load;
 
-        std::shared_ptr<std::optional<std::pair<uint32_t, uint32_t>>> resize_request;
+        std::shared_ptr<std::optional<std::pair<uint32_t, uint32_t> > > resize_request;
 
         void register_global_functions();
 
@@ -160,8 +171,10 @@ namespace blipcade::runtime {
 
         float globalTime = 0;
         std::chrono::steady_clock::time_point lastTime;
-    };
 
+        float offsetX = 0;
+        float offsetY = 0;
+    };
 } // runtime
 // blipcade
 

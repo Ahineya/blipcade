@@ -2,6 +2,8 @@ import {RenderLayer} from "./draw.system.js";
 import {particlesSystem} from "./particles.system.js";
 import {MiasmaParticle, ParticlesEmitter} from "../particles.js";
 import {messageSystem} from "./messageSystem.js";
+import {actionMenuSystem} from "./action-menu.system.js";
+import {interactiveObjectsSystem} from "./interactive-objects.system.js";
 
 // This should not be here
 const createMiasmaEmitter = (position) => {
@@ -16,8 +18,8 @@ const levels = [
                 type: "background",
                 spriteSheet: 1,
                 spriteIndex: "res://spritesheets/level1-bg.json",
-                position: { x: 0, y: 0 },
-                size: { width: 320, height: 200 },
+                position: {x: 0, y: 0},
+                size: {width: 320, height: 200},
                 origin: {x: 0, y: 0}
             },
             {
@@ -26,7 +28,7 @@ const levels = [
                 spriteIndex: 0,
                 origin: {x: 0.5, y: 0.75},
                 size: {width: 112, height: 29},
-                position: { x: 157, y: 138 }
+                position: {x: 157, y: 138}
             },
             {
                 type: "music",
@@ -48,7 +50,7 @@ const levels = [
                 ]
             }
         ],
-        playerStartPosition: { x: 112, y: 167 },
+        playerStartPosition: {x: 112, y: 167},
         playerFacing: "right",
         playerNavMeshIndex: "res://navmeshes/level1.json",
         playerScale: {
@@ -65,8 +67,8 @@ const levels = [
                 type: "background",
                 spriteSheet: "res://spritesheets/level2-bg.json",
                 spriteIndex: 0,
-                position: { x: 0, y: 0 },
-                size: { width: 320, height: 200 },
+                position: {x: 0, y: 0},
+                size: {width: 320, height: 200},
                 origin: {x: 0, y: 0}
             },
             {
@@ -78,7 +80,7 @@ const levels = [
                         spriteIndex: 0,
                         origin: {x: 0.5, y: 0.85},
                         size: {width: 159, height: 118},
-                        position: { x: 161, y: 206 }
+                        position: {x: 161, y: 206}
                     },
                     {
                         type: "sprite",
@@ -86,7 +88,7 @@ const levels = [
                         spriteIndex: 0,
                         origin: {x: 0.5, y: 0.5},
                         size: {width: 23, height: 22},
-                        position: { x: 180, y: 160 }
+                        position: {x: 180, y: 160}
                     },
                 ]
             },
@@ -98,41 +100,70 @@ const levels = [
             {
                 type: "interactive",
                 colliderId: "res://colliders/bookshelf.json",
-                description: "A bookshelf filled with books",
-                action: {
-                    type: "showMessage",
-                    text: "Many times I lost myself in these pages...#But today, they seem to be written in a language#I can't understand."
-                }
+                description: "A bookshelf",
+                hoverActions: [
+                    {
+                        type: 'Look',
+                        actions: [
+                            {
+                                type: "showMessage",
+                                text: "Many times I lost myself in these pages...#But today, they seem to be written in a language#I can't understand."
+                            }
+                        ]
+                    }
+
+                ]
             },
             {
                 type: "interactive",
                 colliderId: "res://colliders/painting.json",
                 description: "A picture of a man",
-                action: {
-                    type: "showMessage",
-                    text: "I painted Miguel two years ago.#Even though we're no longer together,#I can't bring myself to take his portrait down."
-                }
+                hoverActions: [
+                    {
+                        type: 'Look',
+                        actions: [
+                            {
+                                type: "showMessage",
+                                text: "I painted Miguel two years ago.#Even though we're no longer together,#I can't bring myself to take his portrait down."
+                            }
+                        ]
+                    }
+                ]
             },
             {
                 type: "interactive",
                 colliderId: "res://colliders/plant.json",
                 description: "A plant",
-                action: {
-                    type: "showMessage",
-                    text: "I brought home this aloe to symbolize my#journey of healing.#Now, its leaves wither and fade."
-                }
+                hoverActions: [
+                    {
+                        type: 'Look',
+                        actions: [
+                            {
+                                type: "showMessage",
+                                text: "I brought home this aloe to symbolize my#journey of healing.#Now, its leaves wither and fade."
+                            }
+                        ]
+                    }
+                ]
             },
             {
                 type: "interactive",
                 colliderId: "res://colliders/teddy.json",
                 description: "A teddy bear",
-                action: {
-                    type: "showMessage",
-                    text: "This teddy bear was my companion#through many sleepless nights."
-                }
+                hoverActions: [
+                    {
+                        type: 'Look',
+                        actions: [
+                            {
+                                type: "showMessage",
+                                text: "This teddy bear was my companion#through many sleepless nights."
+                            }
+                        ]
+                    }
+                ]
             }
         ],
-        playerStartPosition: { x: 38, y: 197 },
+        playerStartPosition: {x: 38, y: 197},
         playerFacing: "right",
         playerNavMeshIndex: "res://navmeshes/level2.json",
         playerScale: {
@@ -149,8 +180,8 @@ const levels = [
                 type: "background",
                 spriteSheet: "res://spritesheets/level3-bg.json",
                 spriteIndex: 0,
-                position: { x: 0, y: 0 },
-                size: { width: 320, height: 240 },
+                position: {x: 0, y: 0},
+                size: {width: 320, height: 240},
                 origin: {x: 0, y: 0}
             },
             {
@@ -192,27 +223,13 @@ const levels = [
                         ]
                     }
                 ],
-                actions: [
-                    {
-                        type: "showMessage",
-                        text: "This radio played the soundtrack of my youth.#Sometimes, I turn it on hoping to hear a melody#that brings back forgotten joys."
-                    },
-                    {
-                        type: "playSound",
-                        soundId: Sound.loadSound('res://sounds/radio/searching-for-light-filtered.mp3'),
-                        volume: 0.5
-                    },
-                    {
-                        type: "nextAnimation"
-                    }
-                ],
                 sprite: {
                     type: "sprite",
                     spriteSheet: "res://spritesheets/radio.json",
                     spriteIndex: 0,
                     origin: {x: 0.5, y: 0.5},
                     size: {width: 35, height: 18},
-                    position: { x: 191, y: 159 }
+                    position: {x: 191, y: 159}
                 },
                 animation: {
                     type: "animation",
@@ -231,7 +248,7 @@ const levels = [
                 }
             }
         ],
-        playerStartPosition: { x: 38, y: 197 },
+        playerStartPosition: {x: 38, y: 197},
         playerFacing: "right",
         playerNavMeshIndex: "res://navmeshes/level3.json",
         playerScale: {
@@ -247,8 +264,8 @@ const levels = [
                 type: "background",
                 spriteSheet: "res://spritesheets/photoalbum.json",
                 spriteIndex: 0,
-                position: { x: 0, y: 0 },
-                size: { width: 320, height: 240 },
+                position: {x: 0, y: 0},
+                size: {width: 320, height: 240},
                 origin: {x: 0, y: 0}
             }
         ],
@@ -296,9 +313,9 @@ class LevelSystem {
         }
 
         ECS.forEachEntity(["Player", "Sprite", "Animation", "PlayerScale"], (entity, player, sprite, animation, playerScale) => {
-            player.position = { ...level.playerStartPosition };
-            sprite.position = { ...level.playerStartPosition };
-            player.velocity = { x: 0, y: 0 };
+            player.position = {...level.playerStartPosition};
+            sprite.position = {...level.playerStartPosition};
+            player.velocity = {x: 0, y: 0};
             player.path = [];
             player.currentPathIndex = 0;
             animation.currentAnimation = "idle";
@@ -409,6 +426,8 @@ class LevelSystem {
     unloadCurrentLevel() {
         particlesSystem.clear();
         messageSystem.clear();
+        actionMenuSystem.clear();
+        interactiveObjectsSystem.clear();
 
         ECS.forEachEntity([], (entity) => {
             if (ECS.getComponent(entity, "Music")) {

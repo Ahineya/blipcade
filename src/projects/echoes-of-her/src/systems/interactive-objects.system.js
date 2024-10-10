@@ -21,38 +21,14 @@ class InteractiveObjectsSystem {
     }
 
     handleMouseEvent(event) {
-        if (event.type === "mouseDown") {
-            const {x, y} = event.position;
-
-            let processed = false;
-
-            ECS.forEachEntity(["InteractiveObject", "Collider"], (entity, interactiveObject, collider) => {
-                const isClicked = Collision.checkCollisionPoint(x, y, interactiveObject.colliderId);
-                if (isClicked) {
-                    if (interactiveObject.action) {
-                        this.processAction(entity, interactiveObject.action);
-                    } else if (interactiveObject.actions) {
-                        for (const action of interactiveObject.actions) {
-                            this.processAction(entity, action);
-                        }
-                    }
-
-                    processed = true;
-                }
-            });
-
-            return processed;
-        } else if (event.type === "mouseMove") {
+        if (event.type === "mouseMove") {
             const {x, y} = event.position;
 
             ECS.forEachEntity(["InteractiveObject", "Collider"], (entity, interactiveObject, collider) => {
                 const isHovered = Collision.checkCollisionPoint(x, y, interactiveObject.colliderId);
                 if (isHovered) {
-                    messageSystem.setTooltipText(interactiveObject.description, entity);
                     this.showHoverActions(entity, interactiveObject, {x, y});
-
                 } else {
-                    messageSystem.clearTooltipText(entity);
                     this.hideHoverActions(entity);
                 }
             });
@@ -65,8 +41,9 @@ class InteractiveObjectsSystem {
             return;
         }
 
-        // Here we want to display a menu of actions that can be taken when hovering over an object
-        // log(`Hover actions: ${hoverActions.actions.map(action => action.type).join(", ")}`);
+        if (this.hoverEntity) {
+            return;
+        }
 
         const actionMenu = ECS.getComponent(this.menu, "ActionMenu");
         if (!actionMenu.visible) {
@@ -82,7 +59,6 @@ class InteractiveObjectsSystem {
     }
 
     hideHoverActions(entity) {
-        // log(`Hide hover actions for entity ${entity}, hoverEntity: ${this.hoverEntity}`);
         if (this.hoverEntity !== entity) {
             return;
         }
@@ -90,12 +66,8 @@ class InteractiveObjectsSystem {
         const actionMenu = ECS.getComponent(this.menu, "ActionMenu");
         if (!actionMenu.hovered) {
             actionMenu.visible = false;
+            this.hoverEntity = null;
         }
-
-        this.hoverEntity = null;
-
-
-        log("Hide hover actions");
     }
 
     processActions(entity, actions) {
@@ -145,6 +117,14 @@ class InteractiveObjectsSystem {
         }
     }
 
+    clear() {
+        ECS.forEachEntity(["ActionMenu"], (entity, actionMenu) => {
+            actionMenu.visible = false;
+            actionMenu.hovered = false;
+        });
+
+        this.hoverEntity = null;
+    }
 }
 
 export const interactiveObjectsSystem = new InteractiveObjectsSystem();

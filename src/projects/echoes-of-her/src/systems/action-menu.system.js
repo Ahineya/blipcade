@@ -1,5 +1,10 @@
 import {interactiveObjectsSystem} from "./interactive-objects.system.js";
 
+const ACTION_TO_SPRITE = {
+    "look": 0,
+    "use": 1,
+}
+
 class ActionMenuSystem {
     update() {
         ECS.forEachEntity(["ActionMenu"], (entity, actionMenu) => {
@@ -28,7 +33,12 @@ class ActionMenuSystem {
             const buttonX = x + (index * 12) + 5;
             const buttonY = y;
             Graphics.drawFilledRect(buttonX, buttonY, 12, 12, 0x2e);
-            text(action.type[0], buttonX + 1, buttonY + 1, 0xfe);
+
+            if (this.hoveredAction === action.type) {
+                Graphics.drawFilledRect(buttonX, buttonY, 12, 12, 0xf3);
+            }
+
+            Graphics.drawSprite(buttonX, buttonY, ACTION_TO_SPRITE[action.type], "res://spritesheets/icons.json");
         });
     }
 
@@ -39,7 +49,7 @@ class ActionMenuSystem {
                     return;
                 }
 
-                let {x, y} = actionMenu;
+                let {x, y, actions} = actionMenu;
                 y = y - 10;
 
                 const menuWidth = actionMenu.actions.length * 12 + 5;
@@ -47,6 +57,25 @@ class ActionMenuSystem {
                 const isHovered = event.position.x >= x && event.position.x <= x + menuWidth && event.position.y >= y && event.position.y <= y + menuHeight
 
                 actionMenu.hovered = isHovered;
+
+                let isHoveringButton = false;
+                actions.forEach((action, index) => {
+                    const buttonX = x + (index * 12) + 5;
+                    const buttonY = y + 10;
+
+                    // const isClicked = Collision.checkCollisionPoint(buttonX, buttonY, 12, 12);
+                    // We don't have Collision.checkCollisionPoint yet, let's do a manual check:
+                    const isHovered = event.position.x >= buttonX && event.position.x < buttonX + 12 && event.position.y >= buttonY && event.position.y < buttonY + 12
+
+                    if (isHovered) {
+                        this.hoveredAction = action.type;
+                        isHoveringButton = true;
+                    }
+                });
+
+                if (!isHoveringButton) {
+                    this.hoveredAction = null;
+                }
             });
         } else if (event.type === "mouseDown") {
             let handled = false;
@@ -83,6 +112,8 @@ class ActionMenuSystem {
             actionMenu.visible = false;
             actionMenu.hovered = false;
         });
+
+        this.hoveredAction = null;
     }
 }
 

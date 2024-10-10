@@ -20,6 +20,8 @@ namespace blipcade {
 
             void bindSetTransparentColor(quickjs::value &global);
 
+            void bindSetCamera(quickjs::value &global);
+
             void bindTextFunction(quickjs::value& global);
 
             void bindBlipFunctions(quickjs::value &global);

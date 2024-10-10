@@ -274,6 +274,36 @@ class MoveSystem {
 // }
 
 export function getScale(y, min = 0.2, max = 1, quarterScreenMin = 1.0) {
+
+    // if quarterScreenMin is 0, then we want just a simple linear scale from min to max
+    if (quarterScreenMin === 0) {
+        const quarterScreenY = Screen.height * 0.85;
+        const maxScale = 2;
+
+        // Clamp Y to the screen bounds
+        const clampedY = Math.max(0, Math.min(y, Screen.height));
+
+        let scale;
+
+        if (clampedY <= quarterScreenY) {
+            // Normalize Y to [0,1]
+            const t = clampedY / quarterScreenY;
+
+            // Ease-In Quadratic Function
+            const easeInQuad = t * t * t * t;
+
+            // Ease-In Sine Function
+            // const easeInSin = 1 - Math.cos((Math.PI / 2) * t);
+
+            scale = min + (max - min) * easeInQuad;
+        } else {
+            // Scale increases linearly from 1.0 to maxScale as y increases from quarterScreenY to Screen.height
+            scale = max + ((clampedY - quarterScreenY) / (Screen.height - quarterScreenY)) * (maxScale - 1.0);
+        }
+
+        return Math.max(0.2, Math.min(scale, maxScale));
+    }
+
     const quarterScreenY = Screen.height * 0.65;
     const maxScale = 2;
 

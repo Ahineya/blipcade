@@ -31,7 +31,6 @@ namespace blipcade::runtime {
         // Graphics
         bindGraphicsGlobalObject(global);
 
-
         // Lighting
         bindLightingGlobalObject(global);
         bindAddLightEffect(global);
@@ -193,6 +192,7 @@ namespace blipcade::runtime {
         createNamespace(global, "Graphics");
 
         bindSetTransparentColor(global);
+        bindSetCamera(global);
         bindFillScreen(global);
         bindPutPixel(global);
         bindDrawLine(global);
@@ -224,6 +224,28 @@ namespace blipcade::runtime {
             if (argsCount >= 1) color = a[0].as_int32();
 
             m_runtime.getCanvas()->setTransparentColor(color);
+        });
+    }
+
+    /**
+     * @function setCamera
+     * @param {number} offsetX - The x-coordinate of the camera.
+     * @param {number} offsetY - The y-coordinate of the camera.
+     * @description Sets the camera position.
+     * @example Graphics.setCamera(100, 100); // Sets the camera position to (100, 100).
+     */
+    void JSBindings::bindSetCamera(quickjs::value &global) {
+        auto graphics = global.get_property("Graphics");
+
+        graphics.set_property("setCamera", [this](const quickjs::args &a) {
+            auto argsCount = a.size();
+
+            int32_t offsetX = 0, offsetY = 0;
+
+            if (argsCount >= 1) offsetX = a[0].as_int32();
+            if (argsCount >= 2) offsetY = a[1].as_int32();
+
+            m_runtime.getCanvas()->setCamera(offsetX, offsetY);
         });
     }
 

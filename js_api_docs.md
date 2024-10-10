@@ -10,6 +10,7 @@
    - [Function: loadNavmesh](#function-loadnavmesh)
 - [Namespace: Graphics](#namespace-graphics)
    - [Function: setTransparentColor](#function-settransparentcolor)
+   - [Function: setCamera](#function-setcamera)
    - [Function: fillScreen](#function-fillscreen)
    - [Function: drawSprite](#function-drawsprite)
    - [Function: drawSpriteEx](#function-drawspriteex)
@@ -150,6 +151,23 @@ Namespace: `Graphics`
 
 ```javascript
 Graphics.setTransparentColor(0x00); // Black color will be transparent
+```
+
+---
+#### Function: `setCamera`
+**Description:** Sets the camera position.
+
+**Parameters (Required):**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `offsetX` | `number` | The x-coordinate of the camera. |
+| `offsetY` | `number` | The y-coordinate of the camera. |
+
+**Example:**
+
+```javascript
+Graphics.setCamera(100, 100); // Sets the camera position to (100, 100).
 ```
 
 ---

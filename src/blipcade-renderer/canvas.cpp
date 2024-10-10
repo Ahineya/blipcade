@@ -155,50 +155,84 @@ lightEffects()  {
 
     void Canvas::drawPixel(const int32_t x, const int32_t y, const uint8_t color) {
         const auto realColor = colorLookup[virtualPalette[color]];
-        DrawPixel(x, y, realColor);
+        const auto realX = x + offsetX;
+        const auto realY = y + offsetY;
+        DrawPixel(realX, realY, realColor);
     }
 
     void Canvas::drawLine(const int32_t x0, const int32_t y0, const int32_t x1, const int32_t y1,
                           const uint8_t color) const {
         // TODO: clipper
         auto realColor = colorLookup[virtualPalette[color]];
-        DrawLine(x0, y0, x1, y1, realColor);
+        const auto realX0 = x0 + offsetX;
+        const auto realY0 = y0 + offsetY;
+        const auto realX1 = x1 + offsetX;
+        const auto realY1 = y1 + offsetY;
+
+        DrawLine(realX0, realY0, realX1, realY1, realColor);
     }
 
     void Canvas::drawCircle(const int32_t center_x, const int32_t center_y, const uint32_t radius,
                             const uint8_t color) {
         auto realColor = colorLookup[virtualPalette[color]];
-        DrawCircleLines(center_x, center_y, radius, realColor);
+
+        const auto realCenterX = center_x + offsetX;
+        const auto realCenterY = center_y + offsetY;
+
+        DrawCircleLines(realCenterX, realCenterY, radius, realColor);
     }
 
     void Canvas::drawFilledCircle(const int32_t center_x, const int32_t center_y, const uint32_t radius,
                                   const uint8_t color) {
         auto realColor = colorLookup[virtualPalette[color]];
-        DrawCircle(center_x, center_y, radius, realColor);
+
+        const auto realCenterX = center_x + offsetX;
+        const auto realCenterY = center_y + offsetY;
+
+        DrawCircle(realCenterX, realCenterY, radius, realColor);
     }
 
     void Canvas::drawRectangle(const int32_t x0, const int32_t y0, const int32_t x1, const int32_t y1,
                                const uint8_t color) {
         const auto realColor = colorLookup[virtualPalette[color]];
-        DrawRectangleLines(x0, y0, x0 + x1, y0 + y1, realColor);
+
+        const auto realX0 = x0 + offsetX;
+        const auto realY0 = y0 + offsetY;
+
+        DrawRectangleLines(realX0, realY0, realX0 + x1, realY0 + y1, realColor);
+
     }
 
     void Canvas::drawRectangleW(const int32_t x, const int32_t y, const int32_t width, const int32_t height,
                                 const uint8_t color) {
         const auto realColor = colorLookup[virtualPalette[color]];
-        DrawRectangleLines(x, y, width, height, realColor);
+
+        const auto realX = x + offsetX;
+        const auto realY = y + offsetY;
+
+        DrawRectangleLines(realX, realY, width, height, realColor);
     }
 
     void Canvas::drawFilledRectangle(const int32_t x0, const int32_t y0, const int32_t x1, const int32_t y1,
                                      const uint8_t color) {
         const auto realColor = colorLookup[virtualPalette[color]];
-        DrawRectangle(x0, y0, x0 + x1, y0 + y1, realColor);
+        // DrawRectangle(x0, y0, x0 + x1, y0 + y1, realColor);
+
+        const auto realX0 = x0 + offsetX;
+        const auto realY0 = y0 + offsetY;
+
+        DrawRectangle(realX0, realY0, realX0 + x1, realY0 + y1, realColor);
     }
 
     void Canvas::drawFilledRectangleW(const int32_t x, const int32_t y, const int32_t width, const int32_t height,
                                       const uint8_t color) {
         const auto realColor = colorLookup[virtualPalette[color]];
-        DrawRectangle(x, y, width, height, realColor);
+        // DrawRectangle(x, y, width, height, realColor);
+
+        const auto realX = x + offsetX;
+        const auto realY = y + offsetY;
+
+        DrawRectangle(realX, realY, width, height, realColor);
     }
 
     void Canvas::drawSprite(int32_t x, int32_t y, bool flipX, bool flipY,

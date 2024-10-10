@@ -276,13 +276,21 @@ const scenes = [
         objects: [
             {
                 type: "background",
-                spriteSheet: "res://spritesheets/photoalbum.json",
+                spriteSheet: "res://spritesheets/hub.json",
                 spriteIndex: 0,
                 position: {x: 0, y: 0},
                 size: {width: 320, height: 240},
                 origin: {x: 0, y: 0}
             }
         ],
+        playerStartPosition: {x: 38, y: 197},
+        playerFacing: "right",
+        playerNavMeshIndex: "res://navmeshes/hub-1.json",
+        playerScale: {
+            min: 0.1,
+            max: 2.5,
+            quarterScreenMin: 0
+        }
     },
     {
         id: "photoalbum scene",
@@ -304,6 +312,38 @@ const scenes = [
                         type: "closeOverlayScene",
                     }
                 ]
+            },
+            {
+                type: "interactive",
+                colliderId: "res://colliders/photoalbum/left.json",
+                description: "Miguel",
+                hoverActions: [
+                    {
+                        type: "Look at",
+                        actions: [
+                            {
+                                type: "showMessage",
+                                text: "Miguel was my second love.#We met in the summer of 1999."
+                            }
+                        ]
+                    }
+                ],
+            },
+            {
+                type: "interactive",
+                colliderId: "res://colliders/photoalbum/right.json",
+                description: "Me",
+                hoverActions: [
+                    {
+                        type: "Look at",
+                        actions: [
+                            {
+                                type: "showMessage",
+                                text: "This is me, in the summer of 1999.#I was so young and full of dreams."
+                            }
+                        ]
+                    }
+                ],
             }
         ]
     }

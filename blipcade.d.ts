@@ -34,6 +34,11 @@ declare global {
         function setTransparentColor(color?: number): void;
 
         /**
+         * Sets the camera position.
+         */
+        function setCamera(offsetX: number, offsetY: number): void;
+
+        /**
          * Fills the screen with a color.
          */
         function fillScreen(color?: number): void;

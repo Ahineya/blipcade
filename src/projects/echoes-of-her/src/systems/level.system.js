@@ -103,7 +103,7 @@ const levels = [
                 description: "A bookshelf",
                 hoverActions: [
                     {
-                        type: 'Look',
+                        type: 'Look at',
                         actions: [
                             {
                                 type: "showMessage",
@@ -120,7 +120,7 @@ const levels = [
                 description: "A picture of a man",
                 hoverActions: [
                     {
-                        type: 'Look',
+                        type: 'Look at',
                         actions: [
                             {
                                 type: "showMessage",
@@ -136,7 +136,7 @@ const levels = [
                 description: "A plant",
                 hoverActions: [
                     {
-                        type: 'Look',
+                        type: 'Look at',
                         actions: [
                             {
                                 type: "showMessage",
@@ -152,7 +152,7 @@ const levels = [
                 description: "A teddy bear",
                 hoverActions: [
                     {
-                        type: 'Look',
+                        type: 'Look at',
                         actions: [
                             {
                                 type: "showMessage",
@@ -201,7 +201,7 @@ const levels = [
                 description: "A vintage radio",
                 hoverActions: [
                     {
-                        type: "look",
+                        type: "Look at",
                         actions: [
                             {
                                 type: "showMessage",
@@ -210,7 +210,7 @@ const levels = [
                         ]
                     },
                     {
-                        type: "use",
+                        type: "Use",
                         actions: [
                             {
                                 type: "playSound",

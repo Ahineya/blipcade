@@ -1,8 +1,8 @@
 import {interactiveObjectsSystem} from "./interactive-objects.system.js";
 
 const ACTION_TO_SPRITE = {
-    "look": 0,
-    "use": 1,
+    "Look at": 0,
+    "Use": 1,
 }
 
 class ActionMenuSystem {
@@ -24,6 +24,18 @@ class ActionMenuSystem {
 
             //Graphics.drawFilledRect(x, y, 20, 20, 0x2e);
             this.drawButtons(entity, actionMenu);
+
+            if (this.hoveredAction) {
+                const {x, y, actions} = actionMenu;
+
+                const textX = x + 5;
+                const textY = y - 10 - 8;
+
+                const textWidth = this.hoveredAction.length * 5 + 2;
+                Graphics.drawFilledRect(textX - 5, textY - 1, textWidth + 5, 9, 0x2e);
+                Graphics.drawFilledRect(textX - 5, textY - 1, 1, 9, 0xfe);
+                text(this.hoveredAction, textX + 1, textY, 0xfe);
+            }
         });
     }
 

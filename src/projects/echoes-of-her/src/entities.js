@@ -67,13 +67,14 @@ export class Entities {
         });
 
         ECS.addComponent(player, "Animation", {
+            spriteOffset: 0,
             animations: {
                 idle: [0, 1],
-                walk: [0, 1],
+                walk: [2, 3],
             },
             spritesheets: {
-                idle: "res://spritesheets/player-idle.json",
-                walk: "res://spritesheets/player-walk.json",
+                idle: "res://spritesheets/elena.json",
+                walk: "res://spritesheets/elena.json",
             },
             currentAnimation: "idle",
             currentFrame: 0,

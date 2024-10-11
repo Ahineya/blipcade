@@ -97,8 +97,8 @@
           "frameDuration": 700.0,
           "frameTime": 0.0,
           "spritesheets": {
-            "idle": "res://spritesheets/player-idle.json",
-            "walk": "res://spritesheets/player-walk.json"
+            "idle": "res://spritesheets/elena.json",
+            "walk": "res://spritesheets/elena.json"
           }
         },
         "Persistent": {},

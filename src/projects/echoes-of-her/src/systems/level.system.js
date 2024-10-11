@@ -299,7 +299,8 @@ const scenes = [
             max: 2.5,
             quarterScreenMin: 0
         },
-        camera: {x: -320, y: 0}
+        camera: {x: -320, y: 0},
+        animationOffset: 4,
     },
     {
         id: "photoalbum scene",
@@ -450,6 +451,10 @@ class LevelSystem {
                 playerScale.quarterScreenMin = level.playerScale.quarterScreenMin;
 
                 sprite.flipX = level.playerFacing === "left";
+
+                if (level.animationOffset) {
+                    animation.spriteOffset = level.animationOffset;
+                }
             });
         }
 

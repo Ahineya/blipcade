@@ -16,7 +16,7 @@ class AnimationSystem {
                 }
             }
 
-            sprite.spriteIndex = animation.animations[animation.currentAnimation][animation.currentFrame];
+            sprite.spriteIndex = animation.animations[animation.currentAnimation][animation.currentFrame] + animation.spriteOffset;
             sprite.spriteSheet = animation.spritesheets[animation.currentAnimation];
         });
     }

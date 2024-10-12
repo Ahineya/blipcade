@@ -39,7 +39,7 @@ export function init() {
     state.previousMouseButtonStates = {};
 
     state.entities = new Entities();
-    levelSystem.loadLevel("level2");
+    levelSystem.loadLevel("fantasy-bedroom");
 
     state.systems = {
         eventSystem,
@@ -140,17 +140,18 @@ function updateSingleKeyState(keyCode, isPressed) {
     }
 
     if (state.keyStates[keyCode] === 'pressed' && keyCode === 32) {
-        const levelComponent = ECS.getComponent(levelSystem.levelControllerEntity, "LevelController");
-        if (levelComponent.currentLevel === "level1") {
-            levelComponent.loadLevel = "level2";
-        } else if (levelComponent.currentLevel === "level2") {
-            levelComponent.loadLevel = "level3";
-        } else if (levelComponent.currentLevel === "level3") {
-            levelComponent.loadLevel = "level4";
-        }
-        else {
-            levelComponent.loadLevel = "level1";
-        }
+        levelSystem.nextLevel();
+        // const levelComponent = ECS.getComponent(levelSystem.levelControllerEntity, "LevelController");
+        // if (levelComponent.currentLevel === "level1") {
+        //     levelComponent.loadLevel = "level2";
+        // } else if (levelComponent.currentLevel === "level2") {
+        //     levelComponent.loadLevel = "level3";
+        // } else if (levelComponent.currentLevel === "level3") {
+        //     levelComponent.loadLevel = "level4";
+        // }
+        // else {
+        //     levelComponent.loadLevel = "level1";
+        // }
     }
 }
 

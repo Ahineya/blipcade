@@ -165,8 +165,6 @@ class InteractiveObjectsSystem {
 
                 eventSystem.onEvent("playerReachedDestination", e => {
                     if (e.data.requestId === requestId) {
-                        // this.processActions(entity, action.onEndActions); // TODO: In a perfect world we want this to run after a few frames
-
                         this.timeEvents.push({
                             id: requestId,
                             entity,

@@ -1,0 +1,26 @@
+graph TD
+    Start --> a012
+
+    a012[Exit the bedroom] --> a010
+
+    a010[Enter the tavern] --> a008
+    a008[Talk to Maria] --> a011
+    a008 -->a013
+
+    a014[Get a shovel] -->a002
+    a013[Get a request to gather some onion herbs from the forest] -->a014
+
+    a011[Drink coffee] --> a006
+
+    a007[Talk to the stranger] --> a005
+    a006[Exit the tavern] --> a005
+    a006 --> a007
+    a005[Get the map] --> a009
+    a009[Exit the tavern] --> a004
+    a004[Exit the town] --> a002
+
+    a002[Go to the Forest] --> a003
+    a003{forest.mermaid} --> a001
+    a001[Bring herbs to Maria] --> End
+
+    End

@@ -1,0 +1,26 @@
+graph TD
+    Start(Start) --> d1
+    Start --> k
+
+    k[Use an oak] --> g
+    g[Talk to an oak] --> a002
+    g ---> f
+    g --> a003
+
+    a002[Look at oak roots] --> l
+    l{cave.mermaid} --> h
+    h[Use moss on oak Roots] --> b001
+
+    a003[Use shovel on Oak roots] --> b002
+    b002[Save an oak from boars] --> b001
+
+    b001[Calm an Oak] --> f
+    f[Get a hint from an oak] --> d
+    d1[Look at bridge] --> d
+    d[Remember the bridge] --> c
+    c[Get herbs] --> b
+    b(Transform the forest) --> C
+    C[Interact with plants] --> B
+    B[Watch the memory] --> A
+    A[Exit the garden] --> End{End Act}
+

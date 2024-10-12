@@ -58,10 +58,11 @@ const scenes = [
             max: 1,
             quarterScreenMin: 1.0
         },
+        animationOffset: 0,
         message: "Am I wandering through a memory or a dream?#Every flower whispers a story I thought I'd forgotten."
     },
     {
-        id: "level2",
+        id: "fantasy-bedroom",
         objects: [
             {
                 type: "background",
@@ -164,9 +165,9 @@ const scenes = [
                                 onEndActions: [
                                     {
                                         type: "loadLevel",
-                                        levelId: "level4",
-                                        playerStartPosition: {x: 150, y: 187},
-                                        playerFacing: "left"
+                                        levelId: "town-default",
+                                        playerStartPosition: {x: 40, y: 220},
+                                        playerFacing: "right"
                                     },
                                     {
                                         type: "playSound",
@@ -186,6 +187,100 @@ const scenes = [
             min: 0.2,
             max: 2.4,
             quarterScreenMin: -1
+        },
+        animationOffset: 4,
+    },
+    {
+        id: "town-default",
+        objects: [
+            {
+                type: "background",
+                spriteSheet: "res://spritesheets/town/town-default.json",
+                spriteIndex: 0,
+                position: {x: 0, y: 0},
+                size: {width: 320, height: 240},
+                origin: {x: 0, y: 0}
+            },
+            {
+                type: "interactive",
+                colliderId: "res://colliders/town-default/home-door.json",
+                description: "A door",
+                hoverActions: [
+                    {
+                        type: 'Look at',
+                        actions: [
+                            {
+                                type: "showMessage",
+                                text: "This door leads to my home.#I've always felt safe here."
+                            }
+                        ]
+                    },
+                    {
+                        type: 'Use',
+                        actions: [
+                            {
+                                type: "movePlayer",
+                                faceDirectionAfterMove: "left",
+                                endDelay: 7,
+                                onEndActions: [
+                                    {
+                                        type: "loadLevel",
+                                        levelId: "fantasy-bedroom",
+                                        playerStartPosition: {x: 38, y: 197},
+                                        playerFacing: "right"
+                                    },
+                                    {
+                                        type: "playSound",
+                                        soundId: Sound.loadSound("res://sounds/door.mp3"),
+                                    }
+                                ]
+                            },
+                        ]
+                    }
+                ]
+            },
+            {
+                type: "interactive",
+                colliderId: "res://colliders/town-default/town-exit.json",
+                description: "Town exit",
+                hoverActions: [
+                    {
+                        type: 'Look at',
+                        actions: [
+                            {
+                                type: "showMessage",
+                                text: "There are very nice views this way."
+                            }
+                        ]
+                    },
+                    {
+                        type: 'Use',
+                        actions: [
+                            {
+                                type: "movePlayer",
+                                faceDirectionAfterMove: "left",
+                                endDelay: 1,
+                                onEndActions: [
+                                    {
+                                        type: "loadLevel",
+                                        levelId: "hub",
+                                        playerStartPosition: {x: 139, y: 140},
+                                        playerFacing: "right"
+                                    },
+                                ]
+                            },
+                        ]
+                    }
+                ]
+            }
+        ],
+        playerStartPosition: {x: 38, y: 197},
+        playerFacing: "right",
+        playerNavMeshIndex: "res://navmeshes/fantasy-town.json",
+        playerScale: {
+            min: 0.2,
+            max: 0.6,
+            quarterScreenMin: -2
         },
         animationOffset: 4,
     },
@@ -413,10 +508,11 @@ const scenes = [
             min: 0.2,
             max: 1.4,
             quarterScreenMin: 1.4
-        }
+        },
+        animationOffset: 0,
     },
     {
-        id: "level4",
+        id: "hub",
         objects: [
             {
                 type: "background",
@@ -438,6 +534,40 @@ const scenes = [
                 type: "music",
                 musicId: Sound.loadSound('res://sounds/hub/main.mp3'),
                 volume: 0.2
+            },
+            {
+                type: "interactive",
+                colliderId: "res://colliders/hub/town.json",
+                description: "Town",
+                hoverActions: [
+                    {
+                        type: "Look at",
+                        actions: [
+                            {
+                                type: "showMessage",
+                                text: "I've lived here all my life."
+                            }
+                        ]
+                    },
+                    {
+                        type: "Use",
+                        actions: [
+                            {
+                                type: "movePlayer",
+                                faceDirectionAfterMove: "right",
+                                endDelay: 1,
+                                onEndActions: [
+                                    {
+                                        type: "loadLevel",
+                                        levelId: "town-default",
+                                        playerStartPosition: {x: 99, y: 187},
+                                        playerFacing: "right"
+                                    },
+                                ]
+                            },
+                        ]
+                    }
+                ],
             }
         ],
         playerStartPosition: {x: 475, y: 187},
@@ -453,6 +583,7 @@ const scenes = [
     },
     {
         id: "photoalbum scene",
+        type: "overlay",
         objects: [
             {
                 type: "background",
@@ -560,6 +691,17 @@ class LevelSystem {
         return levelController.isInScene;
     }
 
+    // TODO: Remove in production
+    nextLevel() {
+        // We want to filter out the overlay scenes
+        const levels = scenes.filter(scene => !scene.type || scene.type !== "overlay");
+        const levelController = ECS.getComponent(this.levelControllerEntity, "LevelController");
+        const currentLevel = levelController.currentLevel;
+        const currentLevelIndex = levels.findIndex(l => l.id === currentLevel);
+
+        this.loadLevel(levels[(currentLevelIndex + 1) % levels.length].id);
+    }
+
     loadLevel(levelId, {playerStartPosition, playerFacing} = {}) {
         log(`Loading level ${levelId}`);
 
@@ -571,8 +713,6 @@ class LevelSystem {
         // Here would be nice to have a transition effects
 
         this.loadLevelObjects(levelId, {playerStartPosition, playerFacing});
-
-        // Graphics.setCamera(-320, 0);
     }
 
     loadLevelObjects(levelId, {sceneId, playerStartPosition, playerFacing} = {}) {

@@ -1,8 +1,11 @@
 import {messageSystem} from "./messageSystem.js";
 import {levelSystem} from "./level.system.js";
+import {Evt, eventSystem} from "./event.system.js";
+import {timerSystem} from "./timer.system.js";
 
 class InteractiveObjectsSystem {
     hoverEntity = null;
+    timeEvents = [];
 
     constructor() {
         const menu = ECS.createEntity();
@@ -19,6 +22,16 @@ class InteractiveObjectsSystem {
         ECS.addComponent(menu, "Tag", "ActionMenu");
         ECS.addComponent(menu, "Persistent", {});
         this.menu = menu;
+    }
+
+    update() {
+        eventSystem.processEvents("interactiveObjectsSystem");
+
+        this.timeEvents.forEach(te => {
+            if (timerSystem.isTimerDone(te.id)) {
+                this.processActions(te.entity, te.actions);
+            }
+        })
     }
 
     handleMouseEvent(event) {
@@ -136,6 +149,47 @@ class InteractiveObjectsSystem {
             }
             case "closeOverlayScene": {
                 levelSystem.hideOverlayScene();
+                break;
+            }
+            case "movePlayer": {
+                const mousePos = Input.getMousePos();
+
+                // Generate a unique id for this request
+                const requestId = Math.random().toString(36).substring(7);
+                eventSystem.emit(new Evt("movePlayer", {
+                    x: mousePos.x,
+                    y: mousePos.y,
+                    requestId,
+                    faceDirectionAfterMove: action.faceDirectionAfterMove
+                }));
+
+                eventSystem.onEvent("playerReachedDestination", e => {
+                    if (e.data.requestId === requestId) {
+                        // this.processActions(entity, action.onEndActions); // TODO: In a perfect world we want this to run after a few frames
+
+                        this.timeEvents.push({
+                            id: requestId,
+                            entity,
+                            actions: action.onEndActions,
+                        });
+
+                        timerSystem.addTimer(requestId, action.endDelay);
+
+                        eventSystem.removeListenersWithId("moveRequest");
+                        return true;
+                    } else {
+                        eventSystem.removeListenersWithId("moveRequest");
+                    }
+                }, "interactiveObjectsSystem", "moveRequest");
+
+                log("Move player");
+                break;
+            }
+            case "loadLevel": {
+                levelSystem.loadLevel(action.levelId, {
+                    playerStartPosition: action.playerStartPosition,
+                    playerFacing: action.playerFacing
+                });
                 break;
             }
             default:

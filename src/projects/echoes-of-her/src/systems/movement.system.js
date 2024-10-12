@@ -1,5 +1,6 @@
 import {state} from "../state/state.js";
 import {levelSystem} from "./level.system.js";
+import {eventSystem, Evt} from "./event.system.js";
 
 const PLAYER_SPEED = 30; // pixels per second
 const WIDTH = 320;
@@ -47,7 +48,17 @@ const normalize = (vector) => {
 }
 
 class MoveSystem {
+    init() {
+        eventSystem.onEvent("movePlayer", (e) => {
+            const {x, y, requestId, faceDirectionAfterMove} = e.data;
+            ECS.forEachEntity(["Player"], (playerEntity, player) => {
+                this.movePlayer(player, x, y, {requestId, faceDirectionAfterMove});
+                log(`Move player to ${x}, ${y}, requestId: ${requestId}`);
+            });
+        }, "MoveSystem");
+    }
     update(deltaTime) {
+        eventSystem.processEvents("MoveSystem");
         ECS.forEachEntity(["Player", "Sprite", "Animation", "Sound", "PlayerScale"], (playerEntity, player, sprite, animation, sound, playerScale) => {
             if (player.path && player.currentPathIndex < player.path.length) {
                 const targetPoint = player.path[player.currentPathIndex];
@@ -74,8 +85,8 @@ class MoveSystem {
                 player.velocity.x = -normalizedDirection.x;
 
                 // Update sprite position
-                sprite.position.x = Math.round(player.position.x);
-                sprite.position.y = Math.round(player.position.y);
+                sprite.position.x = player.position.x;
+                sprite.position.y = player.position.y;
 
                 // Handle sprite flipping based on movement direction
                 if (normalizedDirection.x < 0) {
@@ -102,6 +113,29 @@ class MoveSystem {
 
                 // Optionally handle collisions here
                 // handleCollisions(player, deltaTime); // TODO: Implement this function
+            } else if (player.path && player.path.length && player.currentPathIndex >= player.path.length) {
+                // Player has reached the end of the path
+
+                eventSystem.emit(new Evt("playerReachedDestination", {
+                    x: player.path[player.path.length - 1].x,
+                    y: player.path[player.path.length - 1].y,
+                    requestId: player.movementRequestId
+                }));
+
+                // Face the player
+                if (player.faceDirectionAfterMove !== null) {
+                    log(`Face direction after move: ${player.faceDirectionAfterMove}`);
+                    sprite.flipX = player.faceDirectionAfterMove;
+                    player.faceDirectionAfterMove = null;
+                } else {
+                    // Face the player based on the difference between the initial and final x position
+                    sprite.flipX = player.position.x < player.path[0].x;
+                }
+
+                player.path = null;
+                player.currentPathIndex = 0;
+                player.movementRequestId = null;
+                player.faceDirectionAfterMove = null;
             } else {
                 // No path to follow; ensure the player stops
                 player.velocity.x = 0;
@@ -115,6 +149,27 @@ class MoveSystem {
         });
     }
 
+    movePlayer(player, x, y, request = null) {
+        const currentPosition = player.position;
+
+        const path = Pathfinding.findPath(
+            Math.round(currentPosition.x),
+            Math.round(currentPosition.y),
+            Math.round(x),
+            Math.round(y),
+            player.navMeshIndex
+        );
+
+        if (path.length > 0) {
+            player.path = path;
+            player.currentPathIndex = 0;
+            player.movementRequestId = request?.requestId;
+            player.faceDirectionAfterMove = request ? request.faceDirectionAfterMove === "left" : null; // true for left, false for right
+        } else {
+            log(`No path found from ${currentPosition.x}, ${currentPosition.y} to ${x}, ${y}`);
+        }
+    }
+
     handleMouseEvent(event) {
         if (event.type === "mouseDown") {
             if (levelSystem.isInScene()) {
@@ -124,24 +179,7 @@ class MoveSystem {
             const coords = Input.getMousePos();
 
             ECS.forEachEntity(["Player"], (playerEntity, player) => {
-                if (playerEntity) {
-                    const currentPosition = player.position;
-
-                    const path = Pathfinding.findPath(
-                        Math.round(currentPosition.x),
-                        Math.round(currentPosition.y),
-                        Math.round(coords.x),
-                        Math.round(coords.y),
-                        player.navMeshIndex
-                    );
-
-                    if (path.length > 0) {
-                        player.path = path;
-                        player.currentPathIndex = 0;
-                    } else {
-                        log(`No path found from ${currentPosition.x}, ${currentPosition.y} to ${coords.x}, ${coords.y}`);
-                    }
-                }
+                this.movePlayer(player, coords.x, coords.y);
             });
         }
     }
@@ -277,6 +315,34 @@ class MoveSystem {
 // }
 
 export function getScale(y, min = 0.2, max = 1, quarterScreenMin = 1.0) {
+
+    if (quarterScreenMin === -1) {
+        const quarterScreenY = Screen.height * 0.85;
+        const maxScale = 2.3;
+
+        // Clamp Y to the screen bounds
+        const clampedY = Math.max(0, Math.min(y, Screen.height));
+
+        let scale;
+
+        if (clampedY <= quarterScreenY) {
+            // Normalize Y to [0,1]
+            const t = clampedY / quarterScreenY;
+
+            // Ease-In Quadratic Function
+            // const easeInQuad = t * t;
+
+            // Ease-In Sine Function
+            const easeInSin = 1 - Math.cos((Math.PI / 2) * t);
+
+            scale = min + (max - min) * easeInSin;
+        } else {
+            // Scale increases linearly from 1.0 to maxScale as y increases from quarterScreenY to Screen.height
+            scale = max + ((clampedY - quarterScreenY) / (Screen.height - quarterScreenY)) * (maxScale - 1.0);
+        }
+
+        return Math.max(0.2, Math.min(scale, maxScale));
+    }
 
     // if quarterScreenMin is 0, then we want just a simple linear scale from min to max
     if (quarterScreenMin === 0) {

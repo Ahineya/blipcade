@@ -13,6 +13,8 @@ import {interactiveObjectsSystem} from "./systems/interactive-objects.system.js"
 import {actionMenuSystem} from "./systems/action-menu.system.js";
 import {buttonSystem} from "./systems/button.system.js";
 import {cameraSystem} from "./systems/camera.system.js";
+import {eventSystem} from "./systems/event.system.js";
+import {timerSystem} from "./systems/timer.system.js";
 
 const CURSOR_SPRITESHEET = "res://spritesheets/cursor.json";
 
@@ -40,6 +42,8 @@ export function init() {
     levelSystem.loadLevel("level2");
 
     state.systems = {
+        eventSystem,
+        timerSystem,
         cameraSystem,
         levelSystem,
         drawSystem,

@@ -1,0 +1,14 @@
+{
+  "texture": {
+    "image": "fantasy-bed.png"
+  },
+  "sprites": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 187,
+      "height": 129,
+      "flags": 0
+    }
+  ]
+}

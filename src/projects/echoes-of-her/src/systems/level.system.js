@@ -65,6 +65,135 @@ const scenes = [
         objects: [
             {
                 type: "background",
+                spriteSheet: "res://spritesheets/fantasy-bedroom.json",
+                spriteIndex: 0,
+                position: {x: 0, y: 0},
+                size: {width: 320, height: 240},
+                origin: {x: 0, y: 0}
+            },
+            {
+                type: "spriteGroup",
+                sprites: [
+                    {
+                        type: "sprite",
+                        spriteSheet: "res://spritesheets/fantasy-bed.json",
+                        spriteIndex: 0,
+                        origin: {x: 0.5, y: 0.8},
+                        size: {width: 187, height: 129},
+                        position: {x: 162, y: 210}
+                    },
+                    {
+                        type: "sprite",
+                        spriteSheet: "res://spritesheets/teddy.json",
+                        spriteIndex: 0,
+                        origin: {x: 0.5, y: 0.5},
+                        size: {width: 23, height: 22},
+                        position: {x: 180, y: 160}
+                    },
+                ]
+            },
+            {
+                type: "interactive",
+                colliderId: "res://colliders/teddy.json",
+                description: "A teddy bear",
+                hoverActions: [
+                    {
+                        type: 'Look at',
+                        actions: [
+                            {
+                                type: "showMessage",
+                                text: "My favorite teddy bear.#I've had it since I was a child."
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                type: "interactive",
+                colliderId: "res://colliders/fantasy-bedroom/plants.json",
+                description: "Plants",
+                hoverActions: [
+                    {
+                        type: 'Look at',
+                        actions: [
+                            {
+                                type: "showMessage",
+                                text: "I've always loved plants.#My mother says they bring life to a room."
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                type: "interactive",
+                colliderId: "res://colliders/fantasy-bedroom/wall.json",
+                description: "Decorated wall",
+                hoverActions: [
+                    {
+                        type: 'Look at',
+                        actions: [
+                            {
+                                type: "showMessage",
+                                text: "I made these carpets and paintings myself.#I am proud of them."
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                type: "interactive",
+                colliderId: "res://colliders/fantasy-bedroom/door.json",
+                description: "A door",
+                hoverActions: [
+                    {
+                        type: 'Look at',
+                        actions: [
+                            {
+                                type: "showMessage",
+                                text: "When I was a child, I used to imagine#that this door led to a magical world."
+                            }
+                        ]
+                    },
+                    {
+                        type: 'Use',
+                        actions: [
+                            {
+                                type: "movePlayer",
+                                faceDirectionAfterMove: "left",
+                                endDelay: 7,
+                                onEndActions: [
+                                    {
+                                        type: "loadLevel",
+                                        levelId: "level4",
+                                        playerStartPosition: {x: 150, y: 187},
+                                        playerFacing: "left"
+                                    },
+                                    {
+                                        type: "playSound",
+                                        soundId: Sound.loadSound("res://sounds/door.mp3"),
+                                    }
+                                ]
+                            },
+                        ]
+                    }
+                ]
+            }
+        ],
+        playerStartPosition: {x: 38, y: 197},
+        playerFacing: "right",
+        playerNavMeshIndex: "res://navmeshes/fantasy-bedroom.json",
+        playerScale: {
+            min: 0.2,
+            max: 2.4,
+            quarterScreenMin: -1
+        },
+        animationOffset: 4,
+    },
+    {
+        id: "level2-x",
+        objects: [
+            {
+                type: "background",
                 spriteSheet: "res://spritesheets/level2-bg.json",
                 spriteIndex: 0,
                 position: {x: 0, y: 0},
@@ -171,6 +300,7 @@ const scenes = [
             max: 1.5,
             quarterScreenMin: 1.5
         },
+        animationOffset: 0,
         message: "This has always been my sanctuary...#But today, it feels like it's shifting beneath my feet."
     },
     {
@@ -202,9 +332,15 @@ const scenes = [
                         type: "Use",
                         actions: [
                             {
-                                type: "showOverlayScene",
-                                sceneId: "photoalbum scene"
-                            },
+                                type: "movePlayer",
+                                endDelay: 1,
+                                onEndActions: [
+                                    {
+                                        type: "showOverlayScene",
+                                        sceneId: "photoalbum scene"
+                                    }
+                                ]
+                            }
                         ]
                     }
                 ],
@@ -227,12 +363,19 @@ const scenes = [
                         type: "Use",
                         actions: [
                             {
-                                type: "playSound",
-                                soundId: Sound.loadSound('res://sounds/radio/searching-for-light-filtered.mp3'),
-                                volume: 0.5
-                            },
-                            {
-                                type: "nextAnimation"
+                                type: "movePlayer",
+                                faceDirectionAfterMove: "left",
+                                endDelay: 3,
+                                onEndActions: [
+                                    {
+                                        type: "playSound",
+                                        soundId: Sound.loadSound('res://sounds/radio/searching-for-light-filtered.mp3'),
+                                        volume: 0.5
+                                    },
+                                    {
+                                        type: "nextAnimation"
+                                    }
+                                ]
                             }
                         ]
                     }
@@ -259,6 +402,7 @@ const scenes = [
                     currentFrame: 0,
                     frameTime: 0,
                     frameDuration: 700,
+                    spriteOffset: 0
                 }
             }
         ],
@@ -289,6 +433,11 @@ const scenes = [
                 origin: {x: 0.5, y: 1.0},
                 size: {width: 254, height: 49},
                 position: {x: 320 + 160, y: 240}
+            },
+            {
+                type: "music",
+                musicId: Sound.loadSound('res://sounds/hub/main.mp3'),
+                volume: 0.2
             }
         ],
         playerStartPosition: {x: 475, y: 187},
@@ -390,7 +539,7 @@ class LevelSystem {
             sceneId
         });
 
-        this.loadLevelObjects(sceneId, sceneId);
+        this.loadLevelObjects(sceneId, {sceneId});
         const levelController = ECS.getComponent(this.levelControllerEntity, "LevelController");
         levelController.isInScene = true;
 
@@ -411,7 +560,7 @@ class LevelSystem {
         return levelController.isInScene;
     }
 
-    loadLevel(levelId) {
+    loadLevel(levelId, {playerStartPosition, playerFacing} = {}) {
         log(`Loading level ${levelId}`);
 
         this.unloadCurrentLevel();
@@ -421,12 +570,12 @@ class LevelSystem {
 
         // Here would be nice to have a transition effects
 
-        this.loadLevelObjects(levelId);
+        this.loadLevelObjects(levelId, {playerStartPosition, playerFacing});
 
         // Graphics.setCamera(-320, 0);
     }
 
-    loadLevelObjects(levelId, sceneId = null) {
+    loadLevelObjects(levelId, {sceneId, playerStartPosition, playerFacing} = {}) {
         const level = scenes.find(l => l.id === levelId);
         if (!level) {
             log(`Level ${levelId} not found`);
@@ -439,8 +588,8 @@ class LevelSystem {
 
         if (!sceneId) {
             ECS.forEachEntity(["Player", "Sprite", "Animation", "PlayerScale"], (entity, player, sprite, animation, playerScale) => {
-                player.position = {...level.playerStartPosition};
-                sprite.position = {...level.playerStartPosition};
+                player.position = playerStartPosition ? {...playerStartPosition} : {...level.playerStartPosition};
+                sprite.position = player.position;
                 player.velocity = {x: 0, y: 0};
                 player.path = [];
                 player.currentPathIndex = 0;
@@ -450,15 +599,15 @@ class LevelSystem {
                 playerScale.max = level.playerScale.max;
                 playerScale.quarterScreenMin = level.playerScale.quarterScreenMin;
 
-                sprite.flipX = level.playerFacing === "left";
+                sprite.flipX = playerFacing ? playerFacing === "left" : level.playerFacing === "left";
 
-                if (level.animationOffset) {
+                if (level.animationOffset !== undefined) {
                     animation.spriteOffset = level.animationOffset;
                 }
             });
         }
 
-        const cameraOffset = level.camera || {x: 0, y: 0};
+        const cameraOffset = playerStartPosition ? {x: playerStartPosition.x, y: 0} : (level.camera || {x: 0, y: 0});
 
         ECS.forEachEntity(["Camera"], (entity, camera) => {
             camera.x = cameraOffset.x;

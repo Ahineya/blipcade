@@ -217,12 +217,13 @@ void fragment() {
     COLOR.rgb += bloom(0.1, uv);
 
     // Color grading
-    COLOR.rgb = mix(COLOR.rgb, vec3(0.7, 0.9, 0.8), 0.05);
-//
-//    // Contrast
+//    COLOR.rgb = mix(COLOR.rgb, vec3(0.7, 0.9, 0.8), 0.05);
+    COLOR.rgb = mix(COLOR.rgb, vec3(0.9, 0.6, 0.7), 0.05);
+
+    // Contrast
     vec3 contrast = (COLOR.rgb - 0.5) * 2.0 + 0.5;
     COLOR.rgb = mix(COLOR.rgb, contrast, 0.05);
-//
+
     COLOR.rgb = pow(COLOR.rgb, vec3(1.2));
 
 //    COLOR.rgb = vec3(edgeMask);

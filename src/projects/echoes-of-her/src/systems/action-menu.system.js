@@ -3,6 +3,7 @@ import {interactiveObjectsSystem} from "./interactive-objects.system.js";
 const ACTION_TO_SPRITE = {
     "Look at": 0,
     "Use": 1,
+    "Go to": 2
 }
 
 class ActionMenuSystem {
